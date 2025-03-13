@@ -47,5 +47,4 @@ Additionally, the root /output folder also contains the following folders:
     includes histograms for post-hoc power analysis 
 
 /_manuscript figures and tables
-
-     contains all figures, tables (/tables subfolder) and numerical data (included in "/tables/Document - Text-Cited Numbers") used in the manuscript. Note that table formatting may differ from that used in the final manuscript.
+    contains all figures, tables (/tables subfolder) and numerical data (included in "/tables/Document - Text-Cited Numbers") used in the manuscript. Note that table formatting may differ from that used in the final manuscript.
