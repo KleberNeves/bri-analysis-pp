@@ -1,4 +1,6 @@
 # Brazilian Reproducibility Initiative (BRI) Analysis
+[![](<https://img.shields.io/badge/Dataverse DOI-10.7910/DVN/ZJRDIV-orange>)](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/ZJRDIV)
+
 This repository contains the code and data necessary to get all the main results of the Brazilian Reproducibility Initiative.
 
 All analyses are run from the script *main.R* - you can simply clone the repo, install the required packages and run it. The exception is the code on the "maps" folder, which is not R, but Vega-lite and needs to be run separately. 
