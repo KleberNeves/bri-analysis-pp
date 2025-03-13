@@ -1,0 +1,42 @@
+LAB;EXP;Grouping Variable Name;Primary outcome;Paired;Group1_name;Group2_name;Group3_name;Group4_name;outcome_name;outcome_name_short
+LAB16;EPM1;Animal_id;Time_OpenArms;No;Standard diet;Cafeteria diet;;;Time in open arms (sec);OA time (sec)
+LAB80;EPM1;Animal_id;Time_OpenArms;No;Standard diet;Cafeteria diet;;;Time in open arms (sec);OA time (sec)
+LAB82;EPM1;Animal_id;Time_OpenArms;No;Standard diet;Cafeteria diet;;;Time in open arms (sec);OA time (sec)
+LAB62;EPM11;Animal_id;Perc_Time_OpenArms_total;No;Vehicle control;Memantine (8mg/kg);;;Percentage of time in open arms (relative to total test time);% OA time (test time)
+LAB80;EPM11;Animal_id;Perc_Time_OpenArms_total;No;Vehicle control;Memantine (8mg/kg);;;Percentage of time in open arms (relative to total test time);% OA time (test time)
+LAB83;EPM11;Animal_id;Perc_Time_OpenArms_total;No;Vehicle control;Memantine (8mg/kg);;;Percentage of time in open arms (relative to total test time);% OA time (test time)
+LAB11;EPM13;Litter_id;Perc_Time_ClosedArms_arms;No;Born and reared by control dams;Born and reared by stressed dams;;;Percentage of time in closed arms (relative to total arms time);% CA time (arms time)
+LAB91;EPM13;Litter_id;Perc_Time_ClosedArms_arms;No;Born and reared by control dams;Born and reared by stressed dams;;;Percentage of time in closed arms (relative to total arms time);% CA time (arms time)
+LAB11;EPM15;Animal_id;Time_OpenArms;No;Vehicle control;Caffeine (throughout life);;;Time in open arms (sec);OA time (sec)
+LAB24;EPM19;Animal_id;Entries_OpenArms;No;Vehicle control;Linalool oxide (0.65%);;;Number of entries in open arms;OA entries (No.)
+LAB7;EPM19;Animal_id;Entries_OpenArms;No;Vehicle control;Linalool oxide (0.65%);;;Number of entries in open arms;OA entries (No.)
+LAB24;EPM2;Animal_id;Perc_Time_OpenArms_arms;No;Vehicle control;Chlordiazepoxide (5 mg/kg);;;Percentage of time in open arms (relative to total arms time);% OA time (arms time)
+LAB7;EPM2;Animal_id;Perc_Time_OpenArms_arms;No;Vehicle control;Chlordiazepoxide (5 mg/kg);;;Percentage of time in open arms (relative to total arms time);% OA time (arms time)
+LAB86;EPM2;Animal_id;Perc_Time_OpenArms_arms;No;Vehicle control;Chlordiazepoxide (5 mg/kg);;;Percentage of time in open arms (relative to total arms time);% OA time (arms time)
+LAB24;EPM21;Cage_id;Perc_Entries_OpenArms;No;Non-stressed control;Cage-mates of stressed animals;Stressed animals;;Percentage of entries in open arms;% OA entries
+LAB80;EPM21;Cage_id;Perc_Entries_OpenArms;No;Non-stressed control;Cage-mates of stressed animals;Stressed animals;;Percentage of entries in open arms;% OA entries
+LAB25;EPM25;Animal_id;Perc_Time_OpenArms_total;No;Methylscopolamine (1 mg/kg) +---Vehicle;Methylscopolamine (1 mg/kg) +--- Pilocarpine (75 mg/kg);;;Percentage of time in open arms (relative to total test time);% OA time (test time)
+LAB62;EPM25;Animal_id;Perc_Time_OpenArms_total;No;Methylscopolamine (1 mg/kg) +---Vehicle;Methylscopolamine (1 mg/kg) +--- Pilocarpine (75 mg/kg);;;Percentage of time in open arms (relative to total test time);% OA time (test time)
+LAB83;EPM25;Animal_id;Perc_Time_OpenArms_total;No;Methylscopolamine (1 mg/kg) +---Vehicle;Methylscopolamine (1 mg/kg) +--- Pilocarpine (75 mg/kg);;;Percentage of time in open arms (relative to total test time);% OA time (test time)
+LAB16;EPM27;Animal_id;Distance;No;Vehicle control;Glutamine (500 mg/kg);;;Distance (m);Distance (m)
+LAB87;EPM27;Animal_id;Distance;No;Vehicle control;Glutamine (500 mg/kg);;;Distance (m);Distance (m)
+LAB7;EPM28;Animal_id;Time_OpenArms;No;Vehicle + ---REM sleep deprivation;Venlafaxine (10 mg/kg) + ---REM sleep deprivation;;;Time in open arms (sec);OA time (sec)
+LAB82;EPM28;Animal_id;Time_OpenArms;No;Vehicle + ---REM sleep deprivation;Venlafaxine (10 mg/kg) + ---REM sleep deprivation;;;Time in open arms (sec);OA time (sec)
+LAB85;EPM28;Animal_id;Time_OpenArms;No;Vehicle + ---REM sleep deprivation;Venlafaxine (10 mg/kg) + ---REM sleep deprivation;Vehicle ---(not sleep deprived);Venlafaxine (10 mg/kg) ---(not sleep deprived);Time in open arms (sec);OA time (sec)
+LAB10;EPM29;Animal_id;Time_OpenArms;No;Vehicle control;Diphenyl ditelluride (3.1 ug/kg);;;Time in open arms (sec);OA time (sec)
+LAB85;EPM29;Animal_id;Time_OpenArms;No;Vehicle control;Diphenyl ditelluride (3.1 ug/kg);;;Time in open arms (sec);OA time (sec)
+LAB88;EPM29;Animal_id;Time_OpenArms;No;Vehicle control;Diphenyl ditelluride (3.1 ug/kg);;;Time in open arms (sec);OA time (sec)
+LAB10;EPM31;Animal_id;Perc_Entries_OpenArms;No;Vehicle control;Midazolam (60 nmol);;;Percentage of entries in open arms;% OA entries
+LAB76;EPM31;Animal_id;Perc_Entries_OpenArms;No;Vehicle control;Midazolam (60 nmol);;;Percentage of entries in open arms;% OA entries
+LAB86;EPM31;Animal_id;Perc_Entries_OpenArms;No;Vehicle control;Midazolam (60 nmol);;;Percentage of entries in open arms;% OA entries
+LAB10;EPM37;Animal_id;Entries_OpenArms;No;Vehicle control;Muscimol (1 nmol);;;Number of entries in open arms;OA entries (No.)
+LAB76;EPM37;Animal_id;Entries_OpenArms;No;Vehicle control;Muscimol (1 nmol);;;Number of entries in open arms;OA entries (No.)
+LAB82;EPM37;Animal_id;Entries_OpenArms;No;Vehicle control;Muscimol (1 nmol);;;Number of entries in open arms;OA entries (No.)
+LAB82;EPM43;Animal_id;Perc_Time_OpenArms_arms;No;Vehicle control;L-arginine (100 nmol);;;Percentage of time in open arms (relative to total arms time);% OA time (arms time)
+LAB86;EPM46;Animal_id;Perc_Entries_OpenArms;No;Vehicle control;DNQX (330 ng);;;Percentage of entries in open arms;% OA entries
+LAB10;EPM5;Animal_id;Perc_Time_OpenArms_mixed;No;Vehicle control;Diazepam (10 mg/kg);;;Percentage of time in open arms (relative to total test time);% OA time (test time)
+LAB62;EPM5;Animal_id;Perc_Time_OpenArms_mixed;No;Vehicle control;Diazepam (10 mg/kg);;;Percentage of time in open arms (relative to total test time);% OA time (test time)
+LAB7;EPM5;Animal_id;Perc_Time_OpenArms_mixed;No;Vehicle control;Diazepam (10 mg/kg);;;Percentage of time in open arms (relative to total arms time);% OA time (arms time)
+LAB24;EPM9;Animal_id;Time_OpenArms;No;Vehicle control;1,4-cineole (400 mg/kg);;;Time in open arms (sec);OA time (sec)
+LAB7;EPM9;Animal_id;Time_OpenArms;No;Vehicle control;1,4-cineole (400 mg/kg);;;Time in open arms (sec);OA time (sec)
+LAB80;EPM9;Animal_id;Time_OpenArms;No;Vehicle control;1,4-cineole (400 mg/kg);;;Time in open arms (sec);OA time (sec)

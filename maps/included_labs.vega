@@ -1,0 +1,121 @@
+// The data used to create this plot can be found in: other-data/intermediate_steps.xlsx
+
+{
+  "$schema": "https://vega.github.io/schema/vega-lite/v5.json",
+  "width": 800,
+  "height": 600,
+  "title": {
+    "text": "Included Labs",
+    "fontSize": 28,
+    "offset": 30
+  },
+  "data": {
+    "url": "https://raw.githubusercontent.com/fititnt/gis-dataset-brasil/master/uf/topojson/uf.json",
+    "format": {"type": "topojson", "feature": "uf"}
+  },
+  "transform": [
+    {
+      "lookup": "properties.name",
+      "from": {
+        "data": {
+          "values": [
+            {"id": "Acre", "n": 0, "centroid": [-70.812, -9.189]},
+            {"id": "Alagoas", "n": 1, "centroid": [-36.429, -10.465]},
+            {"id": "Amapá", "n": 1, "centroid": [-51.796, 1.413]},
+            {"id": "Amazonas", "n":1, "centroid": [-65.421, -5.416]},
+            {"id": "Bahia", "n": 1, "centroid": [-41.728, -12.970]},
+            {"id": "Ceará", "n": 1, "centroid": [-39.53, -5.498]},
+            {"id": "Espírito Santo", "n": 1, "centroid": [-40.276, -19.883]},
+            {"id": "Goiás", "n": 0, "centroid": [-49.706, -16.827]},
+            {"id": "Maranhão", "n": 0, "centroid": [-45.304, -5.614]},
+            {"id": "Mato Grosso", "n": 0, "centroid": [-55.541, -13.681]},
+            {"id": "Mato Grosso do Sul", "n": 0, "centroid": [-54.533, -20.772]},
+            {"id": "Minas Gerais", "n": 9, "centroid": [-44.598, -19.412]},
+            {"id": "Pará", "n": 0, "centroid": [-52.297, -3.416]},
+            {"id": "Paraíba", "n": 1, "centroid": [-36.107, -7.900]},
+            {"id": "Paraná", "n": 4, "centroid": [-51.665, -25.101]},
+            {"id": "Pernambuco", "n": 1, "centroid": [-37.591, -9.113]},
+            {"id": "Piauí", "n": 0, "centroid": [-42.832, -7.718]},
+            {"id": "Rio de Janeiro", "n": 20, "centroid": [-42.4103, -22.909]},
+            {"id": "Rio Grande do Norte", "n": 3, "centroid": [-36.588, -6.394]},
+            {"id": "Rio Grande do Sul", "n": 9, "centroid": [-53.215, -30.034]},
+            {"id": "Rondônia", "n": 0, "centroid": [-63.315, -11.226]},
+            {"id": "Roraima", "n": 0, "centroid": [-61.443, 2.737]},
+            {"id": "Santa Catarina", "n": 4, "centroid": [-49.575, -27.998]},
+            {"id": "São Paulo", "n": 16, "centroid": [-49.379, -22.781]},
+            {"id": "Sergipe", "n": 1, "centroid": [-37.449, -11.27]},
+            {"id": "Tocantins", "n": 0, "centroid": [-48.297, -10.184]},
+            {"id": "DF", "n": 1, "centroid": [-47.929, -15.480]}
+          ]
+        },
+        "key": "id",
+        "fields": ["n", "centroid"]
+      }
+    },
+    {
+      "calculate": "datum.centroid[0]",
+      "as": "longitude"
+    },
+    {
+      "calculate": "datum.centroid[1]",
+      "as": "latitude"
+    }
+  ],
+  "projection": {"type": "mercator"},
+  "layer": [
+    {
+      "mark": {
+        "type": "geoshape",
+        "stroke": "black"
+      },
+      "encoding": {
+        "color": {
+          "field": "n",
+          "type": "quantitative",
+          "scale": {
+            "range": ["#F7FBFF", "#9ECAE1","#6BAED6", "#4292C6", "#2171B5", "#08519C", "#08306B"],
+            "type": "threshold",
+            "domain": [1, 3, 5, 10, 15, 20]
+          },
+          "legend": {
+            "title": "Number of Labs",
+            "titleAlign": "center",
+            "labelFontSize": 14,
+            "offset": -80,
+            "titleFontSize": 18
+          }
+        },
+        "tooltip": [
+          {"field": "properties.name", "type": "nominal", "title": "State"},
+          {"field": "n", "type": "quantitative", "title": "Value"}
+        ]
+      }
+    },
+    {
+      "mark": {
+        "type": "text",
+        "fontSize": 12,
+        "fontWeight": 800,
+        "dy": -10
+      },
+      "encoding": {
+        "longitude": {"field": "longitude", "type": "quantitative"},
+        "latitude": {"field": "latitude", "type": "quantitative"},
+        "text": {"field": "n", "type": "quantitative"},
+        "color": {
+          "condition": [
+            {
+             "test": "datum['properties.name'] === 'São Paulo' || datum['properties.name'] === 'Rio de Janeiro'",
+             "value": "white"
+           },
+           {
+            "test": "datum.n === 0",
+            "value": "transparent"
+          }
+          ],
+      "value": "black"
+        }
+      }
+    }
+  ]
+}

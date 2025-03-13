@@ -1,0 +1,7 @@
+Table: Could the deviations have been prevented?
+
+|Method | No| Yes|
+|:------|--:|---:|
+|EPM    | 11|  30|
+|MTT    | 37|  13|
+|PCR    | 27|  25|
