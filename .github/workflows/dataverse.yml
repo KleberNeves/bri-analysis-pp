@@ -14,4 +14,3 @@ jobs:
           DATAVERSE_SERVER: https://dataverse.harvard.edu
           DATAVERSE_DATASET_DOI: doi:10.7910/DVN/ZJRDIV
           DELETE: True
-          PUBLISH: True
