@@ -420,7 +420,7 @@ bri_ggsave(
 
 # Part 2 - Personal experience ------------------------------------------------------
 
-form2 <- read_excel("./other-data/self-assessment/Avaliação Geral Individual (Responses) - manual edit.xlsx")
+form2 <- read_excel("./other-data/self-assessment/Avaliacao Geral Individual (Responses) - manual edit.xlsx")
 
 ### About the respondents
 
