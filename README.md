@@ -5,7 +5,7 @@ This repository contains the code and data necessary to get all the main results
 
 All analyses are run from the script _main.R_ - you can simply clone the repo, install the required packages and run it. The exception is the code on the "maps" folder, which is not R, but Vega-lite and needs to be run separately. 
 
-The _main.R_ file calls all other functions necessary for analysis.
+The _main.R_ file calls all other functions necessary for analysis. Packages are installed automatically via the pacman package in the analysis.R script. Versions of R and packages used for running the original analysis are avaliable at R session info.txt.
 
 Results from individual experiments with each method (produced by the mtt-summarizer, pcr-summarizer, pcr-summarizer-alt and epm-summarizer scripts are saved in the "replication-results" folder. The "PCR" folder contains RT-PCR relative expression values in log scale (which are used in the primary analysis), while the "PCR-ALT" folder contains relative expression values in linear scale (as a sensitivity analysis).
 
