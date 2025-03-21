@@ -2598,7 +2598,7 @@ doc <- doc |>
 ### Replicated by most criteria -----------------------------------------------------
 
 tbl_most_criteria <- read_tsv(paste0("output/", results_path, "/primary t/Replication Rate Summary.tsv"), show_col_types = FALSE) |> 
-  filter(Metric == "REP_Most_Criteria") |> 
+  filter(Metric == "REP_Most_Criteria_WithTies") |> 
   pivot_longer(cols = -c(Metric, MetricLongName, MetricShortName)) |> 
   mutate(
     Method = name |> str_remove("^(Value|N|successful)_"),

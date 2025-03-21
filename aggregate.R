@@ -138,7 +138,7 @@ make_summary_subset = function (rep_summaries_in, rep_summaries_individual_in, f
   
   # Summarizing the reproducibility rates, by experiment and by individual replicate
   rep_success_complete = rep_summaries |>
-    select(EXP, REP_Orig_in_REMA_PI, REP_REMA_in_Orig_CI, REP_FEMA_SSS_Orig, REP_Voting, REP_Voting_WithTies, REP_Subjective, REP_Subjective_WithTies, REP_Most_Criteria, SignalErrorAll, es_ratio, log_es_ratio, t_score_mean, t_score_FEMA, t_score, OriginalES, OriginalCV, mean_abs_diff_reps, mean_abs_diff_reps_orig)
+    select(EXP, REP_Orig_in_REMA_PI, REP_REMA_in_Orig_CI, REP_FEMA_SSS_Orig, REP_Voting, REP_Voting_WithTies, REP_Subjective, REP_Subjective_WithTies, REP_Most_Criteria_WithTies, SignalErrorAll, es_ratio, log_es_ratio, t_score_mean, t_score_FEMA, t_score, OriginalES, OriginalCV, mean_abs_diff_reps, mean_abs_diff_reps_orig)
   
   rep_success_individual_complete = rep_summaries_individual |>
     select(LAB, EXP, REP_Individual_Rep_in_Orig_CI, REP_Individual_SSS, REP_Individual_IndivSubjective, Significant_Individual, SignalErrorAll_Individual, es_ratio_individual, log_es_ratio_individual, t_score_individual, OriginalES_Individual, OriginalCV_Individual)
@@ -446,7 +446,7 @@ gather_all_rep_rates = function(list_of_analyses, pn) {
       select(
         Inclusion_Set, Level, MA_Dist, Metric, MetricShortName, IsPercentage, Method, Value, N, successful
       ) |> 
-      filter(IsPercentage, Metric != "REP_Most_Criteria", Metric != "Significant")
+      filter(IsPercentage, Metric != "REP_Most_Criteria_WithTies", Metric != "Significant")
     
     rep_rates
   })
@@ -479,7 +479,7 @@ gather_all_rep_rates = function(list_of_analyses, pn) {
       select(
         Inclusion_Set, Level, MA_Dist, Metric, MetricShortName, IsPercentage, Method, Value, N, successful
       ) |> 
-      filter(IsPercentage, Metric != "REP_Most_Criteria", Metric != "Significant")
+      filter(IsPercentage, Metric != "REP_Most_Criteria_WithTies", Metric != "Significant")
     
     rep_rates
   })
