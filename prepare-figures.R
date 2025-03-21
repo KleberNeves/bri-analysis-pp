@@ -14,7 +14,7 @@ pwalk(figure_correspondence_table, function (code_generated_filename, manuscript
   fnt = paste0(paper_fig_path, str_to_title(type), "_", manuscript_name, str_extract(basename(fnf), "\\..+?$"))
   
   if(type == "table"){
-    fnt = paste0(paper_fig_path, "/tables/", str_to_title(type), "_", manuscript_name, str_extract(basename(fnf), "\\..+?$"))
+    fnt = paste0(paper_fig_path, "/tables/", str_to_title(type), " ", manuscript_name, str_extract(basename(fnf), "\\..+?$"))
   } 
 
   if (!is.na(code_generated_filename)) {
