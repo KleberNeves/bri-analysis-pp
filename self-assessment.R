@@ -225,6 +225,8 @@ protocol_labels_fig <- c(
   "9b" = "Lists changes without reasons"
 )
 
+protocol_labels_fig[["6"]] <- "**Other**"
+
 plot_protocol_reasons_final <- ggplot(cat_protocol, aes(y = protocol_options, x = category_counts)) +
   geom_hline(
     yintercept = setdiff(
@@ -266,6 +268,8 @@ plot_protocol_reasons_final <- ggplot(cat_protocol, aes(y = protocol_options, x 
       "black", "white"
     ))
   )
+
+protocol_labels_fig[["6"]] <- "Other"
 
 bri_ggsave(
   paste0(output_path, "/self-assessment/", "Figure 5.png"),
@@ -333,7 +337,7 @@ tbl_s18 <- cat_protocol |>
   rename(Count = category_counts) |>
   rename(Label = protocol_labels) |>
   flextable() |>
-  bold(i = c(1,8,17,22,29)) |> 
+  bold(i = c(1, 8, 17, 22, 29, 32)) |> 
   set_table_properties(layout = "autofit") |>
   add_name("Table S18 - Examples of reasons for protocol deviations.") |>
   add_footer_lines("Table shows the various categories and subcategories for protocol deviations (in order of general category frequency, as in Figure 5), with illustrative examples of lab responses for each subcategory.")
@@ -1145,6 +1149,8 @@ bri_ggsave(paste0(output_path, "/self-assessment/", "difficulties-order-combined
 
 ### Figure S9 ---------------------------------------------------------------
 
+difficulties.labels.fig[["8"]] <- "**Other**" 
+
 fig_s9 <- ggplot(cat_dificulties, aes(y = dificulties_options, x = category_counts)) +
   geom_hline(
     yintercept = setdiff(seq(from = 1, to = 50, by = 1), c(2, 7, 10, 15, 20, 27, 36, 44)),
@@ -1194,6 +1200,8 @@ fig_s9 <- ggplot(cat_dificulties, aes(y = dificulties_options, x = category_coun
       "black", "black", "black", "white"
     ))
   )
+
+difficulties.labels.fig[["8"]] <- "Other" 
 
 bri_ggsave(paste0(output_path, "/self-assessment/", "Figure S9.png"), plot = fig_s9, width = 20, height = 25, units = "cm")
 
