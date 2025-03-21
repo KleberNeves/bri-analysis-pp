@@ -1880,7 +1880,7 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
     select(-successful) |> 
     filter(
       IsPercentage == T,
-      !(Metric %in% c("Significant", "t_score_individual", "OriginalES", "SignalErrorAll", "ExaggerationAll", "mean_abs_diff_reps", "mean_abs_diff_reps_orig", "OriginalCV", "REP_Most_Criteria")),
+      !(Metric %in% c("Significant", "t_score_individual", "OriginalES", "SignalErrorAll", "ExaggerationAll", "mean_abs_diff_reps", "mean_abs_diff_reps_orig", "OriginalCV", "REP_Most_Criteria_WithTies")),
       !(Inclusion_Set %in% c("all_exps", "only_80_single_rep_T", "only_80_single_rep_Z", "only_80_single_rep_KNHA"))
     ) |>
     mutate(
