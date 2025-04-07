@@ -776,7 +776,7 @@ plot_cortable_cluster <- function(FDATA, vars1, vars2, title, fn, show_label, ma
 # Plots combined figure for presentation
 plot_combined_cortable <- function(ct_exp, ct_rep, replication_datapath) {
   ct_exp <- ct_exp + theme(legend.position = "none") +
-    labs(title = "Correlation between experiment features and replication suceess")
+    labs(title = "Correlation between experiment features and replication success")
 
   ct_rep <- ct_rep + theme(
     legend.position = "right",
