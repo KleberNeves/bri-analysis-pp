@@ -68,4 +68,7 @@ pwalk(figure_correspondence_table, function (code_generated_filename, manuscript
 })
 
 # Deleting tables folder
-unlink(paste0(output_path, "/_manuscript figures and tables/tables"), recursive = TRUE)
+file.remove(list.files(path = paste0(output_path, "/_manuscript figures and tables/tables"),
+                       pattern = "Table[ _](S\\d+|[123])",
+                       full.names = TRUE,
+                       ignore.case = TRUE))
