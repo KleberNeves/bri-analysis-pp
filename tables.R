@@ -7,6 +7,8 @@
 
 options(warn = -1)
 
+p_load(rcompanion)
+
 # Tables ------------------------------------------------------------------
 
 ## Replication Rates -------------------------------------------------------
@@ -2443,14 +2445,14 @@ result_c <- df_assessment_by_experiment |>
   filter(str_detect(EXP, "^(EPM|MTT|ALTPCR)")) |>
   summarise(
     p_value = wilcox.test(original_cv, replication_cv, paired = TRUE)$p.value,
-    statistic = wilcox.test(original_cv, replication_cv, paired = TRUE)$statistic
+    statistic = wilcoxonZ(original_cv, replication_cv, paired = TRUE)
   )
 
 doc <- doc |>
   body_add_par(run_linebreak()) |>
   body_add(fpar(ftext("c) Wilcoxon Signed-Rank Test: original_cv vs replication_cv (ALTPCR)", prop = fp_text(bold = TRUE)))) |>
   body_add_par(paste("P-value:", result_c$p_value)) |> 
-  body_add_par(paste("Statistic:", result_c$statistic))
+  body_add_par(paste("Statistic (z):", result_c$statistic))
 
 # d) Wilcoxon test: original_cv vs replication_cv by technique
 result_d <- df_assessment_by_experiment |>
@@ -2465,17 +2467,17 @@ result_d <- df_assessment_by_experiment |>
   group_by(technique) |>
   summarise(
     p_value = wilcox.test(original_cv, replication_cv, paired = TRUE, na.action = na.omit)$p.value,
-    statistic = wilcox.test(original_cv, replication_cv, paired = TRUE, na.action = na.omit)$statistic
+    statistic = wilcoxonZ(original_cv, replication_cv, paired = TRUE)
     
   )
 
 doc <- doc |>
   body_add_par(run_linebreak()) |>
-  body_add(fpar(ftext("d) Wilcoxon Test: original_cv vs replication_cv by Technique", prop = fp_text(bold = TRUE))))
+  body_add(fpar(ftext("d) Wilcoxon Signed-Rank Test: original_cv vs replication_cv by Technique", prop = fp_text(bold = TRUE))))
   
 for (i in 1:nrow(result_d)) {
   doc <- doc |>
-    body_add_par(paste("Technique:", result_d$technique[i], "P-value:", result_d$p_value[i],  "Statistic:", result_d$statistic[i])) 
+    body_add_par(paste("Technique:", result_d$technique[i], "P-value:", result_d$p_value[i],  "Statistic (z):", result_d$statistic[i])) 
 }
 
 # e) Wilcoxon signed-rank test: mean_abs_diff_reps vs mean_abs_diff_reps_orig (excluding ALTPCR)
@@ -2483,14 +2485,14 @@ result_e <- df_assessment_by_experiment |>
   filter(!str_detect(EXP, "ALTPCR")) |>
   summarise(
     p_value = wilcox.test(mean_abs_diff_reps, mean_abs_diff_reps_orig, paired = TRUE, na.action = na.omit)$p.value,
-    statistic = wilcox.test(mean_abs_diff_reps, mean_abs_diff_reps_orig, paired = TRUE, na.action = na.omit)$statistic
+    statistic = wilcoxonZ(mean_abs_diff_reps, mean_abs_diff_reps_orig, paired = TRUE)
   )
 
 doc <- doc |>
   body_add_par(run_linebreak()) |>
   body_add(fpar(ftext("e) Wilcoxon Signed-Rank Test: mean_abs_diff_reps vs mean_abs_diff_reps_orig", prop = fp_text(bold = TRUE)))) |>
   body_add_par(paste("P-value:", result_e$p_value)) |> 
-  body_add_par(paste("Statistic:", result_e$statistic))
+  body_add_par(paste("Statistic (z):", result_e$statistic))
 
 # f) Wilcoxon test: mean_abs_diff_reps vs mean_abs_diff_reps_orig by technique
 result_f <- df_assessment_by_experiment |>
@@ -2505,16 +2507,16 @@ result_f <- df_assessment_by_experiment |>
   group_by(technique) |>
   summarise(
     p_value = wilcox.test(mean_abs_diff_reps, mean_abs_diff_reps_orig, paired = TRUE, na.action = na.omit)$p.value,
-    statistic = wilcox.test(mean_abs_diff_reps, mean_abs_diff_reps_orig, paired = TRUE, na.action = na.omit)$statistic
+    statistic = wilcoxonZ(mean_abs_diff_reps, mean_abs_diff_reps_orig, paired = TRUE)
   )
 
 doc <- doc |>
   body_add_par(run_linebreak()) |>
-  body_add(fpar(ftext("f) Wilcoxon Test: mean_abs_diff_reps vs mean_abs_diff_reps_orig by Technique", prop = fp_text(bold = TRUE)))) 
+  body_add(fpar(ftext("f) Wilcoxon Signed-Rank Test: mean_abs_diff_reps vs mean_abs_diff_reps_orig by Technique", prop = fp_text(bold = TRUE)))) 
   
 for (i in 1:nrow(result_f)) {
   doc <- doc |>
-    body_add_par(paste("Technique:", result_f$technique[i], "P-value:", result_f$p_value[i],  "Statistic:", result_f$statistic[i]))
+    body_add_par(paste("Technique:", result_f$technique[i], "P-value:", result_f$p_value[i],  "Statistic (z):", result_f$statistic[i]))
 }
 
 # g) Count and % of experiments with Validation-mean score == 1
