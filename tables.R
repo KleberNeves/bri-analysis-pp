@@ -1254,7 +1254,7 @@ tbl_3 <- tbl_3 |>
     j = 2:5
   ) |>
   set_table_properties(layout = "autofit") |>
-  add_name("Table 3 - Additional features of replications (Linear Scale).") |>
+  add_name("Table - Additional features of replications (Linear Scale).") |>
   bold(i = 2, part = "header")
 
 ### Saving ----
@@ -1333,7 +1333,7 @@ tbl_s1 <- df_all |>
     sort = everything() ~ "frequency"
   ) |>
   modify_header(label = "") |>
-  add_name("Table S1 - Geographic Distribution of Laboratories.") |>
+  add_name("Table - Geographic Distribution of Laboratories.") |>
   add_footer_lines("Numbers represent number (% of total) of labs in each region/state of Brazil for registered laboratories (those registering to participate in the project), included ones (those that received experiments to replicate) and those that concluded at least one experiment and contributed data to the project.")
 
 ### Saving ----
@@ -1497,7 +1497,7 @@ tbl_s2_all <- df_authorship_list |>
 tbl_s2 <- tbl_merge(list(tbl_s2_all, tbl_s2_only_protocol, tbl_s2_only_data_collection, tbl_s2_both),
   tab_spanner = c("**All**", "**Only Protocol**", "**Only Data Collection**", "**Both**")
 ) |>
-  add_name("Table S2 – Researchers Involved in Protocol Design and Data Collection.") |>
+  add_name("Table – Researchers Involved in Protocol Design and Data Collection.") |>
   set_table_properties(layout = "autofit")
 
 ### Saving ----
@@ -1708,7 +1708,7 @@ tbl_s3 <- tbl_stack(
   ),
   group_header = c("Experiment (n = 60)", "Bias control (EPM experiments, n=20)", "Article, Corresponding author, Institution (n=60)")
 ) |>
-  add_name("Table S3 – Features of selected experiments, bias control, articles, authors and institutions") |>
+  add_name("Table – Features of selected experiments, bias control, articles, authors and institutions") |>
   set_table_properties(layout = "autofit")
 
 ### Saving ----
@@ -1891,7 +1891,7 @@ tbl_s4 <- tbl_s4 |>
   bold(i = 7) |>
   delete_rows(i = 1, part = "header") |>
   add_footer_lines("Number of replications per experiment before (top, n = 143 replications) and after (bottom, n = 96 replications) the validation process. Cells display the number of experiments for each method with three, two, one or zero independent replications in these two samples.") |>
-  add_name("Table S4 - Number of Replications per Experiment") |>
+  add_name("Table - Number of Replications per Experiment") |>
   set_table_properties(layout = "autofit")
 
 ### Saving ----
@@ -1955,7 +1955,7 @@ df_experiments_numbers_overview_wide_join <- df_experiments_numbers_overview_wid
 tbl_s5 <- df_experiments_numbers_overview_wide_join |>
   flextable() |>
   add_footer_lines("Table shows numbers for the different decisions reached at the validation process, as well as the rate of agreement of labs with each of them and a summary description of each category. For more information on the validation process, see https://osf.io/e3fjg.") |>
-  add_name("Table S5 - Agreement with validation decisions.") |>
+  add_name("Table - Agreement with validation decisions.") |>
   set_table_properties(layout = "autofit")
 
 ### Saving ----
@@ -2068,7 +2068,7 @@ tbl_s7 <- tibble(
       slice(1:6, 9, 8, 7)
   ) |>
   flextable() |>
-  add_name("Table S7. Rationale for subjective assessment of replication.") |>
+  add_name("Table - Rationale for subjective assessment of replication.") |>
   bold(i = 2, part = "header") |>
   bold(i = c(1, 7), part = "body") |>
   set_table_properties(layout = "autofit")
@@ -2394,7 +2394,7 @@ tbl_s20 <- df_coord_difficulties |>
   rename(Difficulty = dificuldade) |>
   rename(Rating = soma) |>
   flextable() |>
-  add_name("Table S20 – Project difficulties - Coordinating team assessment") |>
+  add_name("Table – Project difficulties - Coordinating team assessment") |>
   set_table_properties(layout = "autofit")
 
 ### Saving ----

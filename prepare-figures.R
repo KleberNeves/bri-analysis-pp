@@ -72,3 +72,5 @@ file.remove(list.files(path = paste0(output_path, "/_manuscript figures and tabl
                        pattern = "Table[ _](S\\d+|[123])",
                        full.names = TRUE,
                        ignore.case = TRUE))
+
+file.rename(paste0(output_path, "/_manuscript figures and tables/tables"), paste0(output_path, "/_manuscript figures and tables/other tables"))
