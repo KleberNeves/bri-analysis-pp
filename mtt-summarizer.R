@@ -11,16 +11,19 @@ meta_data = read_csv2("./gathered-data/MTT_meta.csv", na = c("","NA"), locale = 
 
 file_to_exp_dict = tibble(Filename = character(0), LAB = character(0), EXP = character(0))
 
+positive_control_df = tibble()
+
 
 build_summary_single_lab = function(lab_code, exp_data, suffix = NULL) {
   exp_code = exp_data$EXP |> unique()
   rep_data = exp_data |> filter(LAB == lab_code)
   
-  # Get pairing info
-  is_paired = (meta_data |> filter(EXP == exp_code, LAB == lab_code) |> pull(`Paired Summary`)) == "yes"
+  # Take all experiments to be paired (TODO: use column)
+  is_paired = T
+  # is_paired = (meta_data |> filter(EXP == exp_code, LAB == lab_code) |> pull(`Paired Summary`)) == "yes"
   
   # Check if the blanks are per plate (but with multiple experimental units in the same plate)
-  is_per_plate_blank = lab_code %in% (rep_data |> filter(Group == "Group1_blank_plate" | Group== "Group2_blank_plate") |> pull(LAB) |> unique())
+  is_per_plate_blank = lab_code %in% (rep_data |> filter(Group == "Group1_blank_plate" | Group == "Group2_blank_plate") |> pull(LAB) |> unique())
   
   summary_data = rep_data
   if (!is_per_plate_blank) {
@@ -83,6 +86,10 @@ build_summary_single_lab = function(lab_code, exp_data, suffix = NULL) {
       id_cols = c(LAB, Replicate), values_from = Value, names_from = Group
     )
   
+  if (!("Positive_Control" %in% colnames(summary_data))) {
+    summary_data$Positive_Control = NA
+  }
+  
   # If you don't have blanks in the data at this point, it means it was a per plate blank and it has been processed above
   if (!is_per_plate_blank) {
     
@@ -117,6 +124,13 @@ build_summary_single_lab = function(lab_code, exp_data, suffix = NULL) {
             !is.na(Blank_all_groups),
             Blank_all_groups, 0
           )
+        ),
+        Positive_Control = Positive_Control - ifelse(
+          !is.na(Group2_blank),
+          Group1_blank, ifelse(
+            !is.na(Blank_all_groups),
+            Blank_all_groups, 0
+          )
         )
       )
   }
@@ -125,15 +139,20 @@ build_summary_single_lab = function(lab_code, exp_data, suffix = NULL) {
   summary_data = summary_data |>
     mutate(
       Group1 = ifelse(Group1 < 0, 0, Group1),
-      Group2 = ifelse(Group2 < 0, 0, Group2)
+      Group2 = ifelse(Group2 < 0, 0, Group2),
+      Positive_Control = ifelse(Positive_Control < 0, 0, Positive_Control)
     )
   
   exp_code = rep_data$EXP[1]
   lab_code = rep_data$LAB[1]
   
+  if (!("Positive_Control" %in% colnames(summary_data))) {
+    summary_data$Positive_Control = NA
+  }
+  
   summary_data = summary_data |>
     mutate(EXP = exp_code) |>
-    select(LAB, EXP, Replicate, Group1, Group2) |>
+    select(LAB, EXP, Replicate, Group1, Group2, Positive_Control) |>
     filter(!is.na(Group1) | !is.na(Group2))
   
   # Express results as percentages, depending on pairing
@@ -141,16 +160,23 @@ build_summary_single_lab = function(lab_code, exp_data, suffix = NULL) {
     summary_data = summary_data |>
       mutate(
         Group1_Perc = 100 * Group1 / Group1,
-        Group2_Perc = 100 * Group2 / Group1
+        Group2_Perc = 100 * Group2 / Group1,
+        Positive_Control_Perc = 100 * Positive_Control / Group1
       )
   } else {
     group1_mean = mean(summary_data$Group1, na.rm = T)
     summary_data = summary_data |>
       mutate(
         Group1_Perc = 100 * Group1 / group1_mean,
-        Group2_Perc = 100 * Group2 / group1_mean
-      )  
+        Group2_Perc = 100 * Group2 / group1_mean,
+        Positive_Control_Perc = 100 * Positive_Control / group1_mean
+      )
   }
+  
+  positive_control_df <<- bind_rows(
+    positive_control_df,
+    summary_data |> select(LAB, EXP, Replicate, Positive_Control_Perc)
+  )
   
   if (is.null(suffix))
     export_file(summary_data, exp_code, lab_code, "MTT")
@@ -208,5 +234,23 @@ experiments = all_data$EXP |> unique()
 summarize_all_tables(experiments)
 
 write_tsv(file_to_exp_dict, "replication-results/MTT_results_dict.tsv")
+
+# Summarize positive controls
+write_tsv(positive_control_df, "replication-results/MTT_positive_control_data.tsv")
+
+positive_control_df = positive_control_df |>
+  group_by(LAB, EXP) |>
+  summarise(
+    Mean_Positive_Control_Perc = mean(Positive_Control_Perc, na.rm = T)
+  ) |>
+  ungroup() |>
+  mutate(
+    `>= 50` = Mean_Positive_Control_Perc >= 50,
+    `>= 20` = Mean_Positive_Control_Perc >= 20,
+    `>= 10` = Mean_Positive_Control_Perc >= 10
+  )
+
+write_tsv(positive_control_df, "replication-results/MTT_positive_control_summary.tsv")
+
 
 rm(list = ls(all = TRUE))
