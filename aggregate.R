@@ -255,6 +255,14 @@ make_summary_subset = function (rep_summaries_in, rep_summaries_individual_in, f
     distinct(.keep_all = T) |>
     rename(orig = original_es)
   
+  # Before left_join for r1 and r2, validate EXP column exists
+  if (!"EXP" %in% colnames(r1)) {
+    stop("[ERROR] r1 is missing the EXP column before left_join.")
+  }
+  if (!"EXP" %in% colnames(r2)) {
+    stop("[ERROR] r2 is missing the EXP column before left_join.")
+  }
+  
   raters_matrix = r1 |> left_join(r2)
   
   icc_summary = map_dfr(c("EPM","MTT","PCR","ALL"), function (mtd) {
@@ -404,9 +412,28 @@ summarize_rates = function (rep_summary_folder) {
   # Plot a matrix of estimates to visually represent intraclass correlations
   print("Plotting ICC ...")
   
-  p_A = plot_icc_matrix(m = rep_calculated$ALL_PCR$icc_matrix, fn = paste0(rep_summary_folder, "/additional-figures/All Replication Estimates.png"), cap_at = NULL, tt = "Effect size comparison, by replication")
+  # Normaliza e ordena a matriz ICC para a figura A (effect sizes originais sempre positivos e ordenados do menor para o maior)
+  # Debug: verificar estrutura antes da normalização
+  print("Estrutura antes da normalização:")
+  print(colnames(rep_calculated$ALL_PCR$icc_matrix))
+  print(head(rep_calculated$ALL_PCR$icc_matrix))
+  # Normaliza e ordena a matriz ICC para a figura A (effect sizes originais sempre positivos e ordenados do menor para o maior)
+  normalized_ordered_icc_matrix <- normalize_icc_matrix_effect_sizes(rep_calculated$ALL_PCR$icc_matrix)
+  # --- START DEBUGGING BLOCK ---
+  # Add this code to inspect the object before the error
+  cat("\n\n--- DEBUGGING INFO ---\n")
+  cat("Object Class:\n")
+  print(class(normalized_ordered_icc_matrix))
+  cat("\nColumn Names:\n")
+  print(colnames(normalized_ordered_icc_matrix))
+  cat("\nFirst 3 Rows:\n")
+  print(head(normalized_ordered_icc_matrix, 3))
+  cat("--- END DEBUGGING ---\n\n")
+  # --- END DEBUGGING BLOCK ---
   
-  plot_icc_matrix(rep_calculated$ALL_PCR$icc_matrix, cap_at = 5, paste0(rep_summary_folder, "/additional-figures/All Replication Estimates (ES less than 5).png"))
+  p_A <- plot_icc_matrix(m = normalized_ordered_icc_matrix, fn = paste0(rep_summary_folder, "/additional-figures/All Replication Estimates.png"), cap_at = NULL, tt = "Effect size comparison, by replication")
+  
+  plot_icc_matrix(normalized_ordered_icc_matrix, cap_at = 5, paste0(rep_summary_folder, "/additional-figures/All Replication Estimates (ES less than 5).png"))
   
   # Plot combined figure for better presentation
   plot_effect_size_figure(p_A, p_B, p_C, rep_summary_folder)
