@@ -368,26 +368,46 @@ plot_cortable_alternative <- function(FDATA, FDATA_EXP, FDATA_REP, vars1, vars2,
         )
     )
 
-  p <- ggplot(test_results |>
+  # Prepare data with separate fill variables for positive and negative correlations
+  plot_data <- test_results |>
     filter(col2 != "Animal") |>
-    distinct(pearson_r, .keep_all = T)) +
-    aes(
-      x = col1,
-      y = fct_rev(col2),
-      fill = sign(rho) * -log10(capped.p_rho),
-      label = label
+    distinct(pearson_r, .keep_all = T) |>
+    mutate(
+      fill_negative = ifelse(rho < 0, -log10(capped.p_rho), NA),
+      fill_positive = ifelse(rho > 0, -log10(capped.p_rho), NA)
+    )
+
+  p <- ggplot(plot_data) +
+    aes(x = col1, y = fct_rev(col2), label = label) +
+    
+    # First scale: Negative correlations (grey to red)
+    geom_tile(aes(fill = fill_negative), data = subset(plot_data, rho < 0)) +
+    scale_fill_gradient(
+      low = bri_color[["mid"]],
+      high = bri_color[["low"]],
+      na.value = "transparent",
+      name = "Negative correlation\n(p-value)",
+      breaks = c(1, 2, 3),
+      labels = c(expression(10^-1), expression(10^-2), expression(10^-3)),
+      guide = guide_colorbar(order = 1, barwidth = unit(0.6, "cm"), barheight = unit(3, "cm"))
     ) +
-    geom_tile() +
-    labs(x = "", y = "", title = title, fill = "p-value") +
-    scale_fill_gradient2(
-      low = bri_color[["low"]],
-      mid = bri_color[["mid"]],
+    
+    # Reset scale for second layer
+    ggnewscale::new_scale_fill() +
+    
+    # Second scale: Positive correlations (grey to blue)
+    geom_tile(aes(fill = fill_positive), data = subset(plot_data, rho > 0)) +
+    scale_fill_gradient(
+      low = bri_color[["mid"]],
       high = bri_color[["high"]],
-      na.value = scales::alpha("white", 0),
-      breaks = c(-3, -2, -1, 0, 1, 2, 3),
-      limits = c(-3, 3),
-      labels = c(expression(10^-3), expression(10^-2), expression(10^-1), expression(1), expression(10^-1), expression(10^-2), expression(10^-3))
+      na.value = "transparent",
+      name = "Positive correlation\n(p-value)",
+      breaks = c(1, 2, 3),
+      labels = c(expression(10^-1), expression(10^-2), expression(10^-3)),
+      guide = guide_colorbar(order = 2, barwidth = unit(0.6, "cm"), barheight = unit(3, "cm"))
     ) +
+    
+    labs(x = "", y = "", title = title) +
     bri_theme +
     theme(
       axis.text = element_text(size = 8),
@@ -395,27 +415,51 @@ plot_cortable_alternative <- function(FDATA, FDATA_EXP, FDATA_REP, vars1, vars2,
       title = element_text(size = 9)
     )
 
-  p_p <- ggplot(test_results) +
+  # Prepare data for Pearson correlation with separate fill variables
+  plot_data_p <- test_results |>
+    mutate(
+      fill_negative = ifelse(pearson_r < 0, -log10(capped.p_pearson), NA),
+      fill_positive = ifelse(pearson_r > 0, -log10(capped.p_pearson), NA)
+    )
+
+  p_p <- ggplot(plot_data_p) +
     aes(
       x = col1, y = fct_rev(fct_relevel(
         col2, "t Value",
         "-log ES Ratio",
         "Original in replication's 95% PI"
       )),
-      fill = sign(pearson_r) * -log10(capped.p_pearson),
       label = label_p
     ) +
-    geom_tile() +
-    labs(x = "", y = "", title = title, fill = "p-value") +
-    scale_fill_gradient2(
-      low = bri_color[["low"]],
-      mid = bri_color[["mid"]],
-      high = bri_color[["high"]],
-      na.value = scales::alpha("white", 0),
-      breaks = c(-3, -2, -1, 0, 1, 2, 3),
-      limits = c(-3, 3),
-      labels = c(expression(10^-3), expression(10^-2), expression(10^-1), expression(1), expression(10^-1), expression(10^-2), expression(10^-3))
+    
+    # First scale: Negative correlations (grey to red)
+    geom_tile(aes(fill = fill_negative), data = subset(plot_data_p, pearson_r < 0)) +
+    scale_fill_gradient(
+      low = bri_color[["mid"]],
+      high = bri_color[["low"]],
+      na.value = "transparent",
+      name = "Negative correlation\n(p-value)",
+      breaks = c(1, 2, 3),
+      labels = c(expression(10^-1), expression(10^-2), expression(10^-3)),
+      guide = guide_colorbar(order = 1, barwidth = unit(0.6, "cm"), barheight = unit(3, "cm"))
     ) +
+    
+    # Reset scale for second layer
+    ggnewscale::new_scale_fill() +
+    
+    # Second scale: Positive correlations (grey to blue)
+    geom_tile(aes(fill = fill_positive), data = subset(plot_data_p, pearson_r > 0)) +
+    scale_fill_gradient(
+      low = bri_color[["mid"]],
+      high = bri_color[["high"]],
+      na.value = "transparent",
+      name = "Positive correlation\n(p-value)",
+      breaks = c(1, 2, 3),
+      labels = c(expression(10^-1), expression(10^-2), expression(10^-3)),
+      guide = guide_colorbar(order = 2, barwidth = unit(0.6, "cm"), barheight = unit(3, "cm"))
+    ) +
+    
+    labs(x = "", y = "", title = title) +
     bri_theme +
     theme(
       axis.text = element_text(size = 8),
@@ -568,7 +612,7 @@ plot_cortable_cluster <- function(FDATA, vars1, vars2, title, fn, show_label, ma
     )
 
   # Plots spearman correlation
-  p <- test_results |>
+  plot_data <- test_results |>
     mutate(group_x = case_when(
       col1 == "Animal" ~ "Model/Method",
       col1 == "EPM" ~ "Model/Method",
@@ -612,7 +656,13 @@ plot_cortable_cluster <- function(FDATA, vars1, vars2, title, fn, show_label, ma
       "Lab",
       "Prediction"
     )) |>
-    ggplot() +
+    mutate(
+      # Create separate fill variables for positive and negative correlations
+      fill_negative = ifelse(rho < 0, -log10(capped.p_rho), NA),
+      fill_positive = ifelse(rho > 0, -log10(capped.p_rho), NA)
+    )
+
+  p <- ggplot(plot_data) +
     aes(
       x = col1,
       y = fct_rev(fct_relevel(
@@ -621,18 +671,44 @@ plot_cortable_cluster <- function(FDATA, vars1, vars2, title, fn, show_label, ma
         "-log ES Ratio",
         "Original in replication's 95% PI"
       )),
-      fill = sign(rho) * -log10(p.value),
       label = label
     ) +
-    geom_tile() +
-    facet_grid(cols = ggplot2::vars(group_x), scales = "free_x", space = "free_x") +
-    labs(x = "", y = "", fill = "-log10(p-value)") +
-    scale_fill_gradient2(
-      low = bri_color[["low"]],
-      mid = bri_color[["mid"]],
-      high = bri_color[["high"]],
-      na.value = scales::alpha("white", 0)
+    
+    # First scale: Negative correlations (grey to red)
+    geom_tile(aes(fill = fill_negative), data = subset(plot_data, rho < 0)) +
+    scale_fill_gradient(
+      low = bri_color[["mid"]],
+      high = bri_color[["low"]],
+      na.value = bri_color[["mid"]],
+      name = "Negative correlation\n(-log10(p-value))",
+      breaks = c(0, 1, 2),
+      labels = c("0", "1", "2"),
+      limits = c(0, 2),
+      guide = guide_colorbar(order = 1, barwidth = unit(0.6, "cm"), barheight = unit(2.5, "cm"), direction = "vertical")
     ) +
+    
+    # Reset scale for second layer
+    ggnewscale::new_scale_fill() +
+    
+    # Second scale: Positive correlations (grey to blue)
+    geom_tile(aes(fill = fill_positive), data = subset(plot_data, rho > 0)) +
+    scale_fill_gradient(
+      low = bri_color[["mid"]],
+      high = bri_color[["high"]],
+      na.value = bri_color[["mid"]],
+      name = "Positive correlation\n(-log10(p-value))",
+      breaks = c(0, 1, 2),
+      labels = c("0", "1", "2"),
+      limits = c(0, 2),
+      guide = guide_colorbar(order = 2, barwidth = unit(0.6, "cm"), barheight = unit(2.5, "cm"), direction = "vertical")
+    ) +
+    
+    # Third scale: Zero correlations (grey background)
+    ggnewscale::new_scale_fill() +
+    geom_tile(fill = bri_color[["mid"]], data = subset(plot_data, rho == 0)) +
+    
+    facet_grid(cols = ggplot2::vars(group_x), scales = "free_x", space = "free_x") +
+    labs(x = "", y = "") +
     bri_theme +
     theme(
       axis.text = element_text(size = 8),
@@ -641,7 +717,9 @@ plot_cortable_cluster <- function(FDATA, vars1, vars2, title, fn, show_label, ma
       strip.background = element_rect(fill = "transparent"),
       strip.text = element_text(color = "black"), # center: 8
       panel.spacing.x = unit(0, "line"),
-      panel.border = element_rect(color = "#333", fill = NA, size = 0.5)
+      panel.border = element_rect(color = "#333", fill = NA, size = 0.5),
+      legend.position = c(1.25, 0.5),
+      legend.box = "vertical"
     )
 
   # Plots Pearson correlation
@@ -725,7 +803,8 @@ plot_cortable_cluster <- function(FDATA, vars1, vars2, title, fn, show_label, ma
       strip.background = element_rect(fill = "transparent"),
       strip.text = element_text(color = "black"), # center: 8
       panel.spacing.x = unit(0, "line"),
-      panel.border = element_rect(color = "#333", fill = NA, size = 0.5)
+      panel.border = element_rect(color = "#333", fill = NA, size = 0.5),
+      plot.margin = margin(t = 5, r = 150, b = 5, l = 5, unit = "pt")
     )
 
   if (show_label) {
@@ -783,15 +862,7 @@ plot_combined_cortable <- function(ct_exp, ct_rep, replication_datapath) {
     legend.key.height = unit(0.8, "cm"),
     plot.margin = unit(c(0, 7.5, 3, 0), "cm")
   ) +
-    scale_fill_gradient2(
-      low = bri_color[["low"]],
-      mid = bri_color[["mid"]],
-      high = bri_color[["high"]],
-      na.value = bri_color[["none"]],
-      breaks = c(-2, -1, 0, 1, 2),
-      labels = c(expression(10^-2), expression(10^-1), expression(1), expression(10^-1), expression(10^-2))
-    ) +
-    labs(fill = "p-value", title = "Correlation between replication features and replication success")
+    labs(title = "Correlation between replication features and replication success")
 
   p <- plot_grid(
     plotlist = list(ct_exp, ct_rep),
@@ -1472,54 +1543,83 @@ plot_scatterplot_predictors <- function(df, corr, c1, c2, c1_cat, c2_cat, fn) {
 
 # Plots the effect sizes in order to compare variation between experiments
 plot_icc_matrix <- function(m, fn, cap_at = NULL, tt = NULL) {
-  m <- m |>
-    pivot_longer(cols = -EXP) |>
+  # Enhanced error handling for required columns
+  if (!"EXP" %in% colnames(m)) {
+    stop(paste0("[ERROR] plot_icc_matrix: Input matrix is missing required column 'EXP'. Columns present: ", paste(colnames(m), collapse = ", ")))
+  }
+  
+  # Pivot data to long format
+  m_long <- m |>
+    pivot_longer(cols = -"EXP") |>
     mutate(
       Technique = EXP |> str_extract("(MTT|EPM|PCR)"),
       Type = ifelse(name == "orig", "Original", "Replication"),
       TypeTechnique = ifelse(Type == "Original", Type, Technique)
-    ) |>
-    arrange(EXP) |>
-    mutate(EXP = factor(EXP, levels = m$EXP)) |>
+    )
+  
+  # Get the desired order based on the 'Original' effect size (reversed for Y-axis display)
+  # For Y-axis: arrange desc() to show negative values at top, positive at bottom
+  exp_order <- m_long |>
+    filter(Type == "Original") |>
+    arrange(desc(value)) |>
+    pull(EXP)
+  
+  # Apply this order to the main dataframe by converting EXP to a factor
+  m_ordered <- m_long |>
+    mutate(EXP = factor(EXP, levels = exp_order))
+  
+  # Filter out rows not needed for the plot
+  m_plot_data <- m_ordered |>
     filter(name != "avg", !is.na(value))
-
+  
   if (!is.null(cap_at)) {
-    m <- m |> filter(value <= cap_at)
+    m_plot_data <- m_plot_data |> filter(value <= cap_at)
   }
-
-  m$EXP <- factor(m$EXP, levels = exp_general_order)
-
-  m$TypeTechnique <- factor(m$TypeTechnique, levels = c("Original", "EPM", "MTT", "PCR"))
-
-  p <- ggplot(m) +
-    aes(x = EXP, y = value, color = TypeTechnique) +
-    geom_hline(yintercept = 0, linetype = "dashed", color = bri_color[["dark"]]) +
-    geom_point(aes(color = TypeTechnique), size = 3.5, alpha = 0.7, data = m |> filter(TypeTechnique == "Original")) +
+  
+  m_plot_data$TypeTechnique <- factor(m_plot_data$TypeTechnique, levels = c("Original", "EPM", "MTT", "PCR"))
+  
+  # --- REVISED GGPLOT CALL ---
+  p <- ggplot(m_plot_data, aes(y = EXP, x = value)) + # 'color' aesthetic removed from here
+    geom_vline(xintercept = 0, linetype = "dashed", color = bri_color[["dark"]]) +
+    
+    # Layer 1: Original points, with its own color aesthetic
+    geom_point(data = . %>% filter(Type == "Original"), aes(color = TypeTechnique), size = 3.5, alpha = 0.7) +
     scale_color_manual(
       values = c("Original" = bri_color[["dark"]]),
-      name = ""
+      name = "" # No legend title for the 'Original' points
     ) +
+    
+    # Reset the color scale for the next layer
     ggnewscale::new_scale_color() +
-    geom_point(aes(color = TypeTechnique), size = 3.5, alpha = 0.7, data = m |> filter(TypeTechnique != "Original")) +
+    
+    # Layer 2: Replication points, with its own color aesthetic
+    geom_point(data = . %>% filter(Type != "Original"), aes(color = TypeTechnique), size = 3.5, alpha = 0.7) +
     scale_color_manual(
       values = c(
         "EPM" = bri_color[["epm"]],
         "MTT" = bri_color[["mtt"]],
         "PCR" = bri_color[["pcr"]]
       ),
-      name = "Replication:"
+      name = "Replication:" # Legend title for the replication points
     ) +
-    scale_y_continuous(breaks = pretty_breaks(n = 5)) +
+    
+    scale_x_continuous(breaks = scales::pretty_breaks(n = 5)) +
     facet_wrap(~Technique, nrow = 1, scales = "free") +
-    labs(x = "", y = "Effect size (log ratio of means)", title = tt) +
+    labs(
+      y = "",
+      x = "Effect size (log ratio of means, normalized, ordered by magnitude)",
+      title = tt
+    ) +
     bri_theme +
-    theme(legend.title = element_text(size = rel(0.8))) +
-    coord_flip()
-
-  bri_ggsave(fn, plot = p, width = 14, height = 6)
-
+    # Ensure the legend is positioned correctly
+    theme(legend.position = "bottom", legend.title = element_text(size = rel(0.8)))
+  
+  bri_ggsave(fn, plot = p, width = 14, height = 10)
+  
   p
 }
+
+
 
 # Plots a correlation between original and replication effect size
 plot_effect_correlation <- function(rep_summary_folder, df, fn, tt) {
@@ -1653,7 +1753,14 @@ plot_cvs <- function(rep_df, orig_df, suffix, rep_summary_folder) {
 
   df <- rbind(df1, df2)
 
-  df$EXP <- factor(df$EXP, levels = exp_general_order)
+  # Criar ordenação baseada no CV original (maior para menor) para que apareça menor para maior após coord_flip()
+  exp_order_by_cv <- df |>
+    filter(type == "Original") |>
+    arrange(desc(cv)) |>
+    pull(EXP) |>
+    unique()
+  
+  df$EXP <- factor(df$EXP, levels = exp_order_by_cv)
 
   df$TypeTechnique <- factor(df$TypeTechnique, levels = c("Original", "EPM", "MTT", "PCR"))
 
@@ -1705,6 +1812,7 @@ plot_cvs <- function(rep_df, orig_df, suffix, rep_summary_folder) {
     ggnewscale::new_scale("color") +
     ggnewscale::new_scale("shape") +
     geom_point(aes(color = technique_flag, shape = technique_flag), size = 2.5, alpha = 0.8, data = df |> filter(!str_detect(technique_flag, "Original"))) +
+    geom_blank(data = data.frame(EXP = "EPM1", cv = 0, Method = "EPM", technique_flag = "EPM"), aes(x = EXP, y = cv), inherit.aes = FALSE) +
     scale_color_manual(
       values = c(
         "EPM" = bri_color[["epm"]],
@@ -1907,8 +2015,8 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
         "all_exps_lab_units" ~ "All experiments",
         "included_by_lab" ~ "Lab's choice",
         "primary" ~ "Primary",
-        "only_3_reps" ~ "3 copies",
-        "at_least_2_reps" ~ "≥2 copies",
+        "only_3_reps" ~ "3 replications",
+        "at_least_2_reps" ~ "≥2 replications",
         "only_80_power_a_posteriori_T" ~ "≥80% power (t - # of units)",
         "only_80_power_a_posteriori_Z" ~ "≥80% power (z)",
         "only_80_power_a_posteriori_KNHA" ~ "≥80% power (t - # of replications)"
@@ -1920,8 +2028,8 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
           "All experiments (BRI UNIT)",
           "All experiments",
           "Lab's choice",
-          "3 copies",
-          "≥2 copies",
+          "3 replications",
+          "≥2 replications",
           "≥80% power (t - # of units)",
           "≥80% power (z)",
           "≥80% power (t - # of replications)"
@@ -2245,4 +2353,40 @@ combine_kappa_plots <- function(plot_kappa_exp, plot_kappa_rep, output_path) {
   bri_ggsave(paste0(output_path, "cortable - combined - kappa.png"), plot = combined_kappa, width = 5.5, height = 7)
 
   return(combined_kappa)
+}
+
+# Função para normalizar e ordenar a matriz ICC (com debug)
+normalize_icc_matrix_effect_sizes <- function(m) {
+  # Debug: estrutura inicial
+  cat("[DEBUG] normalize_icc_matrix_effect_sizes: Initial columns:", paste(colnames(m), collapse = ", "), "\n")
+  cat("[DEBUG] normalize_icc_matrix_effect_sizes: Initial dimensions:", nrow(m), "x", ncol(m), "\n")
+  print(head(m, 3))
+  
+  # Verificar se EXP existe
+  if (!"EXP" %in% colnames(m)) {
+    stop("[ERROR] normalize_icc_matrix_effect_sizes: Coluna EXP não encontrada no data frame. Colunas presentes: ", paste(colnames(m), collapse = ", "))
+  }
+  
+  # Verificar se orig existe
+  if (!"orig" %in% colnames(m)) {
+    stop("[ERROR] normalize_icc_matrix_effect_sizes: Coluna orig não encontrada no data frame. Colunas presentes: ", paste(colnames(m), collapse = ", "))
+  }
+  
+  # Criar cópia do data frame
+  result <- m
+  
+  # Preservar sinais originais - não aplicar abs() ao orig
+  # Ordenar do maior para o menor valor original (mais positivo → mais negativo)
+  order_idx <- order(result$orig, decreasing = TRUE)
+  result <- result[order_idx, ]
+  
+  # Debug: estrutura final
+  cat("[DEBUG] normalize_icc_matrix_effect_sizes: Final columns:", paste(colnames(result), collapse = ", "), "\n")
+  cat("[DEBUG] normalize_icc_matrix_effect_sizes: Final dimensions:", nrow(result), "x", ncol(result), "\n")
+  print(head(result, 3))
+  
+  # Adicionar atributo de normalização
+  attr(result, "normalized_and_ordered") <- TRUE
+  
+  return(result)
 }
