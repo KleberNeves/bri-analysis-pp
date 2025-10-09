@@ -308,7 +308,9 @@ summarize_rates = function (rep_summary_folder) {
   rep_calculated = list(
     ALL_PCR = make_summary_subset(rep_summaries, rep_summaries_individual, "(MTT|EPM|PCR)", "ALL_PCR"),
     ALL_ALTPCR = make_summary_subset(rep_summaries, rep_summaries_individual, "(MTT|EPM|ALTPCR)", "ALL_ALTPCR"),
+    ALL_ALTMTT = make_summary_subset(rep_summaries, rep_summaries_individual, "(ALTMTT|EPM|PCR)", "ALL_ALTMTT"),
     MTT = make_summary_subset(rep_summaries, rep_summaries_individual, "MTT"),
+    ALTMTT = make_summary_subset(rep_summaries, rep_summaries_individual, "ALTMTT"),
     PCR = make_summary_subset(rep_summaries, rep_summaries_individual, "PCR"),
     ALTPCR = make_summary_subset(rep_summaries, rep_summaries_individual, "ALTPCR"),
     EPM = make_summary_subset(rep_summaries, rep_summaries_individual, "EPM")
@@ -317,7 +319,9 @@ summarize_rates = function (rep_summary_folder) {
   rep_success = rbind(
     rep_calculated$ALL_PCR$success,
     rep_calculated$ALL_ALTPCR$success,
+    rep_calculated$ALL_ALTMTT$success,
     rep_calculated$MTT$success,
+    rep_calculated$ALTMTT$success,
     rep_calculated$PCR$success,
     rep_calculated$ALTPCR$success,
     rep_calculated$EPM$success
@@ -483,7 +487,7 @@ gather_all_rep_rates = function(list_of_analyses, pn) {
   # Without aggregation by method, only analysis specifications
   all_replication_rates = map_dfr(list_of_analyses, function (p) {
     rep_rates = fread(paste0(p, "/Replication Rate Summary.tsv"))
-    rep_rates = rep_rates |> select(-Value_MTT, -Value_PCR, -Value_EPM, -Value_ALTPCR, -N_MTT, -N_PCR, -N_EPM, -N_ALTPCR, -successful_MTT, -successful_PCR, -successful_EPM, -successful_ALTPCR)
+    rep_rates = rep_rates |> select(-Value_MTT, -Value_PCR, -Value_EPM, -Value_ALTPCR,-Value_ALTMTT, -N_MTT, -N_PCR, -N_EPM, -N_ALTPCR, -N_ALTMTT, -successful_MTT, -successful_PCR, -successful_EPM, -successful_ALTPCR, -successful_ALTMTT)
     
     rep_rates  = rep_rates |>
       select(-MetricLongName) |>

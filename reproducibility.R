@@ -40,7 +40,8 @@ file_dict = rbind(
   read_tsv("./replication-results/PCR_results_dict.tsv", show_col_types = F),
   read_tsv("./replication-results/PCR_ALT_results_dict.tsv", show_col_types = F),
   read_tsv("./replication-results/EPM_results_dict.tsv", show_col_types = F),
-  read_tsv("./replication-results/MTT_results_dict.tsv", show_col_types = F)
+  read_tsv("./replication-results/MTT_results_dict.tsv", show_col_types = F),
+  read_tsv("./replication-results/MTT_ALT_results_dict.tsv", show_col_types = F)
 ) |>
   filter(
     !is.na(Filename),
@@ -72,22 +73,25 @@ run_all_meta_analyses = function (inclusion_set_column, save_results_to, params,
     mutate(ALT = F)
   
   # Adds alternative PCR measures
-  pcr_alt = data_list |> filter(str_detect(EXP, "PCR")) |>
+  pcr_mtt_alt = data_list |> filter(str_detect(EXP, "(PCR|MTT)")) |>
     mutate(
-      Filename = Filename |> str_replace("PCR/Result", "PCR_ALT/Result") |> str_replace(" PCR", " ALTPCR"),
-      EXP = EXP |> str_replace("PCR", "ALTPCR")
+      Filename = Filename |>
+        str_replace("PCR/Result", "PCR_ALT/Result") |> str_replace(" PCR", " ALTPCR") |>
+        str_replace("MTT/Result", "MTT_ALT/Result") |> str_replace(" MTT", " ALTMTT"),
+      EXP = EXP |> str_replace("PCR", "ALTPCR") |> str_replace("MTT", "ALTMTT")
     )
-  ma_only_list_alt = ma_only_list |> filter(str_detect(EXP, "PCR")) |>
+  ma_only_list_alt = ma_only_list |>
+    filter(str_detect(EXP, "(PCR|MTT)")) |>
     mutate(
-      EXP = EXP |> str_replace("PCR", "ALTPCR")
+      EXP = EXP |> str_replace("PCR", "ALTPCR") |> str_replace("MTT", "ALTMTT")
     )
   
   if (!simulated) {
-    data_list = rbind(data_list, pcr_alt)
+    data_list = rbind(data_list, pcr_mtt_alt)
     ma_only_list = rbind(ma_only_list, ma_only_list_alt)
   }
   
-  # data_list = data_list |> filter(str_detect(EXP, "MTT56"))
+  # data_list = data_list |> filter(str_detect(EXP, "MTT"))
   exps = unique(data_list$EXP)
   
   # Run each analysis 
@@ -118,6 +122,7 @@ run_all_meta_analyses = function (inclusion_set_column, save_results_to, params,
 
 # Function to perform the meta-analysis of each dataset and plot the effects
 perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, simulated = F) {
+  
   print(paste0(EXP_code, " ", params$ma_dist))
   
   # Flags for PCR types and exponents
@@ -139,13 +144,13 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
     paired_labs = rbind(
       meta_data_EPM |> filter(EXP == EXP_code) |> select(LAB, Paired),
       meta_data_PCR |> filter(EXP == EXP_code) |> select(LAB, `Paired Alternative`) |> rename(Paired = `Paired Alternative`),
-      meta_data_MTT |> filter(EXP == EXP_code) |> select(LAB, Paired)
+      meta_data_MTT |> filter(EXP == EXP_code) |> select(LAB, `Paired Main`) |> rename(Paired = `Paired Main`)
     ) |> filter(Paired %in% c("yes","Yes")) |> pull(LAB)
   } else {
     paired_labs = rbind(
       meta_data_EPM |> filter(EXP == EXP_code) |> select(LAB, Paired),
       meta_data_PCR |> filter(EXP == EXP_code) |> select(LAB, Paired),
-      meta_data_MTT |> filter(EXP == EXP_code) |> select(LAB, Paired)
+      meta_data_MTT |> filter(EXP == EXP_code) |> select(LAB, `Paired Main`) |> rename(Paired = `Paired Main`)
     ) |> filter(Paired %in% c("yes","Yes")) |> pull(LAB)
   }
   
@@ -172,10 +177,10 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
   original_ci_upper = original_es + orig_crit * original_sem
   
   # Analyze replications and extract summaries
-  all_rep_es_data = make_rep_es_analysis(data_filenames, simulated, EXP_code, is_PCR, original_es, paired_labs)
+  all_rep_es_data = make_rep_es_analysis(data_filenames, simulated, EXP_code, is_PCR, original_es, paired_labs, params$ma_dist)
   
   if (is_ALTPCR) {
-    all_rep_es_data_PCR_ref = make_rep_es_analysis(data_filenames_PCR_ref, simulated, EXP_code, T, original_es, paired_labs)
+    all_rep_es_data_PCR_ref = make_rep_es_analysis(data_filenames_PCR_ref, simulated, EXP_code, T, original_es, paired_labs, params$ma_dist)
   }
   
   summaries = all_rep_es_data$summaries
@@ -198,7 +203,7 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
   
   # Get coefficient of variation for original and experiments with the summaries using the _Perc columns
   
-  rep_es_with_perc = make_rep_es_analysis(data_filenames, simulated, EXP_code, is_PCR, original_es, paired_labs, use_perc = T)
+  rep_es_with_perc = make_rep_es_analysis(data_filenames, simulated, EXP_code, is_PCR, original_es, paired_labs, params$ma_dist, use_perc = T)
   
   original_cv = orig_data$`Pooled SD` / ((orig_data$`Treated Mean` + orig_data$`Control Mean`) / 2)
   
@@ -726,7 +731,7 @@ summarise_es_by_lab = function(df, paired_labs, use_perc = F) {
 }
 
 # Function to run escalc while handling PCR vs MTT/EPM as well as paired and non-paired experiments (all of which have different effect size measures)
-make_rep_es_analysis = function (data_fns, simulated, EXP_code, is_PCR, original_es, paired_labs, use_perc = F) {
+make_rep_es_analysis = function (data_fns, simulated, EXP_code, is_PCR, original_es, paired_labs, ma_dist, use_perc = F) {
   
   rep_data = map_dfr(data_fns, read_tsv, show_col_types = F)
   
@@ -833,8 +838,6 @@ make_rep_es_analysis = function (data_fns, simulated, EXP_code, is_PCR, original
   
   summaries = do.call(rbind, c(s1,s2))
   summaries = summaries |> filter(!is.na(yi) & !is.na(vi))
-  
-  # if (nrow(summaries) != nrow(rep_es)) browser()
   
   # Calculate Welch's degrees of freedom
   rep_es = rep_es |>

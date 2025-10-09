@@ -17,7 +17,7 @@ build_summary_single_lab = function(lab_code, exp_data, suffix = NULL) {
   rep_data = exp_data |> filter(LAB == lab_code)
   
   # Get pairing info
-  is_paired = (meta_data |> filter(EXP == exp_code, LAB == lab_code) |> pull(`Paired Summary ALT`)) == "yes"
+  is_paired = (meta_data |> filter(EXP == exp_code, LAB == lab_code) |> pull(`Paired Alternative`)) == "yes"
   
   # Check if the blanks are per plate (but with multiple experimental units in the same plate)
   is_per_plate_blank = lab_code %in% (rep_data |> filter(Group == "Group1_blank_plate" | Group== "Group2_blank_plate") |> pull(LAB) |> unique())
@@ -152,6 +152,7 @@ build_summary_single_lab = function(lab_code, exp_data, suffix = NULL) {
       )  
   }
   
+  exp_code = paste0("ALT", exp_code)
   if (is.null(suffix))
     export_file(summary_data, exp_code, lab_code, "MTT_ALT")
   else
@@ -184,7 +185,6 @@ build_summary_table_exp = function (exp_code) {
   if (nrow(exp_data) > 0) {
     grouping_col = meta_data |> filter(EXP == exp_code) |> select(LAB, `Grouping Variable Alternative`)
     
-    # Create new column which has the grouping variable for technical replicates
     exp_data = exp_data |> left_join(grouping_col, by = "LAB")
     exp_data$ExpUnit = NA
     
