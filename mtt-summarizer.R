@@ -18,9 +18,8 @@ build_summary_single_lab = function(lab_code, exp_data, suffix = NULL) {
   exp_code = exp_data$EXP |> unique()
   rep_data = exp_data |> filter(LAB == lab_code)
   
-  # Take all experiments to be paired (TODO: use column)
-  is_paired = T
-  # is_paired = (meta_data |> filter(EXP == exp_code, LAB == lab_code) |> pull(`Paired Summary`)) == "yes"
+  # Take all experiments to be paired
+  is_paired = (meta_data |> filter(EXP == exp_code, LAB == lab_code) |> pull(`Paired Main`)) == "yes"
   
   # Check if the blanks are per plate (but with multiple experimental units in the same plate)
   is_per_plate_blank = lab_code %in% (rep_data |> filter(Group == "Group1_blank_plate" | Group == "Group2_blank_plate") |> pull(LAB) |> unique())

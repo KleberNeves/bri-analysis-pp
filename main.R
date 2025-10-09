@@ -15,6 +15,10 @@ dir.create("./replication-results/MTT")
 dir.create("./replication-results/For labs/MTT")
 source("mtt-summarizer.R")
 
+dir.create("./replication-results/MTT_ALT")
+dir.create("./replication-results/For labs/MTT_ALT")
+source("mtt-summarizer-alt.R")
+
 # PCR
 dir.create("./replication-results/PCR")
 dir.create("./replication-results/For labs/PCR")
@@ -49,6 +53,7 @@ list_of_sets = colnames(inclusion_sets)[str_detect(colnames(inclusion_sets), "^a
 for (setcol in list_of_sets) {
   message("\n\n\n\n")
   message(setcol)
+  
   if (!(setcol %in% c("analysis_only_80_power_a_posteriori_T", "analysis_only_80_power_a_posteriori_KNHA"))) {
     # Run analysis with z distribution only with inclusion sets also using z
     run_all_meta_analyses(
@@ -64,14 +69,15 @@ for (setcol in list_of_sets) {
       params = list(exclude_outliers = F, ma_dist = "t"), simulated = F
     )
   }
-  
+
   if (!(setcol %in% c("analysis_only_80_power_a_posteriori_Z", "analysis_only_80_power_a_posteriori_T"))) {
     # Run analysis with t distribution only with inclusion sets also using t
     run_all_meta_analyses(
       inclusion_set_column = setcol, save_results_to = results_path,
       params = list(exclude_outliers = F, ma_dist = "knha"), simulated = F
     )
-  }
+  # }
+
 }
 
 # For every folder specified below with an analysis in the output folder, calculates the replications rates
