@@ -1107,11 +1107,11 @@ plot_combined_cortable_predictor <- function(ct_exp, ct_rep, replication_datapat
 
 # Plot single replication results (used for individual labs to check)
 plot_individual_results <- function(fn, es_label, output_path) {
-  EXP_code <- fn |> str_extract("(EPM|MTT|ALTPCR|PCR)[0-9]+")
+  EXP_code <- fn |> str_extract("(EPM|ALTMTT|MTT|ALTPCR|PCR)[0-9]+")
   LAB_code <- fn |> str_extract("LAB[0-9]+")
 
   method <- EXP_code |> str_extract("(EPM|MTT|PCR)")
-  altmethod <- EXP_code |> str_extract("(EPM|MTT|ALTPCR|PCR)")
+  altmethod <- EXP_code |> str_extract("(EPM|ALTMTT|MTT|ALTPCR|PCR)")
 
   if (method == "MTT") {
     meta_table <- meta_data_MTT
@@ -1157,7 +1157,7 @@ plot_individual_results <- function(fn, es_label, output_path) {
     }
   }
 
-  if (altmethod == "MTT" | altmethod == "ALTPCR") {
+  if (method == "MTT" | altmethod == "ALTPCR") {
     idf <- read_tsv(fn, show_col_types = F) |>
       select(Group1_Perc, Group2_Perc) |>
       `colnames<-`(c(group1_name, group2_name)) |>

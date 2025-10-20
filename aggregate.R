@@ -295,12 +295,12 @@ make_summary_subset = function (rep_summaries_in, rep_summaries_individual_in, f
 
 # Main function, summarizes rates overall (alternatively using PCR or ALTPCR) and by method
 summarize_rates = function (rep_summary_folder) {
-  
+  # browser()
   print("Evaluating replication results ...")
   
-  rep_summaries = fread(paste0(rep_summary_folder, "/Replication Assessment by Experiment.tsv"))
+  rep_summaries = fread(file = paste0(rep_summary_folder, "/Replication Assessment by Experiment.tsv"))
   
-  rep_summaries_individual = fread(paste0(rep_summary_folder, "/Replication Assessment by Replication.tsv"))
+  rep_summaries_individual = fread(file = paste0(rep_summary_folder, "/Replication Assessment by Replication.tsv"))
   
   dir.create(paste0(rep_summary_folder, "/additional-figures"))
   
