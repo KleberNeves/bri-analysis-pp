@@ -2037,18 +2037,12 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       )
     )
 
+  # IMPORTANT: We avoid mislabeling "ALL" as a specific choice.
+  # For the specification curve with method toggles, we'll filter to the
+  # four explicit combinations (ALL_*), and derive two binary toggles
+  # instead of using the combined "Method" levels. This yields 50/50 splits.
   AGGDATA <- AGGDATA |>
-    # filter(Method != "ALTPCR") |>
-    mutate(
-      Method = case_match(
-        Method,
-        "ALL_PCR" ~ "PCR in log scale",
-        "ALL_ALTPCR" ~ "PCR in linear scale",
-        "PCR" ~ "PCR (log scale)",
-        "ALTPCR" ~ "PCR (linear scale)",
-        .default = Method
-      )
-    )
+    mutate(Method = as.character(Method))
 
   AGGDATA <- AGGDATA |>
     mutate(
@@ -2059,15 +2053,126 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       )
     )
 
-  # Top/line graph
+  # Prepare data for the top plot consistent with the bottom ticks
+  AGGDATA_USED <- AGGDATA
+
+  # Tick graph
+  # Making the specification curve graph
+  # If include_method = TRUE: only individual methods (single method band, black).
+  # If include_method = FALSE: only ALL_* + toggles (PCR_Scale, MTT_Pairing) to show 50/50 splits.
+  if (include_method) {
+    # Only individual methods; no toggles
+    AGGDATA_TOG <- AGGDATA |>
+      filter(Method %in% c("EPM","PCR","ALTPCR","MTT","ALTMTT")) |>
+      mutate(
+        Method_Individual = Method
+      )
+
+    spec_parameters <- c("Inclusion_Set", "Level", "MA_Dist", "Metric", "Method_Individual")
+
+    method_levels <- na.omit(unique(AGGDATA_TOG$Method_Individual))
+    # Ensure stable order of method levels
+    method_levels <- intersect(c("EPM","PCR","ALTPCR","MTT","ALTMTT"), method_levels)
+
+    spec_parameters_levels <- rev(c(
+      unique(AGGDATA_TOG$Metric)[2:3],
+      unique(AGGDATA_TOG$Metric)[1],
+      unique(AGGDATA_TOG$Metric)[4:7],
+      "Aggregate of replications",
+      unique(AGGDATA_TOG$Metric)[8:10],
+      "Individual replication",
+      unique(as.character(AGGDATA_TOG$Inclusion_Set)),
+      method_levels,
+      unique(AGGDATA_TOG$MA_Dist)
+    ))
+
+    # Methods in black, as requested
+    method_colors <- rep("black", length(method_levels))
+    spec_colors <- rev(c(
+      rep(RColorBrewer::brewer.pal(5, "Dark2")[1], length(1:7)),
+      rep(RColorBrewer::brewer.pal(7, "Greens")[7], 1),
+      rep(RColorBrewer::brewer.pal(5, "Dark2")[1], length(8:10)),
+      rep(RColorBrewer::brewer.pal(7, "Greens")[7], 1),
+      rep(RColorBrewer::brewer.pal(7, "Blues")[7], length(unique(AGGDATA_TOG$Inclusion_Set))),
+      method_colors,
+      rep(RColorBrewer::brewer.pal(7, "Oranges")[7], length(unique(AGGDATA_TOG$MA_Dist)))
+    ))
+
+    # Deduplicate breaks while keeping order and map colors to labels
+    spec_breaks <- unique(spec_parameters_levels)
+    spec_colors_named <- setNames(spec_colors, spec_parameters_levels)
+
+    # Re-index so both panels align
+    AGGDATA_TOG <- AGGDATA_TOG |>
+      mutate(index = row_number())
+
+    SPECIFICATION <- AGGDATA_TOG |>
+      select(all_of(c("index", "repro_rate", spec_parameters))) |>
+      pivot_longer(cols = -c(index, repro_rate)) |>
+      filter(!is.na(value)) |>
+      arrange(repro_rate) |>
+      mutate(value = factor(value, levels = spec_parameters_levels))
+    AGGDATA_USED <- AGGDATA_TOG
+  } else {
+    # No individual methods; keep only ALL_* and add toggles to show 50/50 splits
+    AGGDATA_TOG <- AGGDATA |>
+      filter(str_detect(Method, "^ALL_")) |>
+      mutate(
+        PCR_Scale = if_else(str_detect(Method, "ALTPCR"), "PCR (linear)", "PCR (log)"),
+        MTT_Pairing = if_else(str_detect(Method, "ALTMTT"), "MTT (unpaired)", "MTT (paired)")
+      )
+
+    spec_parameters <- c("Inclusion_Set", "Level", "MA_Dist", "Metric", "PCR_Scale", "MTT_Pairing")
+
+    spec_parameters_levels <- rev(c(
+      unique(AGGDATA_TOG$Metric)[2:3],
+      unique(AGGDATA_TOG$Metric)[1],
+      unique(AGGDATA_TOG$Metric)[4:7],
+      "Aggregate of replications",
+      unique(AGGDATA_TOG$Metric)[8:10],
+      "Individual replication",
+      unique(as.character(AGGDATA_TOG$Inclusion_Set)),
+      c("PCR (log)", "PCR (linear)"),
+      c("MTT (paired)", "MTT (unpaired)"),
+      unique(AGGDATA_TOG$MA_Dist)
+    ))
+
+    spec_colors <- rev(c(
+      rep(RColorBrewer::brewer.pal(5, "Dark2")[1], length(1:7)),
+      rep(RColorBrewer::brewer.pal(7, "Greens")[7], 1),
+      rep(RColorBrewer::brewer.pal(5, "Dark2")[1], length(8:10)),
+      rep(RColorBrewer::brewer.pal(7, "Greens")[7], 1),
+      rep(RColorBrewer::brewer.pal(7, "Blues")[7], length(unique(AGGDATA_TOG$Inclusion_Set))),
+      rep(RColorBrewer::brewer.pal(7, "Greys")[7], 2),  # PCR_Scale (2 levels)
+      rep(RColorBrewer::brewer.pal(7, "Greys")[5], 2),  # MTT_Pairing (2 levels)
+      rep(RColorBrewer::brewer.pal(7, "Oranges")[7], length(unique(AGGDATA_TOG$MA_Dist)))
+    ))
+
+    spec_breaks <- unique(spec_parameters_levels)
+    spec_colors_named <- setNames(spec_colors, spec_parameters_levels)
+
+    # Re-index after filtering so both panels align
+    AGGDATA_TOG <- AGGDATA_TOG |>
+      mutate(index = row_number())
+
+    SPECIFICATION <- AGGDATA_TOG |>
+      select(all_of(c("index", "repro_rate", spec_parameters))) |>
+      pivot_longer(cols = -c(index, repro_rate)) |>
+      filter(!is.na(value)) |>
+      arrange(repro_rate) |>
+      mutate(value = factor(value, levels = spec_parameters_levels))
+    AGGDATA_USED <- AGGDATA_TOG
+  }
+
+  # Top/line graph built from AGGDATA_USED to match SPECIFICATION
   # Find the quartiles and median
-  quartiles <- AGGDATA |>
+  quartiles <- AGGDATA_USED |>
     pull(repro_rate) |>
     quantile(na.rm = T, probs = c(0.25, 0.5, 0.75)) |>
     round(2)
 
   # Making the plot with reproducibility rates
-  plot_repro <- ggplot(AGGDATA) +
+  plot_repro <- ggplot(AGGDATA_USED) +
     aes(x = reorder(index, repro_rate), y = repro_rate) +
     geom_point(size = 1) +
     geom_hline(yintercept = quartiles[1], linetype = "dashed", color = bri_color[["none"]], alpha = 0.6) +
@@ -2085,45 +2190,11 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       panel.grid = element_blank(), plot.title = element_blank()
     )
 
-  # Tick graph
-  # Making the specification curve graph
-  spec_parameters <- c("Inclusion_Set", "Level", "MA_Dist", "Metric")
-
-  spec_parameters_levels <- rev(c(
-    unique(AGGDATA$Metric)[2:3],
-    unique(AGGDATA$Metric)[1],
-    unique(AGGDATA$Metric)[4:7],
-    "Aggregate of replications",
-    unique(AGGDATA$Metric)[8:10],
-    "Individual replication",
-    unique(as.character(AGGDATA$Inclusion_Set)),
-    unique(AGGDATA$Method),
-    unique(AGGDATA$MA_Dist)
-  ))
-
-  spec_colors <- rev(c(
-    rep(RColorBrewer::brewer.pal(5, "Dark2")[1], length(1:7)),
-    rep(RColorBrewer::brewer.pal(7, "Greens")[7], 1),
-    rep(RColorBrewer::brewer.pal(5, "Dark2")[1], length(8:10)),
-    rep(RColorBrewer::brewer.pal(7, "Greens")[7], 1),
-    rep(RColorBrewer::brewer.pal(7, "Blues")[7], length(unique(AGGDATA$Inclusion_Set))),
-    rep(RColorBrewer::brewer.pal(7, "Greys")[7], length(unique(AGGDATA$Method))),
-    rep(RColorBrewer::brewer.pal(7, "Oranges")[7], length(unique(AGGDATA$MA_Dist)))
-  ))
-
-  spec_parameters <- c(spec_parameters, "Method")
-
-  SPECIFICATION <- AGGDATA |>
-    select(all_of(c("index", "repro_rate", spec_parameters))) |>
-    pivot_longer(cols = -c(index, repro_rate)) |>
-    arrange(repro_rate) |>
-    mutate(value = factor(value, levels = spec_parameters_levels))
-
   plot_spec2 <- ggplot(SPECIFICATION) +
     aes(x = reorder(index, repro_rate), y = value, fill = value) +
     geom_tile(height = 0.4) +
     scale_alpha(range = c(0, 1)) +
-    scale_fill_manual(breaks = spec_parameters_levels, values = spec_colors) +
+    scale_fill_manual(breaks = spec_breaks, values = spec_colors_named[spec_breaks]) +
     labs(x = "", y = "") +
     theme_minimal() +
     theme(

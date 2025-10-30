@@ -128,6 +128,8 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
   # Flags for PCR types and exponents
   is_PCR = str_detect(EXP_code, "PCR") & !str_detect(EXP_code, "ALTPCR")
   is_ALTPCR = str_detect(EXP_code, "ALTPCR")
+  # Only main MTT (e.g., MTTxx), exclude ALTMTT
+  is_MTT_main = str_detect(EXP_code, "^MTT")
   
   if (is_PCR | is_ALTPCR) {
     PCR_exponent = ifelse((meta_data_PCR |> filter(EXP == EXP_code) |> pull(`Primary Outcome`))[1] == "Optical Density (a.u)", 1, -1)
@@ -177,7 +179,7 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
   original_ci_upper = original_es + orig_crit * original_sem
   
   # Analyze replications and extract summaries
-  all_rep_es_data = make_rep_es_analysis(data_filenames, simulated, EXP_code, is_PCR, original_es, paired_labs, params$ma_dist)
+  all_rep_es_data = make_rep_es_analysis(data_filenames, simulated, EXP_code, is_PCR, original_es, paired_labs, params$ma_dist, use_perc = is_MTT_main)
   
   if (is_ALTPCR) {
     all_rep_es_data_PCR_ref = make_rep_es_analysis(data_filenames_PCR_ref, simulated, EXP_code, T, original_es, paired_labs, params$ma_dist)

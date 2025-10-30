@@ -134,7 +134,7 @@ make_summary_subset = function (rep_summaries_in, rep_summaries_individual_in, f
     OriginalCV_Individual = original_cv
   )
   
-  print(paste0("Calculating replication rates ", ifelse(is.null(filtering), "ALL", filtering), " ..."))
+  print(paste0("Calculating replication rates ", ifelse(is.null(filtering), "ALL_PCR_MTT", filtering), " ..."))
   
   # Summarizing the reproducibility rates, by experiment and by individual replicate
   rep_success_complete = rep_summaries |>
@@ -235,7 +235,7 @@ make_summary_subset = function (rep_summaries_in, rep_summaries_individual_in, f
   if (!is.null(filtering)) {
     success_summary = success_summary |> mutate(Method = filtering_label)
   } else {
-    success_summary = success_summary |> mutate(Method = "ALL")
+    success_summary = success_summary |> mutate(Method = "ALL_PCR_MTT")
   }
   
   # Build matrix for calculating agreement
@@ -265,9 +265,11 @@ make_summary_subset = function (rep_summaries_in, rep_summaries_individual_in, f
   
   raters_matrix = r1 |> left_join(r2)
   
-  icc_summary = map_dfr(c("EPM","MTT","PCR","ALL"), function (mtd) {
+  icc_summary = map_dfr(c("EPM","MTT","PCR","ALL_PCR_MTT"), function (mtd) {
     mrm = raters_matrix
-    if (mtd != "ALL") {
+    if (mtd == "ALL_PCR_MTT") {
+      mrm = mrm |> filter(str_detect(EXP, "^(PCR|MTT|EPM)"))
+    } else {
       mrm = mrm |> filter(str_detect(EXP, mtd))
     }
     
@@ -306,9 +308,10 @@ summarize_rates = function (rep_summary_folder) {
   
   # Calculates aggregate rates summaries for every method subset
   rep_calculated = list(
-    ALL_PCR = make_summary_subset(rep_summaries, rep_summaries_individual, "(MTT|EPM|PCR)", "ALL_PCR"),
-    ALL_ALTPCR = make_summary_subset(rep_summaries, rep_summaries_individual, "(MTT|EPM|ALTPCR)", "ALL_ALTPCR"),
-    ALL_ALTMTT = make_summary_subset(rep_summaries, rep_summaries_individual, "(ALTMTT|EPM|PCR)", "ALL_ALTMTT"),
+    ALL_PCR_MTT = make_summary_subset(rep_summaries, rep_summaries_individual, "(MTT|EPM|PCR)", "ALL_PCR_MTT"),
+    ALL_ALTPCR_MTT = make_summary_subset(rep_summaries, rep_summaries_individual, "(MTT|EPM|ALTPCR)", "ALL_ALTPCR_MTT"),
+    ALL_PCR_ALTMTT = make_summary_subset(rep_summaries, rep_summaries_individual, "(ALTMTT|EPM|PCR)", "ALL_PCR_ALTMTT"),
+    ALL_ALTPCR_ALTMTT = make_summary_subset(rep_summaries, rep_summaries_individual, "(ALTMTT|EPM|ALTPCR)", "ALL_ALTPCR_ALTMTT"),
     MTT = make_summary_subset(rep_summaries, rep_summaries_individual, "MTT"),
     ALTMTT = make_summary_subset(rep_summaries, rep_summaries_individual, "ALTMTT"),
     PCR = make_summary_subset(rep_summaries, rep_summaries_individual, "PCR"),
@@ -317,9 +320,10 @@ summarize_rates = function (rep_summary_folder) {
   )
   
   rep_success = rbind(
-    rep_calculated$ALL_PCR$success,
-    rep_calculated$ALL_ALTPCR$success,
-    rep_calculated$ALL_ALTMTT$success,
+    rep_calculated$ALL_PCR_MTT$success,
+    rep_calculated$ALL_ALTPCR_MTT$success,
+    rep_calculated$ALL_PCR_ALTMTT$success,
+    rep_calculated$ALL_ALTPCR_ALTMTT$success,
     rep_calculated$MTT$success,
     rep_calculated$ALTMTT$success,
     rep_calculated$PCR$success,
@@ -419,10 +423,10 @@ summarize_rates = function (rep_summary_folder) {
   # Normaliza e ordena a matriz ICC para a figura A (effect sizes originais sempre positivos e ordenados do menor para o maior)
   # Debug: verificar estrutura antes da normalização
   print("Estrutura antes da normalização:")
-  print(colnames(rep_calculated$ALL_PCR$icc_matrix))
-  print(head(rep_calculated$ALL_PCR$icc_matrix))
+  print(colnames(rep_calculated$ALL_PCR_MTT$icc_matrix))
+  print(head(rep_calculated$ALL_PCR_MTT$icc_matrix))
   # Normaliza e ordena a matriz ICC para a figura A (effect sizes originais sempre positivos e ordenados do menor para o maior)
-  normalized_ordered_icc_matrix <- normalize_icc_matrix_effect_sizes(rep_calculated$ALL_PCR$icc_matrix)
+  normalized_ordered_icc_matrix <- normalize_icc_matrix_effect_sizes(rep_calculated$ALL_PCR_MTT$icc_matrix)
   # --- START DEBUGGING BLOCK ---
   # Add this code to inspect the object before the error
   cat("\n\n--- DEBUGGING INFO ---\n")
@@ -443,8 +447,8 @@ summarize_rates = function (rep_summary_folder) {
   plot_effect_size_figure(p_A, p_B, p_C, rep_summary_folder)
   
   # Write output  
-  write_tsv(rep_calculated$ALL_PCR$complete_exp, paste0(rep_summary_folder, "/Replication Success by Experiment.tsv"))
-  write_tsv(rep_calculated$ALL_PCR$complete_individual, paste0(rep_summary_folder, "/Replication Success by Replication.tsv"))
+  write_tsv(rep_calculated$ALL_PCR_MTT$complete_exp, paste0(rep_summary_folder, "/Replication Success by Experiment.tsv"))
+  write_tsv(rep_calculated$ALL_PCR_MTT$complete_individual, paste0(rep_summary_folder, "/Replication Success by Replication.tsv"))
   
   write_tsv(rep_success, paste0(rep_summary_folder, "/Replication Rate Summary.tsv"))
   
@@ -487,7 +491,11 @@ gather_all_rep_rates = function(list_of_analyses, pn) {
   # Without aggregation by method, only analysis specifications
   all_replication_rates = map_dfr(list_of_analyses, function (p) {
     rep_rates = fread(paste0(p, "/Replication Rate Summary.tsv"))
-    rep_rates = rep_rates |> select(-Value_MTT, -Value_PCR, -Value_EPM, -Value_ALTPCR,-Value_ALTMTT, -N_MTT, -N_PCR, -N_EPM, -N_ALTPCR, -N_ALTMTT, -successful_MTT, -successful_PCR, -successful_EPM, -successful_ALTPCR, -successful_ALTMTT)
+    rep_rates = rep_rates |> select(-any_of(c(
+      "Value_ALL", "Value_MTT", "Value_PCR", "Value_EPM", "Value_ALTPCR", "Value_ALTMTT",
+      "N_ALL", "N_MTT", "N_PCR", "N_EPM", "N_ALTPCR", "N_ALTMTT",
+      "successful_ALL", "successful_MTT", "successful_PCR", "successful_EPM", "successful_ALTPCR", "successful_ALTMTT"
+    )))
     
     rep_rates  = rep_rates |>
       select(-MetricLongName) |>

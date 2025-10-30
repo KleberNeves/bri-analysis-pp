@@ -90,7 +90,7 @@ create_tbl_by_method_pcr <- function(analysis_type, distribution) {
   # Create column names for experiments
   colnames_all_exps_by_experiment <- df_by_experiment |>
     filter(Inclusion_Set == analysis_type) |>
-    filter(Method != "ALL_ALTPCR") |>
+    filter(Method != "ALL_ALTPCR" & Method != "ALL_ALTMTT" & Method != "ALL_ALTPCR_ALTMTT") |>
     filter(MA_Dist == distribution) |>
     mutate(Method_N = paste0(Method)) |>
     mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
@@ -100,7 +100,7 @@ create_tbl_by_method_pcr <- function(analysis_type, distribution) {
 
   # Create column names for replications
   colnames_all_exps_by_replication <- df_by_replication |>
-    filter(Method != "ALL_ALTPCR") |>
+    filter(Method != "ALL_ALTPCR" & Method != "ALL_ALTMTT" & Method != "ALL_ALTPCR_ALTMTT") |>
     filter(Inclusion_Set == analysis_type) |>
     filter(MA_Dist == distribution) |>
     mutate(Method_N = paste0(Method)) |>
@@ -111,17 +111,16 @@ create_tbl_by_method_pcr <- function(analysis_type, distribution) {
 
   # Build the main table
   tbl_by_method_all_exps <- df_by_experiment |>
-    filter(Method != "ALL_ALTPCR") |>
+    filter(Method != "ALL_ALTPCR" & Method != "ALL_ALTMTT" & Method != "ALL_ALTPCR_ALTMTT") |>
     filter(Inclusion_Set == analysis_type) |>
     filter(MA_Dist == distribution) |>
     mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
     select(MetricShortName, Method, Value_Denominator) |>
     pivot_wider(names_from = Method, values_from = Value_Denominator) |>
-    rename(ALL = ALL_PCR) |>
     add_row(
       data.frame(
         MetricShortName = "By experiment",
-        ALL = colnames_all_exps_by_experiment[[2]],
+        ALL_PCR_MTT = colnames_all_exps_by_experiment[[2]],
         MTT = colnames_all_exps_by_experiment[[3]],
         PCR = colnames_all_exps_by_experiment[[4]],
         ALTPCR = colnames_all_exps_by_experiment[[5]],
@@ -131,17 +130,16 @@ create_tbl_by_method_pcr <- function(analysis_type, distribution) {
     ) |>
     add_row(
       df_by_replication |>
-        filter(Method != "ALL_ALTPCR") |>
+        filter(Method != "ALL_ALTPCR" & Method != "ALL_ALTMTT" & Method != "ALL_ALTPCR_ALTMTT") |>
         filter(Inclusion_Set == analysis_type) |>
         filter(MA_Dist == distribution) |>
         mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
         select(MetricShortName, Method, Value_Denominator) |>
         pivot_wider(names_from = Method, values_from = Value_Denominator) |>
-        rename(ALL = ALL_PCR) |>
         add_row(
           data.frame(
             MetricShortName = "By replication",
-            ALL = colnames_all_exps_by_replication[[2]],
+            ALL_PCR_MTT = colnames_all_exps_by_replication[[2]],
             MTT = colnames_all_exps_by_replication[[3]],
             PCR = colnames_all_exps_by_replication[[4]],
             ALTPCR = colnames_all_exps_by_replication[[5]],
@@ -195,7 +193,7 @@ create_tbl_by_method_altpcr <- function(analysis_type, distribution) {
   # Create column names for experiments
   colnames_all_exps_by_experiment <- df_by_experiment |>
     filter(Inclusion_Set == analysis_type) |>
-    filter(Method != "ALL_PCR") |>
+    filter(Method != "ALL" & Method != "ALL_ALTMTT" & Method != "ALL_ALTPCR_ALTMTT") |>
     filter(MA_Dist == distribution) |>
     mutate(Method_N = paste0(Method)) |>
     mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
@@ -205,7 +203,7 @@ create_tbl_by_method_altpcr <- function(analysis_type, distribution) {
 
   # Create column names for replications
   colnames_all_exps_by_replication <- df_by_replication |>
-    filter(Method != "ALL_PCR") |>
+    filter(Method != "ALL" & Method != "ALL_ALTMTT" & Method != "ALL_ALTPCR_ALTMTT") |>
     filter(Inclusion_Set == analysis_type) |>
     filter(MA_Dist == distribution) |>
     mutate(Method_N = paste0(Method)) |>
@@ -217,17 +215,16 @@ create_tbl_by_method_altpcr <- function(analysis_type, distribution) {
   # Build the main table
 
   tbl_by_method_all_exps <- df_by_experiment |>
-    filter(Method != "ALL_PCR") |>
+    filter(Method != "ALL" & Method != "ALL_ALTMTT" & Method != "ALL_ALTPCR_ALTMTT") |>
     filter(Inclusion_Set == analysis_type) |>
     filter(MA_Dist == distribution) |>
     mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
     select(MetricShortName, Method, Value_Denominator) |>
     pivot_wider(names_from = Method, values_from = Value_Denominator) |>
-    rename(ALL = ALL_ALTPCR) |>
     add_row(
       data.frame(
         MetricShortName = "By experiment",
-        ALL = colnames_all_exps_by_experiment[[2]],
+        ALL_ALTPCR = colnames_all_exps_by_experiment[[2]],
         MTT = colnames_all_exps_by_experiment[[3]],
         PCR = colnames_all_exps_by_experiment[[4]],
         ALTPCR = colnames_all_exps_by_experiment[[5]],
@@ -237,17 +234,16 @@ create_tbl_by_method_altpcr <- function(analysis_type, distribution) {
     ) |>
     add_row(
       df_by_replication |>
-        filter(Method != "ALL_PCR") |>
+        filter(Method != "ALL" & Method != "ALL_ALTMTT" & Method != "ALL_ALTPCR_ALTMTT") |>
         filter(Inclusion_Set == analysis_type) |>
         filter(MA_Dist == distribution) |>
         mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
         select(MetricShortName, Method, Value_Denominator) |>
         pivot_wider(names_from = Method, values_from = Value_Denominator) |>
-        rename(ALL = ALL_ALTPCR) |>
         add_row(
           data.frame(
             MetricShortName = "By replication",
-            ALL = colnames_all_exps_by_replication[[2]],
+            ALL_ALTPCR = colnames_all_exps_by_replication[[2]],
             MTT = colnames_all_exps_by_replication[[3]],
             PCR = colnames_all_exps_by_replication[[4]],
             ALTPCR = colnames_all_exps_by_replication[[5]],
@@ -612,7 +608,7 @@ if (length(existing_tables_knha_altpcr) > 0) {
 
 ## Table 2 -----------------------------------------------------
 tbl_2 <- df_by_experiment |>
-  filter(Method == "ALL_PCR") |>
+  filter(Method == "ALL_PCR_MTT") |>
   filter(MA_Dist == "t") |>
   mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
   select(MetricShortName, Method, Value_Denominator, Inclusion_Set) |>
@@ -625,7 +621,7 @@ tbl_2 <- df_by_experiment |>
   ) |>
   add_row(
     df_by_replication |>
-      filter(Method == "ALL_PCR") |>
+      filter(Method == "ALL_PCR_MTT") |>
       filter(MA_Dist == "t") |>
       mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
       select(MetricShortName, Method, Value_Denominator, Inclusion_Set) |>
@@ -670,12 +666,12 @@ ordered_cols_tbl_2 <- tibble(
 
 tbl_2 <- tbl_2 |>
   select(all_of(ordered_cols_tbl_2)) |>
-  dplyr::rename(`Primary` = primary_ALL_PCR) |>
-  dplyr::rename(`Lab's choice` = included_by_lab_ALL_PCR) |>
-  dplyr::rename(`All Exps` = all_exps_lab_units_ALL_PCR) |>
-  dplyr::rename(`≥ 2 copies` = at_least_2_reps_ALL_PCR) |>
-  dplyr::rename(`3 copies` = only_3_reps_ALL_PCR) |>
-  dplyr::rename(`≥80% power` = only_80_power_a_posteriori_T_ALL_PCR)
+  dplyr::rename(`Primary` = primary_ALL_PCR_MTT) |>
+  dplyr::rename(`Lab's choice` = included_by_lab_ALL_PCR_MTT) |>
+  dplyr::rename(`All Exps` = all_exps_lab_units_ALL_PCR_MTT) |>
+  dplyr::rename(`≥ 2 copies` = at_least_2_reps_ALL_PCR_MTT) |>
+  dplyr::rename(`3 copies` = only_3_reps_ALL_PCR_MTT) |>
+  dplyr::rename(`≥80% power` = only_80_power_a_posteriori_T_ALL_PCR_MTT)
 
 footer_text_tbl_2 <- "Replication rates for the primary and secondary analyses. Effect size comparisons are based on random-effects meta-analysis, while same-sign significance is based on a fixed meta-analysis estimate. The prediction interval criterion only uses experiments with more than one replication. Subsets for secondary analyses include all experiments judged valid by the replicating lab (Lab’s Choice), all concluded experiments (All Exps), both of which use the experimental unit as defined by the lab, only experiments with at least 2 and 3 replications, and only experiments with ≥ 80% a posteriori power. All statistical tests use the t distribution. PI, prediction interval; CI, confidence interval. For more information on replication criteria, see https://osf.io/9rnuj."
 
@@ -2084,7 +2080,7 @@ cat("\n### Table S7 generated! ###\n")
 
 ## Table S14 -----------------------------------------------------
 tbl_s14 <- df_by_experiment |>
-  filter(Method == "ALL_PCR") |>
+  filter(Method == "ALL_PCR_MTT") |>
   filter(MA_Dist == "z") |>
   mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
   select(MetricShortName, Method, Value_Denominator, Inclusion_Set) |>
@@ -2097,7 +2093,7 @@ tbl_s14 <- df_by_experiment |>
   ) |>
   add_row(
     df_by_replication |>
-      filter(Method == "ALL_PCR") |>
+      filter(Method == "ALL_PCR_MTT") |>
       filter(MA_Dist == "z") |>
       mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
       select(MetricShortName, Method, Value_Denominator, Inclusion_Set) |>
@@ -2142,12 +2138,12 @@ ordered_cols_tbl_s14 <- tibble(
 
 tbl_s14 <- tbl_s14 |>
   select(all_of(ordered_cols_tbl_s14)) |>
-  dplyr::rename(`Primary` = primary_ALL_PCR) |>
-  dplyr::rename(`Lab's choice` = included_by_lab_ALL_PCR) |>
-  dplyr::rename(`All Exps` = all_exps_lab_units_ALL_PCR) |>
-  dplyr::rename(`≥ 2 copies` = at_least_2_reps_ALL_PCR) |>
-  dplyr::rename(`3 copies` = only_3_reps_ALL_PCR) |>
-  dplyr::rename(`≥80% power` = only_80_power_a_posteriori_Z_ALL_PCR)
+  dplyr::rename(`Primary` = primary_ALL_PCR_MTT) |>
+  dplyr::rename(`Lab's choice` = included_by_lab_ALL_PCR_MTT) |>
+  dplyr::rename(`All Exps` = all_exps_lab_units_ALL_PCR_MTT) |>
+  dplyr::rename(`≥ 2 copies` = at_least_2_reps_ALL_PCR_MTT) |>
+  dplyr::rename(`3 copies` = only_3_reps_ALL_PCR_MTT) |>
+  dplyr::rename(`≥80% power` = only_80_power_a_posteriori_Z_ALL_PCR_MTT)
 
 footer_text_tbl_s14 <- "Replication rates for the primary and secondary analyses. Results are the same as in Table 2, but using a z distribution for statistical tests and prediction intervals derived from meta-analyses (as the distribution was not specified in the primary analysis). Same-sign significance is based on a fixed meta-analysis estimate, while effect size comparisons are based on random-effects meta-analysis. Subsets for secondary analyses include all experiments judged valid by the replicating lab (Lab’s Choice), all concluded experiments (using the lab unit as defined by the replicating lab), only experiments with at least 2 and 3 copies, and only experiments with ≥ 80% a posteriori power (using a z distribution, which leads to a different subset than that included in Table 2 and Table S8. PI, prediction interval, CI, confidence interval. For more information on replication criteria, see https://osf.io/9rnuj."
 
@@ -2173,7 +2169,7 @@ cat("\n### Table S14 generated! ###\n")
 
 ## Table S16 -----------------------------------------------------
 tbl_s16 <- df_by_experiment |>
-  filter(Method == "ALL_PCR") |>
+  filter(Method == "ALL_PCR_MTT") |>
   filter(MA_Dist == "knha") |>
   mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
   select(MetricShortName, Method, Value_Denominator, Inclusion_Set) |>
@@ -2186,7 +2182,7 @@ tbl_s16 <- df_by_experiment |>
   ) |>
   add_row(
     df_by_replication |>
-      filter(Method == "ALL_PCR") |>
+      filter(Method == "ALL_PCR_MTT") |>
       filter(MA_Dist == "knha") |>
       mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
       select(MetricShortName, Method, Value_Denominator, Inclusion_Set) |>
@@ -2231,12 +2227,12 @@ ordered_cols_tbl_s16 <- tibble(
 
 tbl_s16 <- tbl_s16 |>
   select(all_of(ordered_cols_tbl_s16)) |>
-  dplyr::rename(`Primary` = primary_ALL_PCR) |>
-  dplyr::rename(`Lab's choice` = included_by_lab_ALL_PCR) |>
-  dplyr::rename(`All Exps` = all_exps_lab_units_ALL_PCR) |>
-  dplyr::rename(`≥ 2 copies` = at_least_2_reps_ALL_PCR) |>
-  dplyr::rename(`3 copies` = only_3_reps_ALL_PCR) |>
-  dplyr::rename(`≥80% power` = only_80_power_a_posteriori_KNHA_ALL_PCR)
+  dplyr::rename(`Primary` = primary_ALL_PCR_MTT) |>
+  dplyr::rename(`Lab's choice` = included_by_lab_ALL_PCR_MTT) |>
+  dplyr::rename(`All Exps` = all_exps_lab_units_ALL_PCR_MTT) |>
+  dplyr::rename(`≥ 2 copies` = at_least_2_reps_ALL_PCR_MTT) |>
+  dplyr::rename(`3 copies` = only_3_reps_ALL_PCR_MTT) |>
+  dplyr::rename(`≥80% power` = only_80_power_a_posteriori_KNHA_ALL_PCR_MTT)
 
 footer_text_tbl_s16 <- "Replication rates for the primary and secondary analyses. Results are the same as in Table 2, but using a knha distribution for statistical tests and prediction intervals derived from meta-analyses (as the distribution was not specified in the primary analysis). Same-sign significance is based on a fixed meta-analysis estimate, while effect size comparisons are based on random-effects meta-analysis. Subsets for secondary analyses include all experiments judged valid by the replicating lab (Lab’s Choice), all concluded experiments (using the lab unit as defined by the replicating lab), only experiments with at least 2 and 3 copies, and only experiments with ≥ 80% a posteriori power (using a z distribution, which leads to a different subset than that included in Table 2 and Table S8. PI, prediction interval, CI, confidence interval. For more information on replication criteria, see https://osf.io/9rnuj."
 
@@ -2619,9 +2615,9 @@ tbl_most_criteria <- read_tsv(paste0("output/", results_path, "/primary t/Replic
 doc <- doc |>
   body_add_par(run_linebreak()) |>
   body_add(fpar(ftext("l) Most criteria replicated", prop = fp_text(bold = TRUE)))) |>
-  body_add_par(paste0(tbl_most_criteria$successful[tbl_most_criteria$Method == "ALL_PCR"], 
-                     " (", round(tbl_most_criteria$Value[tbl_most_criteria$Method == "ALL_PCR"],2)*100, "%) ",
-                     "experiments were replicated by at least half of the applicable criteria (primary, t, ALL_PCR)."
+  body_add_par(paste0(tbl_most_criteria$successful[tbl_most_criteria$Method == "ALL_PCR_MTT"], 
+                     " (", round(tbl_most_criteria$Value[tbl_most_criteria$Method == "ALL_PCR_MTT"],2)*100, "%) ",
+                     "experiments were replicated by at least half of the applicable criteria (primary, t, ALL_PCR_MTT)."
                                           )
                )
 

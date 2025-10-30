@@ -3,3 +3,8 @@
 .RData
 .Ruserdata
 bri-analysis-pp.Rproj
+/output
+/replication-results
+.gitignore
+/other-data
+/_smoke_test
