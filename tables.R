@@ -87,67 +87,52 @@ create_tbl_by_method_pcr <- function(analysis_type, distribution) {
   # Ensure that distribution is in lowercase
   distribution <- tolower(distribution)
 
-  # Create column names for experiments
-  colnames_all_exps_by_experiment <- df_by_experiment |>
+  # Build wide tables and avoid relying on column order
+  exp_wide <- df_by_experiment |>
     filter(Inclusion_Set == analysis_type) |>
-    filter(Method != "ALL_ALTPCR" & Method != "ALL_ALTMTT" & Method != "ALL_ALTPCR_ALTMTT") |>
+    filter(Method != "ALL_ALTPCR" & Method != "ALL_ALTMTT" & Method != "ALL_ALTPCR_ALTMTT" & Method != "ALTMTT") |>
     filter(MA_Dist == distribution) |>
-    mutate(Method_N = paste0(Method)) |>
     mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
-    select(MetricShortName, Method_N, Value_Denominator) |>
-    pivot_wider(names_from = Method_N, values_from = Value_Denominator) |>
-    colnames()
+    select(MetricShortName, Method, Value_Denominator) |>
+    pivot_wider(names_from = Method, values_from = Value_Denominator)
 
-  # Create column names for replications
-  colnames_all_exps_by_replication <- df_by_replication |>
-    filter(Method != "ALL_ALTPCR" & Method != "ALL_ALTMTT" & Method != "ALL_ALTPCR_ALTMTT") |>
-    filter(Inclusion_Set == analysis_type) |>
-    filter(MA_Dist == distribution) |>
-    mutate(Method_N = paste0(Method)) |>
-    mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
-    select(MetricShortName, Method_N, Value_Denominator) |>
-    pivot_wider(names_from = Method_N, values_from = Value_Denominator) |>
-    colnames()
-
-  # Build the main table
-  tbl_by_method_all_exps <- df_by_experiment |>
-    filter(Method != "ALL_ALTPCR" & Method != "ALL_ALTMTT" & Method != "ALL_ALTPCR_ALTMTT") |>
+  rep_wide <- df_by_replication |>
+    filter(Method != "ALL_ALTPCR" & Method != "ALL_ALTMTT" & Method != "ALL_ALTPCR_ALTMTT" & Method != "ALTMTT") |>
     filter(Inclusion_Set == analysis_type) |>
     filter(MA_Dist == distribution) |>
     mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
     select(MetricShortName, Method, Value_Denominator) |>
-    pivot_wider(names_from = Method, values_from = Value_Denominator) |>
-    add_row(
-      data.frame(
-        MetricShortName = "By experiment",
-        ALL_PCR_MTT = colnames_all_exps_by_experiment[[2]],
-        MTT = colnames_all_exps_by_experiment[[3]],
-        PCR = colnames_all_exps_by_experiment[[4]],
-        ALTPCR = colnames_all_exps_by_experiment[[5]],
-        EPM = colnames_all_exps_by_experiment[[6]]
-      ),
-      .before = 0
-    ) |>
-    add_row(
-      df_by_replication |>
-        filter(Method != "ALL_ALTPCR" & Method != "ALL_ALTMTT" & Method != "ALL_ALTPCR_ALTMTT") |>
-        filter(Inclusion_Set == analysis_type) |>
-        filter(MA_Dist == distribution) |>
-        mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
-        select(MetricShortName, Method, Value_Denominator) |>
-        pivot_wider(names_from = Method, values_from = Value_Denominator) |>
-        add_row(
-          data.frame(
-            MetricShortName = "By replication",
-            ALL_PCR_MTT = colnames_all_exps_by_replication[[2]],
-            MTT = colnames_all_exps_by_replication[[3]],
-            PCR = colnames_all_exps_by_replication[[4]],
-            ALTPCR = colnames_all_exps_by_replication[[5]],
-            EPM = colnames_all_exps_by_replication[[6]]
-          ),
-          .before = 0
-        )
-    ) |>
+    pivot_wider(names_from = Method, values_from = Value_Denominator)
+
+  # Desired method order and present columns
+  desired_methods <- c("ALL_PCR_MTT", "MTT", "PCR", "ALTPCR", "EPM")
+  present_methods_exp <- desired_methods[desired_methods %in% colnames(exp_wide)]
+  present_methods_rep <- desired_methods[desired_methods %in% colnames(rep_wide)]
+  present_methods <- desired_methods[desired_methods %in% unique(c(present_methods_exp, present_methods_rep))]
+
+  # Reorder columns
+  if (length(present_methods_exp) > 0) {
+    exp_wide <- exp_wide |>
+      select(MetricShortName, all_of(present_methods_exp))
+  }
+  if (length(present_methods_rep) > 0) {
+    rep_wide <- rep_wide |>
+      select(MetricShortName, all_of(present_methods_rep))
+  }
+
+  # Header rows carrying column names (ensures no NA/"" in names)
+  header_exp <- tibble(MetricShortName = "By experiment")
+  for (m in present_methods) header_exp[[m]] <- m
+  header_rep <- tibble(MetricShortName = "By replication")
+  for (m in present_methods) header_rep[[m]] <- m
+
+  # Combine in desired order
+  tbl_by_method_all_exps <- bind_rows(
+    header_exp,
+    exp_wide,
+    header_rep,
+    rep_wide
+  ) |>
     mutate(
       MetricShortName = case_when(
         MetricShortName == "FEMA is significant and has same signal as original" ~ "Same-sign significance (p<0.05)",
@@ -161,15 +146,11 @@ create_tbl_by_method_pcr <- function(analysis_type, distribution) {
         TRUE ~ MetricShortName
       )
     ) |>
-    slice(1:7, 10, 9, 8) |>
-    select(-ALTPCR)
+    select(-any_of(c("ALTPCR")))
 
-  # Adjust column names
+  # Adjust column names and build the flextable
   colnames(tbl_by_method_all_exps) <- as.character(tbl_by_method_all_exps[1, ])
 
-  tbl_by_method_all_exps_df <- tbl_by_method_all_exps
-
-  # Build the flextable
   footer_text <- paste0("Same-sign significance is based on a fixed meta-analysis estimate, while effect size comparisons are based on random-effects meta-analysis. All statistical tests use the ", toupper(distribution), " distribution. PI, prediction interval; CI, confidence interval. For more information on criteria, see https://osf.io/9rnuj.")
 
   tbl_by_method_all_exps <- tbl_by_method_all_exps |>
@@ -190,68 +171,52 @@ create_tbl_by_method_altpcr <- function(analysis_type, distribution) {
   # Ensure that distribution is in lowercase
   distribution <- tolower(distribution)
 
-  # Create column names for experiments
-  colnames_all_exps_by_experiment <- df_by_experiment |>
+  # Build wide tables and avoid relying on column order
+  exp_wide <- df_by_experiment |>
     filter(Inclusion_Set == analysis_type) |>
-    filter(Method != "ALL" & Method != "ALL_ALTMTT" & Method != "ALL_ALTPCR_ALTMTT") |>
+    filter(Method != "ALL" & Method != "ALL_ALTMTT" & Method != "ALL_ALTPCR_ALTMTT" & Method != "ALTMTT") |>
     filter(MA_Dist == distribution) |>
-    mutate(Method_N = paste0(Method)) |>
     mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
-    select(MetricShortName, Method_N, Value_Denominator) |>
-    pivot_wider(names_from = Method_N, values_from = Value_Denominator) |>
-    colnames()
+    select(MetricShortName, Method, Value_Denominator) |>
+    pivot_wider(names_from = Method, values_from = Value_Denominator)
 
-  # Create column names for replications
-  colnames_all_exps_by_replication <- df_by_replication |>
-    filter(Method != "ALL" & Method != "ALL_ALTMTT" & Method != "ALL_ALTPCR_ALTMTT") |>
-    filter(Inclusion_Set == analysis_type) |>
-    filter(MA_Dist == distribution) |>
-    mutate(Method_N = paste0(Method)) |>
-    mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
-    select(MetricShortName, Method_N, Value_Denominator) |>
-    pivot_wider(names_from = Method_N, values_from = Value_Denominator) |>
-    colnames()
-
-  # Build the main table
-
-  tbl_by_method_all_exps <- df_by_experiment |>
-    filter(Method != "ALL" & Method != "ALL_ALTMTT" & Method != "ALL_ALTPCR_ALTMTT") |>
+  rep_wide <- df_by_replication |>
+    filter(Method != "ALL" & Method != "ALL_ALTMTT" & Method != "ALL_ALTPCR_ALTMTT" & Method != "ALTMTT") |>
     filter(Inclusion_Set == analysis_type) |>
     filter(MA_Dist == distribution) |>
     mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
     select(MetricShortName, Method, Value_Denominator) |>
-    pivot_wider(names_from = Method, values_from = Value_Denominator) |>
-    add_row(
-      data.frame(
-        MetricShortName = "By experiment",
-        ALL_ALTPCR = colnames_all_exps_by_experiment[[2]],
-        MTT = colnames_all_exps_by_experiment[[3]],
-        PCR = colnames_all_exps_by_experiment[[4]],
-        ALTPCR = colnames_all_exps_by_experiment[[5]],
-        EPM = colnames_all_exps_by_experiment[[6]]
-      ),
-      .before = 0
-    ) |>
-    add_row(
-      df_by_replication |>
-        filter(Method != "ALL" & Method != "ALL_ALTMTT" & Method != "ALL_ALTPCR_ALTMTT") |>
-        filter(Inclusion_Set == analysis_type) |>
-        filter(MA_Dist == distribution) |>
-        mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
-        select(MetricShortName, Method, Value_Denominator) |>
-        pivot_wider(names_from = Method, values_from = Value_Denominator) |>
-        add_row(
-          data.frame(
-            MetricShortName = "By replication",
-            ALL_ALTPCR = colnames_all_exps_by_replication[[2]],
-            MTT = colnames_all_exps_by_replication[[3]],
-            PCR = colnames_all_exps_by_replication[[4]],
-            ALTPCR = colnames_all_exps_by_replication[[5]],
-            EPM = colnames_all_exps_by_replication[[6]]
-          ),
-          .before = 0
-        )
-    ) |>
+    pivot_wider(names_from = Method, values_from = Value_Denominator)
+
+  # Desired method order and present columns
+  desired_methods <- c("ALL_ALTPCR_MTT", "MTT", "PCR", "ALTPCR", "EPM")
+  present_methods_exp <- desired_methods[desired_methods %in% colnames(exp_wide)]
+  present_methods_rep <- desired_methods[desired_methods %in% colnames(rep_wide)]
+  present_methods <- desired_methods[desired_methods %in% unique(c(present_methods_exp, present_methods_rep))]
+
+  # Reorder columns
+  if (length(present_methods_exp) > 0) {
+    exp_wide <- exp_wide |>
+      select(MetricShortName, all_of(present_methods_exp))
+  }
+  if (length(present_methods_rep) > 0) {
+    rep_wide <- rep_wide |>
+      select(MetricShortName, all_of(present_methods_rep))
+  }
+
+  # Header rows carrying column names (ensures no NA/"" in names)
+  header_exp <- tibble(MetricShortName = "By experiment")
+  for (m in present_methods) header_exp[[m]] <- m
+  header_rep <- tibble(MetricShortName = "By replication")
+  for (m in present_methods) header_rep[[m]] <- m
+
+  # Combine in desired order
+  tbl_by_method_all_exps <- bind_rows(
+    header_exp,
+    exp_wide,
+    header_rep,
+    rep_wide
+  ) |>
     mutate(
       MetricShortName = case_when(
         MetricShortName == "FEMA is significant and has same signal as original" ~ "Same-sign significance (p<0.05)",
@@ -265,13 +230,10 @@ create_tbl_by_method_altpcr <- function(analysis_type, distribution) {
         TRUE ~ MetricShortName
       )
     ) |>
-    slice(1:7, 10, 9, 8) |>
-    select(-PCR)
+    select(-any_of(c("PCR")))
 
   # Adjust column names
   colnames(tbl_by_method_all_exps) <- as.character(tbl_by_method_all_exps[1, ])
-
-  tbl_by_method_all_exps_df <- tbl_by_method_all_exps
 
   # Build the flextable
   footer_text <- paste0("Same-sign significance is based on a fixed meta-analysis estimate, while effect size comparisons are based on random-effects meta-analysis. All statistical tests use the ", toupper(distribution), " distribution. PI, prediction interval; CI, confidence interval. For more information on criteria, see https://osf.io/9rnuj.")
@@ -697,10 +659,11 @@ cat("\n### Table 2 generated! ###\n")
 
 df_assessment_by_experiment <- read_tsv(paste0("output/", results_path, "/primary t/Replication Assessment by Experiment.tsv"), show_col_types = FALSE) |> # You can get it from output folder: primary t result
   mutate(category = case_when(
-    str_detect(EXP, "EPM") == TRUE ~ "EPM",
     str_detect(EXP, "ALTPCR") == TRUE ~ "ALTPCR",
+    str_detect(EXP, "ALTMTT") == TRUE ~ "ALTMTT",
+    str_detect(EXP, "EPM") == TRUE ~ "EPM",
     str_detect(EXP, "PCR") == TRUE ~ "PCR",
-    str_detect(EXP, "MTT") == TRUE ~ "MTT"
+    str_detect(EXP, "^MTT") == TRUE ~ "MTT"
   )) |>
   relocate(
     category,
@@ -717,10 +680,11 @@ df_assessment_by_experiment <- read_tsv(paste0("output/", results_path, "/primar
 
 df_success_by_experiment <- read_tsv(paste0("output/", results_path, "/primary t/Replication Success by Experiment.tsv"), show_col_types = FALSE) |>
   mutate(category = case_when(
-    str_detect(EXP, "EPM") == TRUE ~ "EPM",
     str_detect(EXP, "ALTPCR") == TRUE ~ "ALTPCR",
+    str_detect(EXP, "ALTMTT") == TRUE ~ "ALTMTT",
+    str_detect(EXP, "EPM") == TRUE ~ "EPM",
     str_detect(EXP, "PCR") == TRUE ~ "PCR",
-    str_detect(EXP, "MTT") == TRUE ~ "MTT"
+    str_detect(EXP, "^MTT") == TRUE ~ "MTT"
   )) |>
   relocate(
     category,
@@ -736,7 +700,7 @@ round_digits <- 2
 ### Effect size (original)  -------------------------------------------------
 
 effect_size_original_all <- df_assessment_by_experiment |>
-  filter(category != "ALTPCR") |>
+  filter(category %in% c("EPM","PCR","MTT")) |>
   summarise(
     median_range_median_corrected_sign_original_es = paste0(
       sprintf("%.2f", median(corrected_sign_original_es)),
@@ -749,7 +713,7 @@ effect_size_original_all <- df_assessment_by_experiment |>
   )
 
 effect_size_original_exp <- df_assessment_by_experiment |>
-  filter(category != "ALTPCR") |>
+  filter(category %in% c("EPM","PCR","MTT")) |>
   group_by(category) |>
   summarise(
     median_range_median_corrected_sign_original_es = paste0(
@@ -771,7 +735,7 @@ effect_size_original_mtt <- effect_size_original_exp$median_range_median_correct
 ### Effect size (replication)  ----------------------------------------------
 
 effect_size_replication_all <- df_assessment_by_experiment |>
-  filter(category != "ALTPCR") |>
+  filter(category %in% c("EPM","PCR","MTT")) |>
   summarise(
     median_range_median_corrected_sign_replication_es = paste0(
       sprintf("%.2f", median(corrected_sign_replication_es)),
@@ -784,7 +748,7 @@ effect_size_replication_all <- df_assessment_by_experiment |>
   )
 
 effect_size_replication_exp <- df_assessment_by_experiment |>
-  filter(category != "ALTPCR") |>
+  filter(category %in% c("EPM","PCR","MTT")) |>
   group_by(category) |>
   summarise(
     median_range_median_corrected_sign_replication_es = paste0(
@@ -806,7 +770,7 @@ effect_size_replication_mtt <- effect_size_replication_exp$median_range_median_c
 ### Effect size ratio -------------------------------------------------------
 
 effect_size_ratio_log_diff_all <- df_assessment_by_experiment |>
-  filter(category != "ALTPCR") |>
+  filter(category %in% c("EPM","PCR","MTT")) |>
   summarise(
     median_range_median_es_ratio = paste0(
       sprintf("%.2f", median(es_ratio)),
@@ -819,7 +783,7 @@ effect_size_ratio_log_diff_all <- df_assessment_by_experiment |>
   )
 
 effect_size_ratio_log_diff_exp <- df_assessment_by_experiment |>
-  filter(category != "ALTPCR") |>
+  filter(category %in% c("EPM","PCR","MTT")) |>
   group_by(category) |>
   summarise(
     median_range_median_es_ratio = paste0(
@@ -841,7 +805,7 @@ effect_size_ratio_log_diff_mtt <- effect_size_ratio_log_diff_exp$median_range_me
 ### Coefficient of variation (original) -------------------------------------
 
 coefficient_variation_original_all <- df_assessment_by_experiment |>
-  filter(category != "ALTPCR") |>
+  filter(category %in% c("EPM","PCR","MTT")) |>
   summarise(
     median_range_median_original_cv = paste0(
       sprintf("%.2f", median(original_cv, na.rm = TRUE)),
@@ -854,15 +818,15 @@ coefficient_variation_original_all <- df_assessment_by_experiment |>
   )
 
 coefficient_variation_original_exp <- df_assessment_by_experiment |>
-  filter(category != "ALTPCR") |>
+  filter(category %in% c("EPM","PCR","MTT")) |>
   group_by(category) |>
   summarise(
     median_range_median_original_cv = paste0(
       round(median(original_cv, na.rm = TRUE), 2),
       "\n(",
-      sprintf("%.2f", min(original_cv)),
+      sprintf("%.2f", min(original_cv, na.rm = TRUE)),
       ", ",
-      sprintf("%.2f", max(original_cv)),
+      sprintf("%.2f", max(original_cv, na.rm = TRUE)),
       ")"
     )
   )
@@ -876,7 +840,7 @@ coefficient_variation_original_mtt <- coefficient_variation_original_exp$median_
 ### Coefficient of variation (replication) ---------------------------------
 
 coefficient_variation_replication_all <- df_assessment_by_experiment |>
-  filter(category != "PCR") |>
+  filter(category %in% c("EPM","ALTPCR","MTT")) |>
   summarise(
     median_range_median_replication_cv = paste0(
       sprintf("%.2f", median(replication_cv, na.rm = TRUE)),
@@ -889,7 +853,7 @@ coefficient_variation_replication_all <- df_assessment_by_experiment |>
   )
 
 coefficient_variation_replication_exp <- df_assessment_by_experiment |>
-  filter(category != "PCR") |>
+  filter(category %in% c("EPM","ALTPCR","MTT")) |>
   group_by(category) |>
   summarise(
     median_range_median_replication_cv = paste0(
@@ -915,7 +879,7 @@ df_assessment_by_experiment <- df_assessment_by_experiment |>
   mutate(cv_ratio = original_cv / replication_cv)
 
 coefficient_variation_ratio_all <- df_assessment_by_experiment |>
-  filter(category != "PCR") |>
+  filter(category %in% c("EPM","ALTPCR","MTT")) |>
   summarise(
     median_range_median_cv_ratio = paste0(
       sprintf("%.2f", median(cv_ratio, na.rm = TRUE)),
@@ -928,7 +892,7 @@ coefficient_variation_ratio_all <- df_assessment_by_experiment |>
   )
 
 coefficient_variation_ratio_exp <- df_assessment_by_experiment |>
-  filter(category != "PCR") |>
+  filter(category %in% c("EPM","ALTPCR","MTT")) |>
   group_by(category) |>
   summarise(
     median_range_median_cv_ratio = paste0(
@@ -950,7 +914,7 @@ coefficient_variation_ratio_mtt <- coefficient_variation_ratio_exp$median_range_
 ### Mean absolute difference (original vs. individual replications) ---------
 
 mean_absolute_diff_original_vs_individual_all <- df_assessment_by_experiment |>
-  filter(category != "ALTPCR") |>
+  filter(category %in% c("EPM","PCR","MTT")) |>
   summarise(
     median_range_median_mean_abs_diff_reps_orig = paste0(
       sprintf("%.2f", median(mean_abs_diff_reps_orig_linear, na.rm = TRUE)),
@@ -963,7 +927,7 @@ mean_absolute_diff_original_vs_individual_all <- df_assessment_by_experiment |>
   )
 
 mean_absolute_diff_original_vs_individual_exp <- df_assessment_by_experiment |>
-  filter(category != "ALTPCR") |>
+  filter(category %in% c("EPM","PCR","MTT")) |>
   group_by(category) |>
   summarise(
     median_range_median_mean_abs_diff_reps_orig = paste0(
@@ -985,7 +949,7 @@ mean_absolute_diff_original_vs_individual_mtt <- mean_absolute_diff_original_vs_
 ### Mean absolute difference (between individual replications) ---------
 
 mean_absolute_diff_between_individual_all <- df_assessment_by_experiment |>
-  filter(category != "ALTPCR") |>
+  filter(category %in% c("EPM","PCR","MTT")) |>
   summarise(
     median_range_median_mean_abs_diff_reps = paste0(
       sprintf("%.2f", median(mean_abs_diff_reps_linear, na.rm = TRUE)),
@@ -998,7 +962,7 @@ mean_absolute_diff_between_individual_all <- df_assessment_by_experiment |>
   )
 
 mean_absolute_diff_between_individual_exp <- df_assessment_by_experiment |>
-  filter(category != "ALTPCR") |>
+  filter(category %in% c("EPM","PCR","MTT")) |>
   group_by(category) |>
   summarise(
     median_range_median_mean_abs_diff_reps = paste0(
@@ -1060,7 +1024,7 @@ ratio_mean_absolute_diff_mtt <- ratio_mean_absolute_diff_exp$median_range_median
 ### Signal error (% of significant) ----------------------------------------
 
 signal_error_significant_all <- df_success_by_experiment |>
-  filter(category != "ALTPCR") |>
+  filter(category %in% c("EPM","PCR","MTT")) |>
   summarise(
     signal_error_percentage = paste0(
       sum(SignalErrorAll, na.rm = TRUE),
@@ -1073,7 +1037,7 @@ signal_error_significant_all <- df_success_by_experiment |>
   )
 
 signal_error_significant_exp <- df_success_by_experiment |>
-  filter(category != "ALTPCR") |>
+  filter(category %in% c("EPM","PCR","MTT")) |>
   group_by(category) |>
   summarise(
     signal_error_percentage = paste0(
@@ -1095,7 +1059,7 @@ signal_error_significant_mtt <- signal_error_significant_exp$signal_error_percen
 ### Signal error (% of total) ----------------------------------------
 
 signal_error_total_all <- df_success_by_experiment |>
-  filter(category != "ALTPCR") |>
+  filter(category %in% c("EPM","PCR","MTT")) |>
   summarise(
     signal_error_percentage = paste0(
       sum(SignalErrorAll, na.rm = TRUE),
@@ -1108,7 +1072,7 @@ signal_error_total_all <- df_success_by_experiment |>
   )
 
 signal_error_total_exp <- df_success_by_experiment |>
-  filter(category != "ALTPCR") |>
+  filter(category %in% c("EPM","PCR","MTT")) |>
   group_by(category) |>
   summarise(
     signal_error_percentage = paste0(
@@ -1133,7 +1097,7 @@ signal_error_total_mtt <- signal_error_total_exp$signal_error_percentage[signal_
 ### Opposite signal ----------------------------------------------------------
 
 opposite_signal_total_all <- df_assessment_by_experiment |>
-  filter(category != "ALTPCR") |>
+  filter(category %in% c("EPM","PCR","MTT")) |>
   summarise(
     opposite_signal_percentage = paste0(
       sum((original_es > 0 & replication_es < 0) | (original_es < 0 & replication_es > 0), na.rm = TRUE),
@@ -1146,7 +1110,7 @@ opposite_signal_total_all <- df_assessment_by_experiment |>
   )
 
 opposite_signal_exp <- df_assessment_by_experiment |>
-  filter(category != "ALTPCR") |>
+  filter(category %in% c("EPM","PCR","MTT")) |>
   group_by(category) |>
   summarise(
     opposite_signal_percentage = paste0(
@@ -2341,10 +2305,92 @@ save_tbl(
 )
 cat("\n### Table S17 generated! ###\n")
 
+## Table S21 -----------------------------------------------------------------
+tbl_s21 <- df_by_experiment |>
+  filter(Method == "MTT" | Method == "ALTMTT") |>
+  filter(MA_Dist == "t") |>
+  filter(Inclusion_Set == "all_exps_lab_units" | Inclusion_Set == "primary") |>
+  mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
+  select(MetricShortName, Method, Value_Denominator, Inclusion_Set, MA_Dist) |>
+  pivot_wider(names_from = c(Inclusion_Set, Method, MA_Dist), values_from = Value_Denominator) |>
+  add_row(
+    data.frame(
+      MetricShortName = "By experiment"
+    ),
+    .before = 0
+  ) |>
+  add_row(
+    df_by_replication |>
+      filter(Method == "MTT" | Method == "ALTMTT") |>
+      filter(MA_Dist == "t") |>
+      filter(Inclusion_Set == "all_exps_lab_units" | Inclusion_Set == "primary") |>
+      mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
+      select(MetricShortName, Method, Value_Denominator, Inclusion_Set, MA_Dist) |>
+      pivot_wider(names_from = c(Inclusion_Set, Method, MA_Dist), values_from = Value_Denominator) |>
+      add_row(
+        data.frame(
+          MetricShortName = "By replication"
+        ),
+        .before = 0
+      )
+  ) |>
+  mutate(
+    MetricShortName = case_when(
+      MetricShortName == "FEMA is significant and has same signal as original" ~ "Same-sign significance (p<0.05)",
+      MetricShortName == "Original estimate within PI of REMA" ~ "Original in replication’s 95% PI",
+      MetricShortName == "REMA estimate within CI of Original" ~ "Replication in original 95% CI",
+      MetricShortName == "Subjective assessment majority vote (with ties as success)" ~ "≥50% subjectively replicated",
+      MetricShortName == "t-test majority vote (with ties as success)" ~ "≥50% replications significant",
+      MetricShortName == "Subjective assessment, individual" ~ "Subjectively replicated",
+      MetricShortName == "Replication estimate within CI of Original" ~ "Replication in original 95% CI",
+      MetricShortName == "Replication is significant and has same sign as original" ~ "Same-sign significance (p<0.05)",
+      TRUE ~ MetricShortName
+    )
+  ) |>
+  slice(1:7, 10, 9, 8)
+
+ordered_cols_tbl_s21 <- tibble(
+  colname = colnames(tbl_s21),
+  priority = case_when(
+    str_starts(colname, "MetricShortName") ~ 1,
+    str_starts(colname, "primary") ~ 2,
+    str_starts(colname, "all_exps_lab_units") ~ 3,
+    TRUE ~ 4
+  )
+) |>
+  arrange(priority) |>
+  pull(colname)
+
+tbl_s21 <- tbl_s21 |>
+  select(all_of(ordered_cols_tbl_s21)) |>
+  dplyr::rename(`Primary (Paired)` = primary_MTT_t) |>
+  dplyr::rename(`Primary (Unpaired)` = primary_ALTMTT_t) |>
+  dplyr::rename(`All experiments (Paired)` = all_exps_lab_units_MTT_t) |>
+  dplyr::rename(`All experiments (Unpaired)` = all_exps_lab_units_ALTMTT_t)
+
+footer_text_tbl_s21 <- "Paired columns show results of MTT analyzed with paired comparisons (MTT), while Unpaired columns show the alternative non-paired analysis (ALTMTT). Same-sign significance is based on a fixed meta-analysis estimate, while effect size comparisons are based on random-effects meta-analysis. All statistical tests use the t distribution. PI, prediction interval; CI, confidence interval. For more information on replication criteria, see https://osf.io/9rnuj."
+
+tbl_s21 <- tbl_s21 |>
+  slice(-1) |>
+  flextable() |>
+  bold(j = 2) |>
+  bold(i = 6) |>
+  hline(i = 5:6) |>
+  set_header_labels(MetricShortName = "By experiment") |>
+  add_footer_lines(value = as_paragraph(footer_text_tbl_s21)) |>
+  add_header_lines(values = paste0("Table S21 - Replication rates for MTT experiments using paired vs unpaired analyses. ")) |>
+  bold(i = 2, part = "header") |>
+  set_table_properties(layout = "autofit")
+
+### Saving ----
+save_tbl(
+  tbl_s21,
+  paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S21.docx")
+)
+cat("\n### Table S21 generated! ###\n")
 
 
 ## Table S20 ---------------------------------------------------------------
-
 df_coord_difficulties <- read_excel("other-data/Coordinating team assessment of difficulties.xlsx") |>
   clean_names() |>
   select(categoria, dificuldade, soma_um)

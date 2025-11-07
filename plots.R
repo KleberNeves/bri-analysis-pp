@@ -1695,21 +1695,36 @@ plot_effect_size_figure <- function(p_A, p_B, p_C, rep_summary_folder) {
 plot_cvs <- function(rep_df, orig_df, suffix, rep_summary_folder) {
   dir.create(paste0(rep_summary_folder, "/CV plots"))
 
-  rep_df <- rep_df |> mutate(EXP = str_remove(EXP, "ALT"))
+  # Extract full method label BEFORE collapsing EXP for joins (keeps ALTMTT/ALTPCR distinct)
+  rep_df <- rep_df |>
+    mutate(
+      Method = str_extract(EXP, "(EPM|ALTMTT|MTT|ALTPCR|PCR)"),
+      # Collapse ALT from EXP only for joining with original data and x-axis labeling
+      EXP = str_remove(EXP, "ALT")
+    )
 
   by_rep <- "LAB" %in% colnames(rep_df)
 
   if (by_rep) {
     df <- rep_df |>
       left_join(orig_df |> select(EXP, `SD Estimate`)) |>
-      mutate(Method = str_extract(EXP, "[A-Z]{3}")) |>
       rename(sd_estimate = `SD Estimate`) |>
       select(LAB, EXP, Method, original_cv, replication_cv, sd_estimate) |>
       pivot_longer(cols = -c(LAB, EXP, Method, sd_estimate)) |>
       rename(cv = value) |>
       mutate(
         type = ifelse(name == "original_cv", "Original", "Replications"),
-        TypeTechnique = ifelse(type == "Original", type, Method),
+        # Map ALT variants to base techniques for coloring/legend, but keep Method for faceting
+        TypeTechnique = ifelse(
+          type == "Original",
+          type,
+          case_when(
+            Method %in% c("ALTPCR", "PCR") ~ "PCR",
+            Method %in% c("ALTMTT", "MTT") ~ "MTT",
+            Method == "EPM" ~ "EPM",
+            TRUE ~ Method
+          )
+        ),
         sd_estimate_ok = ifelse(sd_estimate != "reported SEM and range for N", "Reported SD", "Estimated SD"),
         flag = ifelse(
           type == "Original",
@@ -1721,14 +1736,23 @@ plot_cvs <- function(rep_df, orig_df, suffix, rep_summary_folder) {
   } else {
     df <- rep_df |>
       left_join(orig_df |> select(EXP, `SD Estimate`)) |>
-      mutate(Method = str_extract(EXP, "[A-Z]{3}")) |>
       rename(sd_estimate = `SD Estimate`) |>
       select(EXP, Method, original_cv, replication_cv, sd_estimate) |>
       pivot_longer(cols = -c(EXP, Method, sd_estimate)) |>
       rename(cv = value) |>
       mutate(
         type = ifelse(name == "original_cv", "Original", "Replications"),
-        TypeTechnique = ifelse(type == "Original", type, Method),
+        # Map ALT variants to base techniques for coloring/legend, but keep Method for faceting
+        TypeTechnique = ifelse(
+          type == "Original",
+          type,
+          case_when(
+            Method %in% c("ALTPCR", "PCR") ~ "PCR",
+            Method %in% c("ALTMTT", "MTT") ~ "MTT",
+            Method == "EPM" ~ "EPM",
+            TRUE ~ Method
+          )
+        ),
         sd_estimate_ok = ifelse(sd_estimate != "reported SEM and range for N", "Reported SD", "Estimated SD"),
         flag = ifelse(
           type == "Original",
@@ -2007,6 +2031,18 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       )
     )
 
+  desired_inclusion_levels <- c(
+    "Primary",
+    "Lab's choice",
+    "All experiments",
+    "All experiments (BRI UNIT)",
+    "≥2 replications",
+    "3 replications",
+    "≥80% power (t - # of units)",
+    "≥80% power (z)",
+    "≥80% power (t - # of replications)"
+  )
+
   AGGDATA <- AGGDATA |>
     mutate(
       Inclusion_Set = case_match(
@@ -2023,17 +2059,7 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       ),
       Inclusion_Set = factor(
         Inclusion_Set,
-        levels = c(
-          "Primary",
-          "All experiments (BRI UNIT)",
-          "All experiments",
-          "Lab's choice",
-          "3 replications",
-          "≥2 replications",
-          "≥80% power (t - # of units)",
-          "≥80% power (z)",
-          "≥80% power (t - # of replications)"
-        )
+        levels = desired_inclusion_levels
       )
     )
 
@@ -2074,6 +2100,9 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
     # Ensure stable order of method levels
     method_levels <- intersect(c("EPM","PCR","ALTPCR","MTT","ALTMTT"), method_levels)
 
+    available_inclusion_levels <- unique(as.character(AGGDATA_TOG$Inclusion_Set))
+    inclusion_levels <- desired_inclusion_levels[desired_inclusion_levels %in% available_inclusion_levels]
+
     spec_parameters_levels <- rev(c(
       unique(AGGDATA_TOG$Metric)[2:3],
       unique(AGGDATA_TOG$Metric)[1],
@@ -2081,7 +2110,7 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       "Aggregate of replications",
       unique(AGGDATA_TOG$Metric)[8:10],
       "Individual replication",
-      unique(as.character(AGGDATA_TOG$Inclusion_Set)),
+      inclusion_levels,
       method_levels,
       unique(AGGDATA_TOG$MA_Dist)
     ))
@@ -2093,7 +2122,7 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       rep(RColorBrewer::brewer.pal(7, "Greens")[7], 1),
       rep(RColorBrewer::brewer.pal(5, "Dark2")[1], length(8:10)),
       rep(RColorBrewer::brewer.pal(7, "Greens")[7], 1),
-      rep(RColorBrewer::brewer.pal(7, "Blues")[7], length(unique(AGGDATA_TOG$Inclusion_Set))),
+      rep(RColorBrewer::brewer.pal(7, "Blues")[7], length(inclusion_levels)),
       method_colors,
       rep(RColorBrewer::brewer.pal(7, "Oranges")[7], length(unique(AGGDATA_TOG$MA_Dist)))
     ))
@@ -2124,6 +2153,9 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
 
     spec_parameters <- c("Inclusion_Set", "Level", "MA_Dist", "Metric", "PCR_Scale", "MTT_Pairing")
 
+    available_inclusion_levels <- unique(as.character(AGGDATA_TOG$Inclusion_Set))
+    inclusion_levels <- desired_inclusion_levels[desired_inclusion_levels %in% available_inclusion_levels]
+
     spec_parameters_levels <- rev(c(
       unique(AGGDATA_TOG$Metric)[2:3],
       unique(AGGDATA_TOG$Metric)[1],
@@ -2131,7 +2163,7 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       "Aggregate of replications",
       unique(AGGDATA_TOG$Metric)[8:10],
       "Individual replication",
-      unique(as.character(AGGDATA_TOG$Inclusion_Set)),
+      inclusion_levels,
       c("PCR (log)", "PCR (linear)"),
       c("MTT (paired)", "MTT (unpaired)"),
       unique(AGGDATA_TOG$MA_Dist)
@@ -2142,7 +2174,7 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       rep(RColorBrewer::brewer.pal(7, "Greens")[7], 1),
       rep(RColorBrewer::brewer.pal(5, "Dark2")[1], length(8:10)),
       rep(RColorBrewer::brewer.pal(7, "Greens")[7], 1),
-      rep(RColorBrewer::brewer.pal(7, "Blues")[7], length(unique(AGGDATA_TOG$Inclusion_Set))),
+      rep(RColorBrewer::brewer.pal(7, "Blues")[7], length(inclusion_levels)),
       rep(RColorBrewer::brewer.pal(7, "Greys")[7], 2),  # PCR_Scale (2 levels)
       rep(RColorBrewer::brewer.pal(7, "Greys")[5], 2),  # MTT_Pairing (2 levels)
       rep(RColorBrewer::brewer.pal(7, "Oranges")[7], length(unique(AGGDATA_TOG$MA_Dist)))

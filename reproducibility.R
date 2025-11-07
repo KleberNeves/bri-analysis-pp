@@ -222,7 +222,7 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
     escalc_summary = summary(summaries) |>
       select(yi, ci.lb, ci.ub)
     class(escalc_summary) = "data.frame"
-    escalc_summary$LAB = rep_es$LAB
+    escalc_summary$LAB = all_rep_es_data$summaries$LAB
     write_tsv(escalc_summary, file = fn, quote = "all")
   }
   
@@ -360,10 +360,11 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
   
   # Store results and bounds for each experiment individually
   summaries = summary(summaries)
+  class(summaries) = "data.frame"
+  summaries$LAB = all_rep_es_data$summaries$LAB
   
-  summaries = summaries |> mutate(
-    dfi = rep_es$dfi
-  )
+  # Attach per-lab dfi by LAB, not by position
+  summaries = summaries |> left_join(rep_es |> select(LAB, dfi), by = "LAB")
   
   # Calculate individual experiment intervals
   if (params$ma_dist == "z") {
@@ -390,9 +391,6 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
       ci.lb = exp_only_PCR(ci.lb, is_PCR, PCR_exponent),
       ci.ub = exp_only_PCR(ci.ub, is_PCR, PCR_exponent)
     )
-  class(summaries) = "data.frame"
-  
-  summaries$LAB = rep_es$LAB
   
   indiv_estimate = summaries$yi
   indiv_ci_lower = summaries$ci.lb
@@ -839,12 +837,18 @@ make_rep_es_analysis = function (data_fns, simulated, EXP_code, is_PCR, original
   }
   
   summaries = do.call(rbind, c(s1,s2))
+  
+  labs_s1 = if (nrow(rep_es_paired) > 0) rep_es_paired |> group_by(LAB) |> group_keys() |> pull(LAB) else character(0)
+  labs_s2 = if (nrow(rep_es_unpaired) > 0) rep_es_unpaired |> group_by(LAB) |> group_keys() |> pull(LAB) else character(0)
+  summaries$LAB = c(labs_s1, labs_s2)
+  
   summaries = summaries |> filter(!is.na(yi) & !is.na(vi))
   
   # Calculate Welch's degrees of freedom
   rep_es = rep_es |>
+    left_join(summaries |> as_tibble() |> select(LAB, vi), by = "LAB") |>
+    filter(!is.na(vi)) |>
     mutate(
-      vi = summaries$vi,
       wi = 1 / vi,
       ai = wi / sum(wi),
       var_total = sum(ai ^ 2 * vi),

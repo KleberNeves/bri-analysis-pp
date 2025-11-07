@@ -412,10 +412,16 @@ summarize_rates = function (rep_summary_folder) {
   print("Plotting CVs ...")
   
   plot_cvs(rep_summaries_individual |> filter(!str_detect(EXP, "ALT")), original_experiment_data, " - by REP", rep_summary_folder)
-  plot_cvs(rep_summaries_individual |> filter(!str_detect(EXP, "^PCR")), original_experiment_data, " - by REP, ALTPCR", rep_summary_folder)
+  # ALTPCR-only view (não incluir ALTMTT para não misturar com MTT)
+  plot_cvs(rep_summaries_individual |> filter(!str_detect(EXP, "^(PCR|ALTMTT)")), original_experiment_data, " - by REP, ALTPCR", rep_summary_folder)
+  # ALTMTT-only view (não incluir MTT base nem ALTPCR)
+  plot_cvs(rep_summaries_individual |> filter(!str_detect(EXP, "^(MTT|ALTPCR)")), original_experiment_data, " - by REP, ALTMTT", rep_summary_folder)
   
   plot_cvs(rep_summaries |> filter(!str_detect(EXP, "ALT")), original_experiment_data, " - by EXP", rep_summary_folder)
-  plot_cvs(rep_summaries |> filter(!str_detect(EXP, "^PCR")), original_experiment_data, " - EXP, ALTPCR", rep_summary_folder)
+  # ALTPCR-only view (não incluir ALTMTT para não misturar com MTT)
+  plot_cvs(rep_summaries |> filter(!str_detect(EXP, "^(PCR|ALTMTT)")), original_experiment_data, " - EXP, ALTPCR", rep_summary_folder)
+  # ALTMTT-only view (não incluir MTT base nem ALTPCR)
+  plot_cvs(rep_summaries |> filter(!str_detect(EXP, "^(MTT|ALTPCR)")), original_experiment_data, " - EXP, ALTMTT", rep_summary_folder)
   
   # Plot a matrix of estimates to visually represent intraclass correlations
   print("Plotting ICC ...")
