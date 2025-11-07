@@ -2011,8 +2011,16 @@ df_final_sub_avaliation <- read_excel("other-data/self-assessment/Avaliacao_subj
   )) |>
   mutate(replicou = if_else(replicou == "Nao", "No", "Yes"))
 
+n_successful <- df_final_sub_avaliation |>
+  filter(replicou == "Yes") |>
+  nrow()
+
+n_unsuccessful <- df_final_sub_avaliation |>
+  filter(replicou == "No") |>
+  nrow()
+
 tbl_s7 <- tibble(
-  Category = "Successful Replications (n = 45)",
+  Category = paste0("Successful Replications (n = ", n_successful, ")"),
   `N (%)` = NA
 ) |>
   add_row(
@@ -2025,7 +2033,7 @@ tbl_s7 <- tibble(
       pivot_longer(cols = everything(), values_to = "category") |>
       filter(name != "NA") |>
       arrange(desc(category)) |>
-      mutate(percent = category / 45 * 100) |>
+      mutate(percent = if (n_successful > 0) category / n_successful * 100 else NA_real_) |>
       mutate(category = paste0(category, " (", round(percent, 1), "%)")) |>
       rename(
         Category = name,
@@ -2034,7 +2042,7 @@ tbl_s7 <- tibble(
       select(-percent)
   ) |>
   add_row(
-    Category = "Unsuccessful Replications (n = 98)"
+    Category = paste0("Unsuccessful Replications (n = ", n_unsuccessful, ")")
   ) |>
   add_row(
     df_final_sub_avaliation |>
@@ -2046,7 +2054,7 @@ tbl_s7 <- tibble(
       pivot_longer(cols = everything(), values_to = "category") |>
       filter(name != "NA") |>
       arrange(desc(category)) |>
-      mutate(percent = category / 98 * 100) |>
+      mutate(percent = if (n_unsuccessful > 0) category / n_unsuccessful * 100 else NA_real_) |>
       mutate(category = paste0(category, " (", round(percent, 1), "%)")) |>
       rename(
         Category = name,
