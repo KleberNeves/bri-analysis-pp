@@ -41,8 +41,8 @@ df_replication_rate <- read_tsv(paste0("output/", results_path, "/Replication Ra
 
 ### By experiment -----------------------------------------------------------
 desired_order_exp <- c(
-  "Original estimate within PI of REMA",
   "REMA estimate within CI of Original",
+  "Original estimate within PI of REMA",
   "FEMA is significant and has same signal as original",
   "t-test majority vote (with ties as success)",
   "Subjective assessment majority vote (with ties as success)"
@@ -65,9 +65,9 @@ df_by_experiment <- df_replication_rate |>
 
 ### By replication ----------------------------------------------------------
 desired_order_rep <- c(
-  "Subjective assessment, individual",
+  "Replication estimate within CI of Original",
   "Replication is significant and has same sign as original",
-  "Replication estimate within CI of Original"
+  "Subjective assessment, individual"
 )
 
 df_by_replication <- df_replication_rate |>
@@ -160,7 +160,7 @@ create_tbl_by_method_pcr <- function(analysis_type, distribution) {
     bold(i = 6) |>
     hline(i = 5:6) |>
     add_footer_lines(value = as_paragraph(footer_text)) |>
-    add_header_lines(values = paste0("Table S - Replication Rates (PCR) - ", analysis_type, " - dist ", toupper(distribution))) |>
+    add_header_lines(values = paste0("Table S - Replication Rates - ", analysis_type, " - dist ", toupper(distribution))) |>
     bold(i = 2, part = "header") |>
     set_table_properties(layout = "autofit")
 
@@ -1129,11 +1129,38 @@ opposite_signal_epm <- opposite_signal_exp$opposite_signal_percentage[opposite_s
 opposite_signal_pcr <- opposite_signal_exp$opposite_signal_percentage[opposite_signal_exp$category == "PCR"]
 opposite_signal_mtt <- opposite_signal_exp$opposite_signal_percentage[opposite_signal_exp$category == "MTT"]
 
-
 ### Merging ----------------------------------------------------------------
+# Build dynamic column header names based on current number of experiments
+n_all <- df_assessment_by_experiment |>
+  filter(category %in% c("EPM","PCR","MTT")) |>
+  summarise(n = n_distinct(EXP)) |>
+  pull(n)
+
+n_mtt <- df_assessment_by_experiment |>
+  filter(category == "MTT") |>
+  summarise(n = n_distinct(EXP)) |>
+  pull(n)
+
+n_pcr <- df_assessment_by_experiment |>
+  filter(category == "PCR") |>
+  summarise(n = n_distinct(EXP)) |>
+  pull(n)
+
+n_epm <- df_assessment_by_experiment |>
+  filter(category == "EPM") |>
+  summarise(n = n_distinct(EXP)) |>
+  pull(n)
+
+col_headers_tbl3 <- c(
+  "By experiment",
+  paste0("All (n=", n_all, ")"),
+  paste0("MTT (n=", n_mtt, ")"),
+  paste0("PCR (n=", n_pcr, ")"),
+  paste0("EPM (n=", n_epm, ")")
+)
 
 tbl_3 <- tribble(
-  ~`By experiment`, ~`All (n=47)`, ~`MTT (n=18)`, ~`PCR (n=15)`, ~`EPM (n=14)`, ## SEMPRE CONFERIR O N
+  ~`By experiment`, ~`All`, ~`MTT`, ~`PCR`, ~`EPM`, 
 
   # Dados da primeira parte (By experiment)
   "Effect size (original)",
@@ -1200,6 +1227,7 @@ tbl_3 <- tribble(
   opposite_signal_epm
 )
 
+colnames(tbl_3) <- col_headers_tbl3
 
 tbl_3 <- tbl_3 |>
   flextable() |>
