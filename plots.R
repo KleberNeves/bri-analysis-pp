@@ -657,10 +657,27 @@ plot_cortable_cluster <- function(FDATA, vars1, vars2, title, fn, show_label, ma
       "Prediction"
     )) |>
     mutate(
-      # Create separate fill variables for positive and negative correlations
-      fill_negative = ifelse(rho < 0, -log10(capped.p_rho), NA),
-      fill_positive = ifelse(rho > 0, -log10(capped.p_rho), NA)
+      # Create separate fill variables for positive and negative correlations using -log10(p)
+      fill_negative = ifelse(rho < 0, -log10(capped.p_rho), NA_real_),
+      fill_positive = ifelse(rho > 0, -log10(capped.p_rho), NA_real_)
     )
+
+  compute_scale_params <- function(values) {
+    max_val <- suppressWarnings(max(values, na.rm = TRUE))
+    if (!is.finite(max_val) || max_val <= 0) {
+      list(limits = c(0, 0.1), breaks = c(0, 0.1))
+    } else {
+      breaks <- scales::pretty_breaks(n = 3)(c(0, max_val))
+      breaks <- unique(breaks[breaks >= 0 & breaks <= max_val])
+      if (length(breaks) == 0) {
+        breaks <- c(0, max_val)
+      }
+      list(limits = c(0, max_val), breaks = breaks)
+    }
+  }
+
+  neg_scale <- compute_scale_params(plot_data$fill_negative)
+  pos_scale <- compute_scale_params(plot_data$fill_positive)
 
   p <- ggplot(plot_data) +
     aes(
@@ -681,9 +698,9 @@ plot_cortable_cluster <- function(FDATA, vars1, vars2, title, fn, show_label, ma
       high = bri_color[["low"]],
       na.value = bri_color[["mid"]],
       name = "Negative correlation\n(-log10(p-value))",
-      breaks = c(0, 1, 2),
-      labels = c("0", "1", "2"),
-      limits = c(0, 2),
+      breaks = neg_scale$breaks,
+      labels = scales::label_number(accuracy = 0.1)(neg_scale$breaks),
+      limits = neg_scale$limits,
       guide = guide_colorbar(order = 1, barwidth = unit(0.6, "cm"), barheight = unit(2.5, "cm"), direction = "vertical")
     ) +
     
@@ -697,9 +714,9 @@ plot_cortable_cluster <- function(FDATA, vars1, vars2, title, fn, show_label, ma
       high = bri_color[["high"]],
       na.value = bri_color[["mid"]],
       name = "Positive correlation\n(-log10(p-value))",
-      breaks = c(0, 1, 2),
-      labels = c("0", "1", "2"),
-      limits = c(0, 2),
+      breaks = pos_scale$breaks,
+      labels = scales::label_number(accuracy = 0.1)(pos_scale$breaks),
+      limits = pos_scale$limits,
       guide = guide_colorbar(order = 2, barwidth = unit(0.6, "cm"), barheight = unit(2.5, "cm"), direction = "vertical")
     ) +
     
