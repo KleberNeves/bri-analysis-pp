@@ -2333,19 +2333,32 @@ plot_kappa_exp <- function(input_path, output_path) {
       )
     )
 
+  kappa_vals_exp <- -log10(kappa_matrix_exp$p_value)
+  kappa_max_exp <- suppressWarnings(max(kappa_vals_exp, na.rm = TRUE))
+  if (!is.finite(kappa_max_exp) || kappa_max_exp <= 0) {
+    kappa_breaks_exp <- c(0, 0.1)
+    kappa_limits_exp <- c(0, 0.1)
+  } else {
+    kappa_breaks_exp <- scales::pretty_breaks(n = 3)(c(0, kappa_max_exp))
+    kappa_breaks_exp <- unique(kappa_breaks_exp[kappa_breaks_exp >= 0 & kappa_breaks_exp <= kappa_max_exp])
+    if (length(kappa_breaks_exp) == 0) {
+      kappa_breaks_exp <- c(0, kappa_max_exp)
+    }
+    kappa_limits_exp <- c(0, kappa_max_exp)
+  }
+
   # Create visualization with geom_tile
   kappa_plot_exp <- kappa_matrix_exp |>
     ggplot(aes(x = var1, y = fct_rev(var2), fill = -log10(p_value), label = round(kappa, 2))) +
     geom_tile(color = "white") +
     geom_text() +
-    scale_fill_gradient2(
-      low = bri_color[["low"]],
-      mid = bri_color[["mid"]],
+    scale_fill_gradient(
+      low = bri_color[["mid"]],
       high = bri_color[["high"]],
       na.value = bri_color[["none"]],
-      breaks = c(0, 2, 4, 6),
-      limits = c(0.8, 7.2),
-      labels = c(expression(1), expression(10^-2), expression(10^-4), expression(10^-6))
+      breaks = kappa_breaks_exp,
+      limits = kappa_limits_exp,
+      labels = scales::label_number(accuracy = 0.1)(kappa_breaks_exp)
     ) +
     labs(x = "", y = "", title = "Agreement between criteria (experiment)", fill = "p-value") +
     scale_y_discrete(expand = c(0, 0)) +
@@ -2418,19 +2431,32 @@ plot_kappa_rep <- function(input_path, output_path) {
       )
     )
 
+  kappa_vals_rep <- -log10(kappa_matrix_rep$p_value)
+  kappa_max_rep <- suppressWarnings(max(kappa_vals_rep, na.rm = TRUE))
+  if (!is.finite(kappa_max_rep) || kappa_max_rep <= 0) {
+    kappa_breaks_rep <- c(0, 0.1)
+    kappa_limits_rep <- c(0, 0.1)
+  } else {
+    kappa_breaks_rep <- scales::pretty_breaks(n = 3)(c(0, kappa_max_rep))
+    kappa_breaks_rep <- unique(kappa_breaks_rep[kappa_breaks_rep >= 0 & kappa_breaks_rep <= kappa_max_rep])
+    if (length(kappa_breaks_rep) == 0) {
+      kappa_breaks_rep <- c(0, kappa_max_rep)
+    }
+    kappa_limits_rep <- c(0, kappa_max_rep)
+  }
+
   # Create visualization with geom_tile
   kappa_plot_rep <- kappa_matrix_rep |>
     ggplot(aes(x = var1, y = fct_rev(var2), fill = -log10(p_value), label = round(kappa, 2))) +
     geom_tile(color = "white") +
     geom_text() +
-    scale_fill_gradient2(
-      low = bri_color[["low"]],
-      mid = bri_color[["mid"]],
+    scale_fill_gradient(
+      low = bri_color[["mid"]],
       high = bri_color[["high"]],
       na.value = bri_color[["none"]],
-      breaks = c(0, 2, 4, 6),
-      limits = c(1, 7),
-      labels = c(expression(1), expression(10^-2), expression(10^-4), expression(10^-6))
+      breaks = kappa_breaks_rep,
+      limits = kappa_limits_rep,
+      labels = scales::label_number(accuracy = 0.1)(kappa_breaks_rep)
     ) +
     scale_y_discrete(expand = c(0, 0)) +
     scale_x_discrete(expand = c(0, 0)) +
