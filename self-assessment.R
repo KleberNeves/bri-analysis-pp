@@ -227,31 +227,40 @@ protocol_labels_fig <- c(
 
 protocol_labels_fig[["6"]] <- "**Other**"
 
+y_levels <- rev(c(
+  "**Experimental issues**",
+  "1b", "1c", "1a", "1e", "1d", "1f",
+  "**Infrastructure/logistics**",
+  "2a", "2h", "2b", "2c", "2d", "2f", "2e", "2g",
+  "**Deliberate choice**",
+  "3b", "3d", "3a", "3c",
+  "**Lab error**",
+  "4a", "4c", "4d", "4f", "4e",
+  "**Coordinating team error**",
+  "5a", "5b", " ",
+  "6"
+))
+
+grid_positions <- setdiff(
+  seq_along(y_levels),
+  which(y_levels %in% c(
+    "**Experimental issues**",
+    "**Infrastructure/logistics**",
+    "**Deliberate choice**",
+    "**Lab error**",
+    "**Coordinating team error**",
+    " "
+  ))
+)
+
 plot_protocol_reasons_final <- ggplot(cat_protocol, aes(y = protocol_options, x = category_counts)) +
-  geom_hline(
-    yintercept = setdiff(
-      seq(from = 1, to = 50, by = 1),
-      c(2, 5, 11, 16, 25, 32)
-    ),
-    color = "grey90"
-  ) +
+  geom_hline(yintercept = grid_positions, color = "grey90") +
   geom_bar(stat = "identity") +
   bri_theme +
   labs(y = "What are the main reasons for the protocol deviations observed?", x = "Number of replications") +
-  scale_y_discrete(labels = protocol_labels_fig, limits = rev(c(
-    "**Experimental issues**",
-    "1b", "1c", "1a", "1e", "1d", "1f",
-    "**Infrastructure/logistics**",
-    "2a", "2h", "2b", "2c", "2d", "2f", "2e", "2g",
-    "**Deliberate choice**",
-    "3b", "3d", "3a", "3c",
-    "**Lab error**",
-    "4a", "4c", "4d", "4f", "4e",
-    "**Coordinating team error**",
-    "5a", "5b", " ",
-    "6"
-  ))) +
-  coord_cartesian(expand = FALSE) +
+  scale_y_discrete(labels = protocol_labels_fig, limits = y_levels, expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  coord_cartesian(expand = FALSE, clip = "off") +
   theme(
     axis.text.y = ggtext::element_markdown(),
     axis.title.y = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0)),
