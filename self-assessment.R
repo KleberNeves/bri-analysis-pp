@@ -1160,38 +1160,49 @@ bri_ggsave(paste0(output_path, "/self-assessment/", "difficulties-order-combined
 
 difficulties.labels.fig[["8"]] <- "**Other**" 
 
+y_levels_s9 <- rev(c(
+  "**Replication team**",
+  "7d", "7b", "7a", "7g", "7c", "7e", "7f",
+  "**Protocols**",
+  "4f", "4c", "4e", "4b", "4a", "4d", "4h", "4g",
+  "**Reagent acquisition**",
+  "6b", "6d", "6a", "6c", "6e", "6g",
+  "**Infrastructure difficulties**",
+  "2c", "2a", "2b", "2d",
+  "**Experimental difficulties**",
+  "3c", "3b", "3a", "3d",
+  "**External factors**",
+  "1b", "1a",
+  "**Multicentre project**",
+  "5a", "5b", "5c", "5d",
+  " ",
+  "8"
+))
+
+grid_positions_s9 <- setdiff(
+  seq_along(y_levels_s9),
+  which(y_levels_s9 %in% c(
+    "**Replication team**",
+    "**Protocols**",
+    "**Reagent acquisition**",
+    "**Infrastructure difficulties**",
+    "**Experimental difficulties**",
+    "**External factors**",
+    "**Multicentre project**",
+    " "
+  ))
+)
+
 fig_s9 <- ggplot(cat_dificulties, aes(y = dificulties_options, x = category_counts)) +
-  geom_hline(
-    yintercept = setdiff(seq(from = 1, to = 50, by = 1), c(2, 7, 10, 15, 20, 27, 36, 44)),
-    color = "grey90"
-  ) +
+  geom_hline(yintercept = grid_positions_s9, color = "grey90") +
   geom_bar(stat = "identity") +
   # geom_text(aes(label = category_counts, x = 3)) +
 
   bri_theme +
   labs(y = "What were the main difficulties you faced?", x = "Number of answers") +
-  scale_y_discrete(
-    labels = difficulties.labels.fig,
-    limits = rev(c(
-      "**Replication team**",
-      "7d", "7b", "7a", "7g", "7c", "7e", "7f",
-      "**Protocols**",
-      "4f", "4c", "4e", "4b", "4a", "4d", "4h", "4g",
-      "**Reagent acquisition**",
-      "6b", "6d", "6a", "6c", "6e", "6g",
-      "**Infrastructure difficulties**",
-      "2c", "2a", "2b", "2d",
-      "**Experimental difficulties**",
-      "3c", "3b", "3a", "3d",
-      "**External factors**",
-      "1b", "1a",
-      "**Multicentre project**",
-      "5a", "5b", "5c", "5d",
-      " ",
-      "8"
-    ))
-  ) +
-  coord_cartesian(expand = F) +
+  scale_y_discrete(labels = difficulties.labels.fig, limits = y_levels_s9, expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  coord_cartesian(expand = FALSE, clip = "off") +
   theme(
     axis.text.y = ggtext::element_markdown(), # Increase line height to add space between labels
     panel.grid.major.y = element_blank(),
