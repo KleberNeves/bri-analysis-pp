@@ -2040,11 +2040,14 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       repro_rate = Value
     ) |>
     mutate(
-      MA_Dist = case_match(
-        MA_Dist,
-        "t" ~ "t distribution (# of units)",
-        "z" ~ "z distribution",
-        "knha" ~ "t distribution (# of replications)"
+      MA_Dist = factor(
+        case_match(
+          MA_Dist,
+          "t" ~ "t distribution (# of units)",
+          "z" ~ "z distribution",
+          "knha" ~ "t distribution (# of replications)"
+        ),
+        levels = c("t distribution (# of units)", "z distribution", "t distribution (# of replications)")
       )
     )
 
@@ -2129,7 +2132,7 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       "Individual replication",
       inclusion_levels,
       method_levels,
-      unique(AGGDATA_TOG$MA_Dist)
+      c("t distribution (# of units)", "z distribution", "t distribution (# of replications)")[c("t distribution (# of units)", "z distribution", "t distribution (# of replications)") %in% AGGDATA_TOG$MA_Dist]
     ))
 
     # Methods in black, as requested
@@ -2141,7 +2144,7 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       rep(RColorBrewer::brewer.pal(7, "Greens")[7], 1),
       rep(RColorBrewer::brewer.pal(7, "Blues")[7], length(inclusion_levels)),
       method_colors,
-      rep(RColorBrewer::brewer.pal(7, "Oranges")[7], length(unique(AGGDATA_TOG$MA_Dist)))
+      rep(RColorBrewer::brewer.pal(7, "Oranges")[7], length(c("t distribution (# of units)", "z distribution", "t distribution (# of replications)")[c("t distribution (# of units)", "z distribution", "t distribution (# of replications)") %in% AGGDATA_TOG$MA_Dist]))
     ))
 
     # Deduplicate breaks while keeping order and map colors to labels
