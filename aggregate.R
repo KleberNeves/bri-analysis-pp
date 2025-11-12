@@ -7,7 +7,7 @@
 
 # Given a set of replications, calculates success for each replication
 make_summary_subset = function (rep_summaries_in, rep_summaries_individual_in, filtering = NULL, filtering_label = filtering) {
-
+  
   # Replication success by experiment (group of replications)
   rep_summaries = rep_summaries_in
   if (!is.null(filtering)) {
@@ -148,12 +148,10 @@ make_summary_subset = function (rep_summaries_in, rep_summaries_individual_in, f
     # Agreement between the pairs of rates
     combs = expand_grid(x = colnames(REP_AGREE), y = colnames(REP_AGREE))
     pair_agreement = pmap_dfr(combs, function (x,y) {
-      
       amat = cbind(REP_AGREE[[x]], REP_AGREE[[y]])
       agreement = irr::kappa2(amat, weight = "unweighted")
       tibble(`Outcome 1` = x, `Outcome 2` = y, Agreement = agreement$value, Method = "Cohen's Kappa", Call = 'irr::kappa2(DATA_FRAME, weight = "unweighted")')
-    }
-    )
+    })
     
     # General agreement
     general_agreement = irr::kappam.fleiss(REP_AGREE, exact = F)
@@ -172,9 +170,15 @@ make_summary_subset = function (rep_summaries_in, rep_summaries_individual_in, f
   agreements_exp = calc_agreement(REP_AGREE)
   
   # Agreement by replication
-  REP_AGREE = rep_success_individual_complete |>
-    select(REP_Individual_Rep_in_Orig_CI, REP_Individual_SSS, REP_Individual_IndivSubjective) |>
-    `colnames<-`(c("Rep. in orig. CI","Rep. SSS","Rep. Subjective"))
+  if ("All LABs" %in% rep_success_individual_complete$LAB) {
+    REP_AGREE = rep_success_individual_complete |>
+      select(REP_Individual_Rep_in_Orig_CI, REP_Individual_SSS) |>
+      `colnames<-`(c("Rep. in orig. CI","Rep. SSS"))
+  } else {
+    REP_AGREE = rep_success_individual_complete |>
+      select(REP_Individual_Rep_in_Orig_CI, REP_Individual_SSS, REP_Individual_IndivSubjective) |>
+      `colnames<-`(c("Rep. in orig. CI","Rep. SSS","Rep. Subjective"))
+  }
   
   agreements_individual = calc_agreement(REP_AGREE)
   
@@ -295,7 +299,7 @@ make_summary_subset = function (rep_summaries_in, rep_summaries_individual_in, f
 
 # Main function, summarizes rates overall (alternatively using PCR or ALTPCR) and by method
 summarize_rates = function (rep_summary_folder) {
-  # browser()
+  
   print("Evaluating replication results ...")
   
   rep_summaries = fread(file = paste0(rep_summary_folder, "/Replication Assessment by Experiment.tsv"))
@@ -338,7 +342,7 @@ summarize_rates = function (rep_summary_folder) {
     ) |>
     mutate(Metric = OldMetric) |>
     select(-OldMetric)
-
+  
   # Plots effect size correlations (with variations on including outliers, and PCR alternatives)
   print("Plotting correlation between effects ...")
   
@@ -369,7 +373,7 @@ summarize_rates = function (rep_summary_folder) {
     "effect size correlation by indiv reps small ES.png",
     "Effect size correlation, by individual replication (ES < 5)"
   )
-
+  
   plot_effect_correlation(
     rep_summary_folder,
     rep_summaries |> filter(!str_detect(EXP, "^PCR")),
@@ -455,7 +459,7 @@ gather_all_rep_rates = function(list_of_analyses, pn) {
   # All variables
   all_replication_rates = map_dfr(list_of_analyses, function (p) {
     rep_rates = fread(paste0(p, "/Replication Rate Summary.tsv"))
-
+    
     rep_rates  = rep_rates |>
       select(-MetricLongName) |>
       mutate(

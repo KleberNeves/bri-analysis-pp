@@ -41,7 +41,8 @@ file_dict = rbind(
   read_tsv("./replication-results/PCR_ALT_results_dict.tsv", show_col_types = F),
   read_tsv("./replication-results/EPM_results_dict.tsv", show_col_types = F),
   read_tsv("./replication-results/MTT_results_dict.tsv", show_col_types = F),
-  read_tsv("./replication-results/MTT_ALT_results_dict.tsv", show_col_types = F)
+  read_tsv("./replication-results/MTT_ALT_results_dict.tsv", show_col_types = F),
+  read_tsv("./replication-results/BIG_EXP_results_dict.tsv", show_col_types = F)
 ) |>
   filter(
     !is.na(Filename),
@@ -67,6 +68,11 @@ run_all_meta_analyses = function (inclusion_set_column, save_results_to, params,
   data_list$toinclude = data_list[[inclusion_set_column]]
   data_list = data_list |> filter(toinclude %in% c("INCLUDE", "MA ONLY"))
   ma_only_list = data_list |> filter(toinclude == "MA ONLY") |> select(EXP, LAB)
+  
+  if (params$ma_dist == "bigexp") {
+    data_list = data_list |> mutate(LAB = "LAB00") |> distinct(LAB, EXP, .keep_all = T)
+  }
+  
   data_list = data_list |> select(LAB, EXP, UNIT) |>
     mutate(UNIT = ifelse(UNIT == "BRI", NA, UNIT)) |>
     left_join(file_dict, by = c("LAB","EXP", "UNIT")) |>
@@ -124,7 +130,7 @@ run_all_meta_analyses = function (inclusion_set_column, save_results_to, params,
 perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, simulated = F) {
   
   print(paste0(EXP_code, " ", params$ma_dist))
-  
+      
   # Flags for PCR types and exponents
   is_PCR = str_detect(EXP_code, "PCR") & !str_detect(EXP_code, "ALTPCR")
   is_ALTPCR = str_detect(EXP_code, "ALTPCR")
@@ -140,7 +146,9 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
   
   # Paired experiment data
   uses_lab_unit = any(data_filenames |> str_detect("LABUNIT"))
-  if (uses_lab_unit) {
+  if (params$ma_dist == "bigexp") { # If using a single experiment, all experiments are treated as non-paired
+    paired_labs = c()
+  } else if (uses_lab_unit) {
     paired_labs = rbind(
       meta_data_EPM |> filter(EXP == EXP_code) |> select(LAB, Paired),
       meta_data_PCR |> filter(EXP == EXP_code) |> select(LAB, `Paired Alternative`) |> rename(Paired = `Paired Alternative`),
@@ -167,7 +175,7 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
   ## Calculate CIs with degrees of freedom from the original
   if (params$ma_dist == "z") {
     orig_crit = qnorm(0.025, lower.tail = FALSE)
-  } else if (params$ma_dist == "t" | params$ma_dist == "knha") {
+  } else if (params$ma_dist == "t" | params$ma_dist == "knha" | params$ma_dist == "bigexp") {
     orig_crit = qt(0.025, df = orig_data$degrees_of_freedom, lower.tail = FALSE)
   }
   
@@ -336,7 +344,7 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
   }
   
   # If only one replication is available, no meta-analyses
-  if (n_reps == 1) {
+  if (n_reps == 1 & !params$ma_dist == "bigexp") {
     print ("Not enough replications for meta-analysis, running single test ...")
     
     # The rest is defined as NA, will be used to fill the results
@@ -360,7 +368,8 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
   summaries = summary(summaries)
   
   summaries = summaries |> mutate(
-    dfi = rep_es$dfi
+    dfi = rep_es$dfi,
+    pooled_sd = rep_es$pooled_sd
   )
   
   # Calculate individual experiment intervals
@@ -369,7 +378,7 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
       crit = qnorm(0.025, lower.tail = FALSE),
       pval = 2 * pnorm(abs(zi), lower.tail = FALSE)
     )
-  } else if (params$ma_dist == "t" | params$ma_dist == "knha") {
+  } else if (params$ma_dist == "t" | params$ma_dist == "knha" | params$ma_dist == "bigexp") {
     summaries = summaries |> mutate(
       crit = qt(0.025, df = dfi, lower.tail = FALSE),
       pval = 2 * pt(abs(zi), df = dfi, lower.tail = FALSE)
@@ -378,7 +387,9 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
   
   summaries = summaries |> mutate(
     ci.lb = yi - crit * sei,
-    ci.ub = yi + crit * sei
+    ci.ub = yi + crit * sei,
+    pi.lb = yi - crit * pooled_sd,
+    pi.ub = yi + crit * pooled_sd
   )
   
   # Transform PCR estimates
@@ -396,6 +407,25 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
   indiv_ci_lower = summaries$ci.lb
   indiv_ci_upper = summaries$ci.ub
   indiv_pvalue = summaries$pval
+  
+  # If using a single experiment, the MA intervals are replaced with intervals calculated with the SD and SEM of the whole experiment, the bounds just calculated above
+  if (params$ma_dist == "bigexp") {
+    
+    rema_es = indiv_estimate
+    rema_pi_lower = summaries$pi.lb
+    rema_pi_upper = summaries$pi.ub
+    rema_pvalue = summaries$pval
+    
+    rema_I2 = NA
+    rema_tau2 = NA
+    rema_Qp = NA
+    
+    fema_es = indiv_estimate
+    fema_ci_lower = summaries$ci.lb
+    fema_ci_upper = summaries$ci.ub
+    fema_pvalue = summaries$pval
+    
+  }
   
   if (!simulated) {
     
@@ -550,6 +580,15 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
       used_tests |>
         filter(SUBJ_SUCCESS)
     )
+    
+    # If it's a single experiment, just get all the subjective evaluations and count (individual subjective evaluation does not exist)
+    if (params$ma_dist == "bigexp") {
+      n_subjective_successful_eval = subjective_repro_data |>
+        filter(`Código do Experimento` == (str_remove(EXP_code, "ALT"))) |>
+        mutate(SUBJ_SUCCESS = `Na opinião do laboratório, os resultados do experimento original foram replicados com sucesso?` == "Sim") |>
+        filter(SUBJ_SUCCESS) |>
+        nrow()
+    }
     
   }
   
@@ -842,6 +881,7 @@ make_rep_es_analysis = function (data_fns, simulated, EXP_code, is_PCR, original
   # Calculate Welch's degrees of freedom
   rep_es = rep_es |>
     mutate(
+      pooled_sd = (((sd_group_1 ^ 2) * (1 + 1 / n_group_1)) + ((sd_group_2 ^ 2) * (1 + 1 / n_group_2))) ^ (1/2),
       vi = summaries$vi,
       wi = 1 / vi,
       ai = wi / sum(wi),

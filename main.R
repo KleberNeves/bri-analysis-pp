@@ -45,7 +45,7 @@ source("big_exp_summarizer.R")
 
 source("analysis.R")
 
-results_path = paste0(today())
+    results_path = paste0(today())
 dir.create(paste0("./output/", results_path))
 
 # Every column that starts with "analysis" will be considered an inclusion set column and must only have either cells marked "INCLUDE" or empty cells (not included).
@@ -64,7 +64,7 @@ for (setcol in list_of_sets) {
       params = list(exclude_outliers = F, ma_dist = "z"), simulated = F
     )
   }
-  
+
   if (!(setcol %in% c("analysis_only_80_power_a_posteriori_Z", "analysis_only_80_power_a_posteriori_KNHA"))) {
     # Run analysis with t distribution only with inclusion sets also using t
     run_all_meta_analyses(
@@ -78,6 +78,14 @@ for (setcol in list_of_sets) {
     run_all_meta_analyses(
       inclusion_set_column = setcol, save_results_to = results_path,
       params = list(exclude_outliers = F, ma_dist = "knha"), simulated = F
+    )
+  }
+
+  if (!(setcol %in% c("analysis_only_80_power_a_posteriori_Z", "analysis_only_80_power_a_posteriori_KNHA"))) {
+    # Run analysis with bigexp and only with inclusion sets also using t
+    run_all_meta_analyses(
+      inclusion_set_column = setcol, save_results_to = results_path,
+      params = list(exclude_outliers = F, ma_dist = "bigexp"), simulated = F
     )
   }
 
