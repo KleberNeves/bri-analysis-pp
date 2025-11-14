@@ -4,8 +4,9 @@ options(dplyr.summarise.inform = FALSE)
 
 source("functions_summarizer.R")
 
-make_merged_summary = function (data_fns, exp_code, method) {
+make_merged_summary = function (data_fns, exp_code, method, labunit) {
   print(exp_code)
+
   rep_data = map_dfr(data_fns, read_tsv, show_col_types = F)
   
   rep_data = rep_data |>
@@ -19,7 +20,7 @@ make_merged_summary = function (data_fns, exp_code, method) {
       LAB = "All LABs"
     )
   
-  export_file(rep_data, exp_code, "LAB00", method)
+  export_file(rep_data, exp_code, "LAB00", method, S = ifelse(is.na(labunit), "", "LABUNIT"))
   
 }
 
@@ -35,8 +36,6 @@ file_dict = rbind(
     !is.na(Filename),
     # Excluding secondary outcomes from EPM experiments
     !str_detect(Filename, "secondary"),
-    # Exclude LABUNIT cases
-    is.na(UNIT)
   ) |>
   mutate(
     method = str_extract(Filename, "results[/].+[/]") |> str_remove_all("(results|primary_outcomes)") |> str_remove_all("[/]")
@@ -48,9 +47,9 @@ file_dict = rbind(
 file_to_exp_dict = tibble(Filename = character(0), LAB = character(0), EXP = character(0))
 
 file_dict |>
-  group_by(EXP, method) |>
+  group_by(EXP, method, UNIT) |>
   group_walk(
-    ~ make_merged_summary(.x$Filename, unique(.y$EXP), unique(.y$method))
+    ~ make_merged_summary(.x$Filename, unique(.y$EXP), unique(.y$method), unique(.y$UNIT))
   )
 
 write_tsv(file_to_exp_dict, "replication-results/BIG_EXP_results_dict.tsv")
