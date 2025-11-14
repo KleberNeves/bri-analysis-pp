@@ -134,6 +134,8 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
   # Flags for PCR types and exponents
   is_PCR = str_detect(EXP_code, "PCR") & !str_detect(EXP_code, "ALTPCR")
   is_ALTPCR = str_detect(EXP_code, "ALTPCR")
+  # Only main MTT (e.g., MTTxx), exclude ALTMTT
+  is_MTT_main = str_detect(EXP_code, "^MTT")
   
   if (is_PCR | is_ALTPCR) {
     PCR_exponent = ifelse((meta_data_PCR |> filter(EXP == EXP_code) |> pull(`Primary Outcome`))[1] == "Optical Density (a.u)", 1, -1)
@@ -185,7 +187,7 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
   original_ci_upper = original_es + orig_crit * original_sem
   
   # Analyze replications and extract summaries
-  all_rep_es_data = make_rep_es_analysis(data_filenames, simulated, EXP_code, is_PCR, original_es, paired_labs, params$ma_dist)
+  all_rep_es_data = make_rep_es_analysis(data_filenames, simulated, EXP_code, is_PCR, original_es, paired_labs, params$ma_dist, use_perc = is_MTT_main)
   
   if (is_ALTPCR) {
     all_rep_es_data_PCR_ref = make_rep_es_analysis(data_filenames_PCR_ref, simulated, EXP_code, T, original_es, paired_labs, params$ma_dist)
@@ -228,7 +230,7 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
     escalc_summary = summary(summaries) |>
       select(yi, ci.lb, ci.ub)
     class(escalc_summary) = "data.frame"
-    escalc_summary$LAB = rep_es$LAB
+    escalc_summary$LAB = all_rep_es_data$summaries$LAB
     write_tsv(escalc_summary, file = fn, quote = "all")
   }
   
@@ -366,12 +368,11 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
   
   # Store results and bounds for each experiment individually
   summaries = summary(summaries)
+  class(summaries) = "data.frame"
+  summaries$LAB = all_rep_es_data$summaries$LAB
   
-  summaries = summaries |> mutate(
-    dfi = rep_es$dfi,
-    pooled_sd = rep_es$pooled_sd
-  )
-  
+  summaries = summaries |> left_join(rep_es |> select(LAB, dfi, pooled_sd), by = "LAB")
+
   # Calculate individual experiment intervals
   if (params$ma_dist == "z") {
     summaries = summaries |> mutate(
@@ -399,9 +400,6 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
       ci.lb = exp_only_PCR(ci.lb, is_PCR, PCR_exponent),
       ci.ub = exp_only_PCR(ci.ub, is_PCR, PCR_exponent)
     )
-  class(summaries) = "data.frame"
-  
-  summaries$LAB = rep_es$LAB
   
   indiv_estimate = summaries$yi
   indiv_ci_lower = summaries$ci.lb
@@ -876,10 +874,17 @@ make_rep_es_analysis = function (data_fns, simulated, EXP_code, is_PCR, original
   }
   
   summaries = do.call(rbind, c(s1,s2))
+  
+  labs_s1 = if (nrow(rep_es_paired) > 0) rep_es_paired |> group_by(LAB) |> group_keys() |> pull(LAB) else character(0)
+  labs_s2 = if (nrow(rep_es_unpaired) > 0) rep_es_unpaired |> group_by(LAB) |> group_keys() |> pull(LAB) else character(0)
+  summaries$LAB = c(labs_s1, labs_s2)
+  
   summaries = summaries |> filter(!is.na(yi) & !is.na(vi))
   
   # Calculate Welch's degrees of freedom
   rep_es = rep_es |>
+    left_join(summaries |> as_tibble() |> select(LAB, vi), by = "LAB") |>
+    filter(!is.na(vi)) |>
     mutate(
       pooled_sd = (((sd_group_1 ^ 2) * (1 + 1 / n_group_1)) + ((sd_group_2 ^ 2) * (1 + 1 / n_group_2))) ^ (1/2),
       vi = summaries$vi,

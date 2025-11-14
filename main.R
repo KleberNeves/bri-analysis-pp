@@ -45,7 +45,7 @@ source("big_exp_summarizer.R")
 
 source("analysis.R")
 
-    results_path = paste0(today())
+results_path = paste0(today())
 dir.create(paste0("./output/", results_path))
 
 # Every column that starts with "analysis" will be considered an inclusion set column and must only have either cells marked "INCLUDE" or empty cells (not included).

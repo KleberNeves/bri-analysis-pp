@@ -227,31 +227,40 @@ protocol_labels_fig <- c(
 
 protocol_labels_fig[["6"]] <- "**Other**"
 
+y_levels <- rev(c(
+  "**Experimental issues**",
+  "1b", "1c", "1a", "1e", "1d", "1f",
+  "**Infrastructure/logistics**",
+  "2a", "2h", "2b", "2c", "2d", "2f", "2e", "2g",
+  "**Deliberate choice**",
+  "3b", "3d", "3a", "3c",
+  "**Lab error**",
+  "4a", "4c", "4d", "4f", "4e",
+  "**Coordinating team error**",
+  "5a", "5b", " ",
+  "6"
+))
+
+grid_positions <- setdiff(
+  seq_along(y_levels),
+  which(y_levels %in% c(
+    "**Experimental issues**",
+    "**Infrastructure/logistics**",
+    "**Deliberate choice**",
+    "**Lab error**",
+    "**Coordinating team error**",
+    " "
+  ))
+)
+
 plot_protocol_reasons_final <- ggplot(cat_protocol, aes(y = protocol_options, x = category_counts)) +
-  geom_hline(
-    yintercept = setdiff(
-      seq(from = 1, to = 50, by = 1),
-      c(2, 5, 11, 16, 25, 32)
-    ),
-    color = "grey90"
-  ) +
+  geom_hline(yintercept = grid_positions, color = "grey90") +
   geom_bar(stat = "identity") +
   bri_theme +
   labs(y = "What are the main reasons for the protocol deviations observed?", x = "Number of replications") +
-  scale_y_discrete(labels = protocol_labels_fig, limits = rev(c(
-    "**Experimental issues**",
-    "1b", "1c", "1a", "1e", "1d", "1f",
-    "**Infrastructure/logistics**",
-    "2a", "2h", "2b", "2c", "2d", "2f", "2e", "2g",
-    "**Deliberate choice**",
-    "3b", "3d", "3a", "3c",
-    "**Lab error**",
-    "4a", "4c", "4d", "4f", "4e",
-    "**Coordinating team error**",
-    "5a", "5b", " ",
-    "6"
-  ))) +
-  coord_cartesian(expand = FALSE) +
+  scale_y_discrete(labels = protocol_labels_fig, limits = y_levels, expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  coord_cartesian(expand = FALSE, clip = "off") +
   theme(
     axis.text.y = ggtext::element_markdown(),
     axis.title.y = element_text(margin = margin(t = 0, r = 20, b = 0, l = 0)),
@@ -1151,38 +1160,49 @@ bri_ggsave(paste0(output_path, "/self-assessment/", "difficulties-order-combined
 
 difficulties.labels.fig[["8"]] <- "**Other**" 
 
+y_levels_s9 <- rev(c(
+  "**Replication team**",
+  "7d", "7b", "7a", "7g", "7c", "7e", "7f",
+  "**Protocols**",
+  "4f", "4c", "4e", "4b", "4a", "4d", "4h", "4g",
+  "**Reagent acquisition**",
+  "6b", "6d", "6a", "6c", "6e", "6g",
+  "**Infrastructure difficulties**",
+  "2c", "2a", "2b", "2d",
+  "**Experimental difficulties**",
+  "3c", "3b", "3a", "3d",
+  "**External factors**",
+  "1b", "1a",
+  "**Multicentre project**",
+  "5a", "5b", "5c", "5d",
+  " ",
+  "8"
+))
+
+grid_positions_s9 <- setdiff(
+  seq_along(y_levels_s9),
+  which(y_levels_s9 %in% c(
+    "**Replication team**",
+    "**Protocols**",
+    "**Reagent acquisition**",
+    "**Infrastructure difficulties**",
+    "**Experimental difficulties**",
+    "**External factors**",
+    "**Multicentre project**",
+    " "
+  ))
+)
+
 fig_s9 <- ggplot(cat_dificulties, aes(y = dificulties_options, x = category_counts)) +
-  geom_hline(
-    yintercept = setdiff(seq(from = 1, to = 50, by = 1), c(2, 7, 10, 15, 20, 27, 36, 44)),
-    color = "grey90"
-  ) +
+  geom_hline(yintercept = grid_positions_s9, color = "grey90") +
   geom_bar(stat = "identity") +
   # geom_text(aes(label = category_counts, x = 3)) +
 
   bri_theme +
   labs(y = "What were the main difficulties you faced?", x = "Number of answers") +
-  scale_y_discrete(
-    labels = difficulties.labels.fig,
-    limits = rev(c(
-      "**Replication team**",
-      "7d", "7b", "7a", "7g", "7c", "7e", "7f",
-      "**Protocols**",
-      "4f", "4c", "4e", "4b", "4a", "4d", "4h", "4g",
-      "**Reagent acquisition**",
-      "6b", "6d", "6a", "6c", "6e", "6g",
-      "**Infrastructure difficulties**",
-      "2c", "2a", "2b", "2d",
-      "**Experimental difficulties**",
-      "3c", "3b", "3a", "3d",
-      "**External factors**",
-      "1b", "1a",
-      "**Multicentre project**",
-      "5a", "5b", "5c", "5d",
-      " ",
-      "8"
-    ))
-  ) +
-  coord_cartesian(expand = F) +
+  scale_y_discrete(labels = difficulties.labels.fig, limits = y_levels_s9, expand = c(0, 0)) +
+  scale_x_continuous(expand = c(0, 0)) +
+  coord_cartesian(expand = FALSE, clip = "off") +
   theme(
     axis.text.y = ggtext::element_markdown(), # Increase line height to add space between labels
     panel.grid.major.y = element_blank(),

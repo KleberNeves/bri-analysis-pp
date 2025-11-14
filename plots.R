@@ -657,10 +657,27 @@ plot_cortable_cluster <- function(FDATA, vars1, vars2, title, fn, show_label, ma
       "Prediction"
     )) |>
     mutate(
-      # Create separate fill variables for positive and negative correlations
-      fill_negative = ifelse(rho < 0, -log10(capped.p_rho), NA),
-      fill_positive = ifelse(rho > 0, -log10(capped.p_rho), NA)
+      # Create separate fill variables for positive and negative correlations using -log10(p)
+      fill_negative = ifelse(rho < 0, -log10(capped.p_rho), NA_real_),
+      fill_positive = ifelse(rho > 0, -log10(capped.p_rho), NA_real_)
     )
+
+  compute_scale_params <- function(values) {
+    max_val <- suppressWarnings(max(values, na.rm = TRUE))
+    if (!is.finite(max_val) || max_val <= 0) {
+      list(limits = c(0, 0.1), breaks = c(0, 0.1))
+    } else {
+      breaks <- scales::pretty_breaks(n = 3)(c(0, max_val))
+      breaks <- unique(breaks[breaks >= 0 & breaks <= max_val])
+      if (length(breaks) == 0) {
+        breaks <- c(0, max_val)
+      }
+      list(limits = c(0, max_val), breaks = breaks)
+    }
+  }
+
+  neg_scale <- compute_scale_params(plot_data$fill_negative)
+  pos_scale <- compute_scale_params(plot_data$fill_positive)
 
   p <- ggplot(plot_data) +
     aes(
@@ -681,9 +698,9 @@ plot_cortable_cluster <- function(FDATA, vars1, vars2, title, fn, show_label, ma
       high = bri_color[["low"]],
       na.value = bri_color[["mid"]],
       name = "Negative correlation\n(-log10(p-value))",
-      breaks = c(0, 1, 2),
-      labels = c("0", "1", "2"),
-      limits = c(0, 2),
+      breaks = neg_scale$breaks,
+      labels = scales::label_number(accuracy = 0.1)(neg_scale$breaks),
+      limits = neg_scale$limits,
       guide = guide_colorbar(order = 1, barwidth = unit(0.6, "cm"), barheight = unit(2.5, "cm"), direction = "vertical")
     ) +
     
@@ -697,9 +714,9 @@ plot_cortable_cluster <- function(FDATA, vars1, vars2, title, fn, show_label, ma
       high = bri_color[["high"]],
       na.value = bri_color[["mid"]],
       name = "Positive correlation\n(-log10(p-value))",
-      breaks = c(0, 1, 2),
-      labels = c("0", "1", "2"),
-      limits = c(0, 2),
+      breaks = pos_scale$breaks,
+      labels = scales::label_number(accuracy = 0.1)(pos_scale$breaks),
+      limits = pos_scale$limits,
       guide = guide_colorbar(order = 2, barwidth = unit(0.6, "cm"), barheight = unit(2.5, "cm"), direction = "vertical")
     ) +
     
@@ -1695,21 +1712,36 @@ plot_effect_size_figure <- function(p_A, p_B, p_C, rep_summary_folder) {
 plot_cvs <- function(rep_df, orig_df, suffix, rep_summary_folder) {
   dir.create(paste0(rep_summary_folder, "/CV plots"))
 
-  rep_df <- rep_df |> mutate(EXP = str_remove(EXP, "ALT"))
+  # Extract full method label BEFORE collapsing EXP for joins (keeps ALTMTT/ALTPCR distinct)
+  rep_df <- rep_df |>
+    mutate(
+      Method = str_extract(EXP, "(EPM|ALTMTT|MTT|ALTPCR|PCR)"),
+      # Collapse ALT from EXP only for joining with original data and x-axis labeling
+      EXP = str_remove(EXP, "ALT")
+    )
 
   by_rep <- "LAB" %in% colnames(rep_df)
 
   if (by_rep) {
     df <- rep_df |>
       left_join(orig_df |> select(EXP, `SD Estimate`)) |>
-      mutate(Method = str_extract(EXP, "[A-Z]{3}")) |>
       rename(sd_estimate = `SD Estimate`) |>
       select(LAB, EXP, Method, original_cv, replication_cv, sd_estimate) |>
       pivot_longer(cols = -c(LAB, EXP, Method, sd_estimate)) |>
       rename(cv = value) |>
       mutate(
         type = ifelse(name == "original_cv", "Original", "Replications"),
-        TypeTechnique = ifelse(type == "Original", type, Method),
+        # Map ALT variants to base techniques for coloring/legend, but keep Method for faceting
+        TypeTechnique = ifelse(
+          type == "Original",
+          type,
+          case_when(
+            Method %in% c("ALTPCR", "PCR") ~ "PCR",
+            Method %in% c("ALTMTT", "MTT") ~ "MTT",
+            Method == "EPM" ~ "EPM",
+            TRUE ~ Method
+          )
+        ),
         sd_estimate_ok = ifelse(sd_estimate != "reported SEM and range for N", "Reported SD", "Estimated SD"),
         flag = ifelse(
           type == "Original",
@@ -1721,14 +1753,23 @@ plot_cvs <- function(rep_df, orig_df, suffix, rep_summary_folder) {
   } else {
     df <- rep_df |>
       left_join(orig_df |> select(EXP, `SD Estimate`)) |>
-      mutate(Method = str_extract(EXP, "[A-Z]{3}")) |>
       rename(sd_estimate = `SD Estimate`) |>
       select(EXP, Method, original_cv, replication_cv, sd_estimate) |>
       pivot_longer(cols = -c(EXP, Method, sd_estimate)) |>
       rename(cv = value) |>
       mutate(
         type = ifelse(name == "original_cv", "Original", "Replications"),
-        TypeTechnique = ifelse(type == "Original", type, Method),
+        # Map ALT variants to base techniques for coloring/legend, but keep Method for faceting
+        TypeTechnique = ifelse(
+          type == "Original",
+          type,
+          case_when(
+            Method %in% c("ALTPCR", "PCR") ~ "PCR",
+            Method %in% c("ALTMTT", "MTT") ~ "MTT",
+            Method == "EPM" ~ "EPM",
+            TRUE ~ Method
+          )
+        ),
         sd_estimate_ok = ifelse(sd_estimate != "reported SEM and range for N", "Reported SD", "Estimated SD"),
         flag = ifelse(
           type == "Original",
@@ -1999,13 +2040,28 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       repro_rate = Value
     ) |>
     mutate(
-      MA_Dist = case_match(
-        MA_Dist,
-        "t" ~ "t distribution (# of units)",
-        "z" ~ "z distribution",
-        "knha" ~ "t distribution (# of replications)"
+      MA_Dist = factor(
+        case_match(
+          MA_Dist,
+          "t" ~ "t distribution (# of units)",
+          "z" ~ "z distribution",
+          "knha" ~ "t distribution (# of replications)"
+        ),
+        levels = c("t distribution (# of units)", "z distribution", "t distribution (# of replications)")
       )
     )
+
+  desired_inclusion_levels <- c(
+    "Primary",
+    "Lab's choice",
+    "All experiments",
+    "All experiments (BRI UNIT)",
+    "≥2 replications",
+    "3 replications",
+    "≥80% power (t - # of units)",
+    "≥80% power (z)",
+    "≥80% power (t - # of replications)"
+  )
 
   AGGDATA <- AGGDATA |>
     mutate(
@@ -2023,32 +2079,16 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       ),
       Inclusion_Set = factor(
         Inclusion_Set,
-        levels = c(
-          "Primary",
-          "All experiments (BRI UNIT)",
-          "All experiments",
-          "Lab's choice",
-          "3 replications",
-          "≥2 replications",
-          "≥80% power (t - # of units)",
-          "≥80% power (z)",
-          "≥80% power (t - # of replications)"
-        )
+        levels = desired_inclusion_levels
       )
     )
 
+  # IMPORTANT: We avoid mislabeling "ALL" as a specific choice.
+  # For the specification curve with method toggles, we'll filter to the
+  # four explicit combinations (ALL_*), and derive two binary toggles
+  # instead of using the combined "Method" levels. This yields 50/50 splits.
   AGGDATA <- AGGDATA |>
-    # filter(Method != "ALTPCR") |>
-    mutate(
-      Method = case_match(
-        Method,
-        "ALL_PCR" ~ "PCR in log scale",
-        "ALL_ALTPCR" ~ "PCR in linear scale",
-        "PCR" ~ "PCR (log scale)",
-        "ALTPCR" ~ "PCR (linear scale)",
-        .default = Method
-      )
-    )
+    mutate(Method = as.character(Method))
 
   AGGDATA <- AGGDATA |>
     mutate(
@@ -2059,15 +2099,132 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       )
     )
 
-  # Top/line graph
+  # Prepare data for the top plot consistent with the bottom ticks
+  AGGDATA_USED <- AGGDATA
+
+  # Tick graph
+  # Making the specification curve graph
+  # If include_method = TRUE: only individual methods (single method band, black).
+  # If include_method = FALSE: only ALL_* + toggles (PCR_Scale, MTT_Pairing) to show 50/50 splits.
+  if (include_method) {
+    # Only individual methods; no toggles
+    AGGDATA_TOG <- AGGDATA |>
+      filter(Method %in% c("EPM","PCR","ALTPCR","MTT","ALTMTT")) |>
+      mutate(
+        Method_Individual = Method
+      )
+
+    spec_parameters <- c("Inclusion_Set", "Level", "MA_Dist", "Metric", "Method_Individual")
+
+    method_levels <- na.omit(unique(AGGDATA_TOG$Method_Individual))
+    # Ensure stable order of method levels
+    method_levels <- intersect(c("EPM","PCR","ALTPCR","MTT","ALTMTT"), method_levels)
+
+    available_inclusion_levels <- unique(as.character(AGGDATA_TOG$Inclusion_Set))
+    inclusion_levels <- desired_inclusion_levels[desired_inclusion_levels %in% available_inclusion_levels]
+
+    spec_parameters_levels <- rev(c(
+      unique(AGGDATA_TOG$Metric)[2:3],
+      unique(AGGDATA_TOG$Metric)[1],
+      unique(AGGDATA_TOG$Metric)[4:7],
+      "Aggregate of replications",
+      unique(AGGDATA_TOG$Metric)[8:10],
+      "Individual replication",
+      inclusion_levels,
+      method_levels,
+      c("t distribution (# of units)", "z distribution", "t distribution (# of replications)")[c("t distribution (# of units)", "z distribution", "t distribution (# of replications)") %in% AGGDATA_TOG$MA_Dist]
+    ))
+
+    # Methods in black, as requested
+    method_colors <- rep("black", length(method_levels))
+    spec_colors <- rev(c(
+      rep(RColorBrewer::brewer.pal(5, "Dark2")[1], length(1:7)),
+      rep(RColorBrewer::brewer.pal(7, "Greens")[7], 1),
+      rep(RColorBrewer::brewer.pal(5, "Dark2")[1], length(8:10)),
+      rep(RColorBrewer::brewer.pal(7, "Greens")[7], 1),
+      rep(RColorBrewer::brewer.pal(7, "Blues")[7], length(inclusion_levels)),
+      method_colors,
+      rep(RColorBrewer::brewer.pal(7, "Oranges")[7], length(c("t distribution (# of units)", "z distribution", "t distribution (# of replications)")[c("t distribution (# of units)", "z distribution", "t distribution (# of replications)") %in% AGGDATA_TOG$MA_Dist]))
+    ))
+
+    # Deduplicate breaks while keeping order and map colors to labels
+    spec_breaks <- unique(spec_parameters_levels)
+    spec_colors_named <- setNames(spec_colors, spec_parameters_levels)
+
+    # Re-index so both panels align
+    AGGDATA_TOG <- AGGDATA_TOG |>
+      mutate(index = row_number())
+
+    SPECIFICATION <- AGGDATA_TOG |>
+      select(all_of(c("index", "repro_rate", spec_parameters))) |>
+      pivot_longer(cols = -c(index, repro_rate)) |>
+      filter(!is.na(value)) |>
+      arrange(repro_rate) |>
+      mutate(value = factor(value, levels = spec_parameters_levels))
+    AGGDATA_USED <- AGGDATA_TOG
+  } else {
+    # No individual methods; keep only ALL_* and add toggles to show 50/50 splits
+    AGGDATA_TOG <- AGGDATA |>
+      filter(str_detect(Method, "^ALL_")) |>
+      mutate(
+        PCR_Scale = if_else(str_detect(Method, "ALTPCR"), "PCR (linear)", "PCR (log)"),
+        MTT_Pairing = if_else(str_detect(Method, "ALTMTT"), "MTT (unpaired)", "MTT (paired)")
+      )
+
+    spec_parameters <- c("Inclusion_Set", "Level", "MA_Dist", "Metric", "PCR_Scale", "MTT_Pairing")
+
+    available_inclusion_levels <- unique(as.character(AGGDATA_TOG$Inclusion_Set))
+    inclusion_levels <- desired_inclusion_levels[desired_inclusion_levels %in% available_inclusion_levels]
+
+    spec_parameters_levels <- rev(c(
+      unique(AGGDATA_TOG$Metric)[2:3],
+      unique(AGGDATA_TOG$Metric)[1],
+      unique(AGGDATA_TOG$Metric)[4:7],
+      "Aggregate of replications",
+      unique(AGGDATA_TOG$Metric)[8:10],
+      "Individual replication",
+      inclusion_levels,
+      c("PCR (log)", "PCR (linear)"),
+      c("MTT (paired)", "MTT (unpaired)"),
+      unique(AGGDATA_TOG$MA_Dist)
+    ))
+
+    spec_colors <- rev(c(
+      rep(RColorBrewer::brewer.pal(5, "Dark2")[1], length(1:7)),
+      rep(RColorBrewer::brewer.pal(7, "Greens")[7], 1),
+      rep(RColorBrewer::brewer.pal(5, "Dark2")[1], length(8:10)),
+      rep(RColorBrewer::brewer.pal(7, "Greens")[7], 1),
+      rep(RColorBrewer::brewer.pal(7, "Blues")[7], length(inclusion_levels)),
+      rep(RColorBrewer::brewer.pal(7, "Greys")[7], 2),  # PCR_Scale (2 levels)
+      rep(RColorBrewer::brewer.pal(7, "Greys")[5], 2),  # MTT_Pairing (2 levels)
+      rep(RColorBrewer::brewer.pal(7, "Oranges")[7], length(unique(AGGDATA_TOG$MA_Dist)))
+    ))
+
+    spec_breaks <- unique(spec_parameters_levels)
+    spec_colors_named <- setNames(spec_colors, spec_parameters_levels)
+
+    # Re-index after filtering so both panels align
+    AGGDATA_TOG <- AGGDATA_TOG |>
+      mutate(index = row_number())
+
+    SPECIFICATION <- AGGDATA_TOG |>
+      select(all_of(c("index", "repro_rate", spec_parameters))) |>
+      pivot_longer(cols = -c(index, repro_rate)) |>
+      filter(!is.na(value)) |>
+      arrange(repro_rate) |>
+      mutate(value = factor(value, levels = spec_parameters_levels))
+    AGGDATA_USED <- AGGDATA_TOG
+  }
+
+  # Top/line graph built from AGGDATA_USED to match SPECIFICATION
   # Find the quartiles and median
-  quartiles <- AGGDATA |>
+  quartiles <- AGGDATA_USED |>
     pull(repro_rate) |>
     quantile(na.rm = T, probs = c(0.25, 0.5, 0.75)) |>
     round(2)
 
   # Making the plot with reproducibility rates
-  plot_repro <- ggplot(AGGDATA) +
+  plot_repro <- ggplot(AGGDATA_USED) +
     aes(x = reorder(index, repro_rate), y = repro_rate) +
     geom_point(size = 1) +
     geom_hline(yintercept = quartiles[1], linetype = "dashed", color = bri_color[["none"]], alpha = 0.6) +
@@ -2085,45 +2242,11 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       panel.grid = element_blank(), plot.title = element_blank()
     )
 
-  # Tick graph
-  # Making the specification curve graph
-  spec_parameters <- c("Inclusion_Set", "Level", "MA_Dist", "Metric")
-
-  spec_parameters_levels <- rev(c(
-    unique(AGGDATA$Metric)[2:3],
-    unique(AGGDATA$Metric)[1],
-    unique(AGGDATA$Metric)[4:7],
-    "Aggregate of replications",
-    unique(AGGDATA$Metric)[8:10],
-    "Individual replication",
-    unique(as.character(AGGDATA$Inclusion_Set)),
-    unique(AGGDATA$Method),
-    unique(AGGDATA$MA_Dist)
-  ))
-
-  spec_colors <- rev(c(
-    rep(RColorBrewer::brewer.pal(5, "Dark2")[1], length(1:7)),
-    rep(RColorBrewer::brewer.pal(7, "Greens")[7], 1),
-    rep(RColorBrewer::brewer.pal(5, "Dark2")[1], length(8:10)),
-    rep(RColorBrewer::brewer.pal(7, "Greens")[7], 1),
-    rep(RColorBrewer::brewer.pal(7, "Blues")[7], length(unique(AGGDATA$Inclusion_Set))),
-    rep(RColorBrewer::brewer.pal(7, "Greys")[7], length(unique(AGGDATA$Method))),
-    rep(RColorBrewer::brewer.pal(7, "Oranges")[7], length(unique(AGGDATA$MA_Dist)))
-  ))
-
-  spec_parameters <- c(spec_parameters, "Method")
-
-  SPECIFICATION <- AGGDATA |>
-    select(all_of(c("index", "repro_rate", spec_parameters))) |>
-    pivot_longer(cols = -c(index, repro_rate)) |>
-    arrange(repro_rate) |>
-    mutate(value = factor(value, levels = spec_parameters_levels))
-
   plot_spec2 <- ggplot(SPECIFICATION) +
     aes(x = reorder(index, repro_rate), y = value, fill = value) +
     geom_tile(height = 0.4) +
     scale_alpha(range = c(0, 1)) +
-    scale_fill_manual(breaks = spec_parameters_levels, values = spec_colors) +
+    scale_fill_manual(breaks = spec_breaks, values = spec_colors_named[spec_breaks]) +
     labs(x = "", y = "") +
     theme_minimal() +
     theme(
@@ -2210,19 +2333,32 @@ plot_kappa_exp <- function(input_path, output_path) {
       )
     )
 
+  kappa_vals_exp <- -log10(kappa_matrix_exp$p_value)
+  kappa_max_exp <- suppressWarnings(max(kappa_vals_exp, na.rm = TRUE))
+  if (!is.finite(kappa_max_exp) || kappa_max_exp <= 0) {
+    kappa_breaks_exp <- c(0, 0.1)
+    kappa_limits_exp <- c(0, 0.1)
+  } else {
+    kappa_breaks_exp <- scales::pretty_breaks(n = 3)(c(0, kappa_max_exp))
+    kappa_breaks_exp <- unique(kappa_breaks_exp[kappa_breaks_exp >= 0 & kappa_breaks_exp <= kappa_max_exp])
+    if (length(kappa_breaks_exp) == 0) {
+      kappa_breaks_exp <- c(0, kappa_max_exp)
+    }
+    kappa_limits_exp <- c(0, kappa_max_exp)
+  }
+
   # Create visualization with geom_tile
   kappa_plot_exp <- kappa_matrix_exp |>
     ggplot(aes(x = var1, y = fct_rev(var2), fill = -log10(p_value), label = round(kappa, 2))) +
     geom_tile(color = "white") +
     geom_text() +
-    scale_fill_gradient2(
-      low = bri_color[["low"]],
-      mid = bri_color[["mid"]],
+    scale_fill_gradient(
+      low = bri_color[["mid"]],
       high = bri_color[["high"]],
       na.value = bri_color[["none"]],
-      breaks = c(0, 2, 4, 6),
-      limits = c(0.8, 7.2),
-      labels = c(expression(1), expression(10^-2), expression(10^-4), expression(10^-6))
+      breaks = kappa_breaks_exp,
+      limits = kappa_limits_exp,
+      labels = scales::label_number(accuracy = 0.1)(kappa_breaks_exp)
     ) +
     labs(x = "", y = "", title = "Agreement between criteria (experiment)", fill = "p-value") +
     scale_y_discrete(expand = c(0, 0)) +
@@ -2295,19 +2431,32 @@ plot_kappa_rep <- function(input_path, output_path) {
       )
     )
 
+  kappa_vals_rep <- -log10(kappa_matrix_rep$p_value)
+  kappa_max_rep <- suppressWarnings(max(kappa_vals_rep, na.rm = TRUE))
+  if (!is.finite(kappa_max_rep) || kappa_max_rep <= 0) {
+    kappa_breaks_rep <- c(0, 0.1)
+    kappa_limits_rep <- c(0, 0.1)
+  } else {
+    kappa_breaks_rep <- scales::pretty_breaks(n = 3)(c(0, kappa_max_rep))
+    kappa_breaks_rep <- unique(kappa_breaks_rep[kappa_breaks_rep >= 0 & kappa_breaks_rep <= kappa_max_rep])
+    if (length(kappa_breaks_rep) == 0) {
+      kappa_breaks_rep <- c(0, kappa_max_rep)
+    }
+    kappa_limits_rep <- c(0, kappa_max_rep)
+  }
+
   # Create visualization with geom_tile
   kappa_plot_rep <- kappa_matrix_rep |>
     ggplot(aes(x = var1, y = fct_rev(var2), fill = -log10(p_value), label = round(kappa, 2))) +
     geom_tile(color = "white") +
     geom_text() +
-    scale_fill_gradient2(
-      low = bri_color[["low"]],
-      mid = bri_color[["mid"]],
+    scale_fill_gradient(
+      low = bri_color[["mid"]],
       high = bri_color[["high"]],
       na.value = bri_color[["none"]],
-      breaks = c(0, 2, 4, 6),
-      limits = c(1, 7),
-      labels = c(expression(1), expression(10^-2), expression(10^-4), expression(10^-6))
+      breaks = kappa_breaks_rep,
+      limits = kappa_limits_rep,
+      labels = scales::label_number(accuracy = 0.1)(kappa_breaks_rep)
     ) +
     scale_y_discrete(expand = c(0, 0)) +
     scale_x_discrete(expand = c(0, 0)) +
