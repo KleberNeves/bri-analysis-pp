@@ -38,9 +38,6 @@ dir.create("./replication-results/EPM/secondary_outcomes")
 dir.create("./replication-results/For labs/EPM/secondary_outcomes")
 source("epm-summarizer.R")
 
-# Join summarized files into the single large experiments
-source("big_exp_summarizer.R")
-
 ##### Run the analysis script to perform the first part, the meta-analysis to estimate replication rates. Plots and datasets with the results will be saved in the folder output, with a subfolder for each subset. ####
 
 source("analysis.R")

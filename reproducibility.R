@@ -41,8 +41,7 @@ file_dict = rbind(
   read_tsv("./replication-results/PCR_ALT_results_dict.tsv", show_col_types = F),
   read_tsv("./replication-results/EPM_results_dict.tsv", show_col_types = F),
   read_tsv("./replication-results/MTT_results_dict.tsv", show_col_types = F),
-  read_tsv("./replication-results/MTT_ALT_results_dict.tsv", show_col_types = F),
-  read_tsv("./replication-results/BIG_EXP_results_dict.tsv", show_col_types = F)
+  read_tsv("./replication-results/MTT_ALT_results_dict.tsv", show_col_types = F)
 ) |>
   filter(
     !is.na(Filename),
@@ -68,10 +67,6 @@ run_all_meta_analyses = function (inclusion_set_column, save_results_to, params,
   data_list$toinclude = data_list[[inclusion_set_column]]
   data_list = data_list |> filter(toinclude %in% c("INCLUDE", "MA ONLY"))
   ma_only_list = data_list |> filter(toinclude == "MA ONLY") |> select(EXP, LAB)
-  
-  if (params$ma_dist == "bigexp") {
-    data_list = data_list |> mutate(LAB = "LAB00") |> distinct(LAB, EXP, .keep_all = T)
-  }
   
   data_list = data_list |> select(LAB, EXP, UNIT) |>
     mutate(UNIT = ifelse(UNIT == "BRI", NA, UNIT)) |>
@@ -130,7 +125,7 @@ run_all_meta_analyses = function (inclusion_set_column, save_results_to, params,
 perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, simulated = F) {
   
   print(paste0(EXP_code, " ", params$ma_dist))
-      
+  
   # Flags for PCR types and exponents
   is_PCR = str_detect(EXP_code, "PCR") & !str_detect(EXP_code, "ALTPCR")
   is_ALTPCR = str_detect(EXP_code, "ALTPCR")
@@ -285,7 +280,7 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
   zval_FEMA = NA
   
   # If there is more than one replication, run meta-analysis
-  if (n_reps > 1) {
+  if (n_reps > 1 & params$ma_dist != "bigexp") {
     # Perform random and fixed effects meta-analysis
     print ("Running meta-analyses and individual tests ...")
     
@@ -372,7 +367,7 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
   summaries$LAB = all_rep_es_data$summaries$LAB
   
   summaries = summaries |> left_join(rep_es |> select(LAB, dfi, pooled_sd), by = "LAB")
-
+  
   # Calculate individual experiment intervals
   if (params$ma_dist == "z") {
     summaries = summaries |> mutate(
@@ -771,6 +766,31 @@ summarise_es_by_lab = function(df, paired_labs, use_perc = F) {
 make_rep_es_analysis = function (data_fns, simulated, EXP_code, is_PCR, original_es, paired_labs, ma_dist, use_perc = F) {
   
   rep_data = map_dfr(data_fns, read_tsv, show_col_types = F)
+  
+  if (ma_dist == "bigexp") {
+    group_means = rep_data |>
+      group_by(LAB) |>
+      summarise(
+        group1_mean = mean(Group1, na.rm = T),
+        group2_mean = mean(Group2, na.rm = T)
+      )
+    
+    rep_data = rep_data |>
+      left_join(group_means) |>
+      rowwise() |>
+      mutate(
+        Group2_Perc = ifelse(
+          str_detect(EXP_code, "^PCR"), Group2 - group2_mean, Group2 / group2_mean
+        ),
+        Group1_Perc = ifelse(
+          str_detect(EXP_code, "^PCR"), Group1 - group1_mean, Group1 / group1_mean
+        )
+      ) |>
+      ungroup() |>
+      mutate(
+        LAB = "All LABs"
+      )
+  }
   
   rep_enough_ns = rep_data |>
     count(LAB) |>
