@@ -780,7 +780,7 @@ make_rep_es_analysis = function (data_fns, simulated, EXP_code, is_PCR, original
       rowwise() |>
       mutate(
         Group2_Perc = ifelse(
-          str_detect(EXP_code, "^PCR"), Group2 - group2_mean, Group2 / group2_mean
+          str_detect(EXP_code, "^PCR"), Group2 - group1_mean, Group2 / group1_mean
         ),
         Group1_Perc = ifelse(
           str_detect(EXP_code, "^PCR"), Group1 - group1_mean, Group1 / group1_mean
