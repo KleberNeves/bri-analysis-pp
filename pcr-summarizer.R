@@ -69,6 +69,8 @@ build_summary_single_lab = function(lab_code, exp_data, alternative_pairing, suf
     mutate(
       EXP = exp_code, LAB = lab_code, Replicate = ExpUnit,
       Group1_Perc = Group1 - group1_mean, Group2_Perc = Group2 - group1_mean
+      %%if not paired Group1_Perc = Group1 - group1_mean, Group2_Perc = Group2 - group1_mean
+      %%if paired Group1_Perc = Group1 - Group1, Group2_Perc = Group2 - Group2
     ) |>
     select(LAB, EXP, Replicate, Group1, Group2, Group1_Perc, Group2_Perc) |>
     
