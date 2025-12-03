@@ -771,8 +771,8 @@ make_rep_es_analysis = function (data_fns, simulated, EXP_code, is_PCR, original
     group_means = rep_data |>
       group_by(LAB) |>
       summarise(
-        group1_mean = mean(Group1, na.rm = T),
-        group2_mean = mean(Group2, na.rm = T)
+        group1_mean = mean(Group1_Perc, na.rm = T),
+        group2_mean = mean(Group2_Perc, na.rm = T)
       )
     
     rep_data = rep_data |>
