@@ -768,28 +768,13 @@ make_rep_es_analysis = function (data_fns, simulated, EXP_code, is_PCR, original
   rep_data = map_dfr(data_fns, read_tsv, show_col_types = F)
   
   if (ma_dist == "bigexp") {
-    group_means = rep_data |>
-      group_by(LAB) |>
-      summarise(
-        group1_mean = mean(Group1, na.rm = T),
-        group2_mean = mean(Group2, na.rm = T)
-      )
-    
+
     rep_data = rep_data |>
-      left_join(group_means) |>
-      rowwise() |>
-      mutate(
-        Group2_Perc = ifelse(
-          str_detect(EXP_code, "^PCR"), Group2 - group2_mean, Group2 / group2_mean
-        ),
-        Group1_Perc = ifelse(
-          str_detect(EXP_code, "^PCR"), Group1 - group1_mean, Group1 / group1_mean
-        )
-      ) |>
-      ungroup() |>
       mutate(
         LAB = "All LABs"
       )
+    
+    use_perc = T
   }
   
   rep_enough_ns = rep_data |>
