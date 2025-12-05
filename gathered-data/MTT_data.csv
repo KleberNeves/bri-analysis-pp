@@ -1592,21 +1592,21 @@ LAB31;MTT28;01/12/22;NA;3;No cell;NA;;Blank;Group1_blank;;0,112
 LAB31;MTT28;01/12/22;NA;3;No cell;NA;;Treatment Blank;Group2_blank;;0,321
 LAB31;MTT28;01/12/22;NA;3;No cell;NA;;Treatment Blank;Group2_blank;;0,388
 LAB31;MTT28;01/12/22;NA;3;No cell;NA;;Treatment Blank;Group2_blank;;0,327
-LAB31;MTT28;01/12/22;NA;3;80;NA;;Y-Oryzanol;Group2;;0,422
-LAB31;MTT28;01/12/22;NA;3;80;NA;;Y-Oryzanol;Group2;;0,506
-LAB31;MTT28;01/12/22;NA;3;80;NA;;Y-Oryzanol;Group2;;0,586
-LAB31;MTT28;01/12/22;NA;3;80;NA;;Control;;;0,869
-LAB31;MTT28;01/12/22;NA;3;80;NA;;Control;;;0,79
-LAB31;MTT28;01/12/22;NA;3;80;NA;;Control;;;0,896
-LAB31;MTT28;01/12/22;NA;3;80;NA;;Ethanol+ßCD;Group1;;0,458
-LAB31;MTT28;01/12/22;NA;3;80;NA;;Ethanol+ßCD;Group1;;0,144
-LAB31;MTT28;01/12/22;NA;3;80;NA;;Ethanol+ßCD;Group1;;0,325
-LAB31;MTT28;01/12/22;NA;3;80;NA;;Vehicle;;;0,336
-LAB31;MTT28;01/12/22;NA;3;80;NA;;Vehicle;;;0,297
-LAB31;MTT28;01/12/22;NA;3;80;NA;;Vehicle;;;0,186
-LAB31;MTT28;01/12/22;NA;3;80;NA;;Positive Control;Positive_Control;;0,389
-LAB31;MTT28;01/12/22;NA;3;80;NA;;Positive Control;Positive_Control;;0,31
-LAB31;MTT28;01/12/22;NA;3;80;NA;;Positive Control;Positive_Control;;0,355
+LAB31;MTT28;01/12/22;NA;3;80;NA;;Y-Oryzanol;Group2;Yes;0,422
+LAB31;MTT28;01/12/22;NA;3;80;NA;;Y-Oryzanol;Group2;Yes;0,506
+LAB31;MTT28;01/12/22;NA;3;80;NA;;Y-Oryzanol;Group2;Yes;0,586
+LAB31;MTT28;01/12/22;NA;3;80;NA;;Control;;Yes;0,869
+LAB31;MTT28;01/12/22;NA;3;80;NA;;Control;;Yes;0,79
+LAB31;MTT28;01/12/22;NA;3;80;NA;;Control;;Yes;0,896
+LAB31;MTT28;01/12/22;NA;3;80;NA;;Ethanol+ßCD;Group1;Yes;0,458
+LAB31;MTT28;01/12/22;NA;3;80;NA;;Ethanol+ßCD;Group1;Yes;0,144
+LAB31;MTT28;01/12/22;NA;3;80;NA;;Ethanol+ßCD;Group1;Yes;0,325
+LAB31;MTT28;01/12/22;NA;3;80;NA;;Vehicle;;Yes;0,336
+LAB31;MTT28;01/12/22;NA;3;80;NA;;Vehicle;;Yes;0,297
+LAB31;MTT28;01/12/22;NA;3;80;NA;;Vehicle;;Yes;0,186
+LAB31;MTT28;01/12/22;NA;3;80;NA;;Positive Control;Positive_Control;Yes;0,389
+LAB31;MTT28;01/12/22;NA;3;80;NA;;Positive Control;Positive_Control;Yes;0,31
+LAB31;MTT28;01/12/22;NA;3;80;NA;;Positive Control;Positive_Control;Yes;0,355
 LAB31;MTT67;17/02/23;NA;1;9;NA;;Control;;;0,446
 LAB31;MTT67;17/02/23;NA;1;9;NA;;Control;;;0,387
 LAB31;MTT67;17/02/23;NA;1;9;NA;;Control;;;0,452
@@ -4636,27 +4636,27 @@ LAB72;MTT4;25/07/22;NA;A;#+11;NA;;Branco do Controle ;Group1_blank;;0,064
 LAB72;MTT4;25/07/22;NA;A;#+11;NA;;Branco Mistura;Group2_blank;;0,063
 LAB72;MTT4;25/07/22;NA;A;#+11;NA;;Branco Mistura;Group2_blank;;0,062
 LAB72;MTT4;25/07/22;NA;A;#+11;NA;;Branco Mistura;Group2_blank;;0,063
-LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Tratamento (Resveratrol, 1uM);Group2;;0,212
-LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Tratamento (Resveratrol, 1uM);Group2;;0,168
-LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Tratamento (Resveratrol, 1uM);Group2;;0,188
-LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Controle (DMSO 1%);Group1;;0,144
-LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Controle (DMSO 1%);Group1;;0,196
-LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Controle (DMSO 1%);Group1;;0,19
-LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Controle Branco;;;0,086
-LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Controle Branco;;;0,17
-LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Controle Branco;;;0,084
-LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Controle Positivo;Positive_Control;;0,136
-LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Controle Positivo;Positive_Control;;0,165
-LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Controle Positivo;Positive_Control;;0,144
-LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Tratamento Branco;;;0,066
-LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Tratamento Branco;;;0,067
-LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Tratamento Branco;;;0,066
-LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Meio de Cultura;;;0,059
-LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Meio de Cultura;;;0,063
-LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Meio de Cultura;;;0,064
-LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Meio de cultura com DMSO;;;0,068
-LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Meio de cultura com DMSO;;;0,07
-LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Meio de cultura com DMSO;;;0,065
+LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Tratamento (Resveratrol, 1uM);Group2;Yes;0,212
+LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Tratamento (Resveratrol, 1uM);Group2;Yes;0,168
+LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Tratamento (Resveratrol, 1uM);Group2;Yes;0,188
+LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Controle (DMSO 1%);Group1;Yes;0,144
+LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Controle (DMSO 1%);Group1;Yes;0,196
+LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Controle (DMSO 1%);Group1;Yes;0,19
+LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Controle Branco;;Yes;0,086
+LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Controle Branco;;Yes;0,17
+LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Controle Branco;;Yes;0,084
+LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Controle Positivo;Positive_Control;Yes;0,136
+LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Controle Positivo;Positive_Control;Yes;0,165
+LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Controle Positivo;Positive_Control;Yes;0,144
+LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Tratamento Branco;;Yes;0,066
+LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Tratamento Branco;;Yes;0,067
+LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Tratamento Branco;;Yes;0,066
+LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Meio de Cultura;;Yes;0,059
+LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Meio de Cultura;;Yes;0,063
+LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Meio de Cultura;;Yes;0,064
+LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Meio de cultura com DMSO;;Yes;0,068
+LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Meio de cultura com DMSO;;Yes;0,07
+LAB75;MTT83;09/06/22;A;1A;P16 e P17;NA;;Meio de cultura com DMSO;;Yes;0,065
 LAB75;MTT83;23/06/22;B;1B;P19;NA;;Tratamento (Resveratrol, 1uM);Group2;;0,181
 LAB75;MTT83;23/06/22;B;1B;P19;NA;;Tratamento (Resveratrol, 1uM);Group2;;0,144
 LAB75;MTT83;23/06/22;B;1B;P19;NA;;Tratamento (Resveratrol, 1uM);Group2;;0,15
@@ -4757,51 +4757,51 @@ LAB75;MTT83;30/06/22;C;3C;P19;NA;;Controle Positivo (triton-x 100);Positive_Cont
 LAB75;MTT83;30/06/22;C;3C;P19;NA;;Controle Positivo (triton-x 100);Positive_Control;;0,076
 LAB75;MTT83;30/06/22;C;3C;P19;NA;;Controle Positivo (triton-x 100);Positive_Control;;0,078
 LAB75;MTT83;30/06/22;C;3C;P19;NA;;Controle Positivo (triton-x 100);Positive_Control;;0,076
-LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;;0,129
-LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;;0,15
-LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;;0,132
-LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;;0,194
-LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;;0,139
-LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;;0,141
-LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;;0,161
-LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;;0,158
-LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;;0,146
-LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;;0,1
-LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;;0,166
-LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;;0,17
-LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;;0,142
-LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;;0,158
-LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;;0,172
-LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;;0,145
-LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;;0,239
-LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;;0,151
-LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;;0,162
-LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;;0,186
-LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;;0,167
-LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;;0,211
-LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;;0,16
-LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;;0,19
-LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;;0,143
-LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;;0,179
-LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;;0,215
-LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;;0,16
-LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;;0,182
-LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;;0,255
-LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Controle Branco;;;0,128
-LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Controle Branco;;;0,133
-LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Controle Branco;;;0,127
-LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Controle Branco;;;0,26
-LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Controle Branco;;;0,178
-LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Controle Branco;;;0,149
-LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Controle Branco;;;0,19
-LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Controle Branco;;;0,147
-LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Controle Branco;;;0,12
-LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Controle Branco;;;0,164
-LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Controle Branco;;;0,135
-LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Controle Branco;;;0,227
-LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Controle Branco;;;0,34
-LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Controle Branco;;;0,192
-LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Controle Branco;;;0,217
+LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;Yes;0,129
+LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;Yes;0,15
+LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;Yes;0,132
+LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;Yes;0,194
+LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;Yes;0,139
+LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;Yes;0,141
+LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;Yes;0,161
+LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;Yes;0,158
+LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;Yes;0,146
+LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;Yes;0,1
+LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;Yes;0,166
+LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;Yes;0,17
+LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;Yes;0,142
+LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;Yes;0,158
+LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Tratamento (Resveratrol, 1uM);Group2;Yes;0,172
+LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;Yes;0,145
+LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;Yes;0,239
+LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;Yes;0,151
+LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;Yes;0,162
+LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;Yes;0,186
+LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;Yes;0,167
+LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;Yes;0,211
+LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;Yes;0,16
+LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;Yes;0,19
+LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;Yes;0,143
+LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;Yes;0,179
+LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;Yes;0,215
+LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;Yes;0,16
+LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;Yes;0,182
+LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Controle (DMSO 0,01%);Group1;Yes;0,255
+LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Controle Branco;;Yes;0,128
+LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Controle Branco;;Yes;0,133
+LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Controle Branco;;Yes;0,127
+LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Controle Branco;;Yes;0,26
+LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Controle Branco;;Yes;0,178
+LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Controle Branco;;Yes;0,149
+LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Controle Branco;;Yes;0,19
+LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Controle Branco;;Yes;0,147
+LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Controle Branco;;Yes;0,12
+LAB75;MTT83;14/07/22;D;2D;P18 e P19;NA;;Controle Branco;;Yes;0,164
+LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Controle Branco;;Yes;0,135
+LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Controle Branco;;Yes;0,227
+LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Controle Branco;;Yes;0,34
+LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Controle Branco;;Yes;0,192
+LAB75;MTT83;14/07/22;D;3D;P18 e P19;NA;;Controle Branco;;Yes;0,217
 LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Controle Positivo (triton-x 100);Positive_Control;;0,066
 LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Controle Positivo (triton-x 100);Positive_Control;;0,064
 LAB75;MTT83;14/07/22;D;1D;P18 e P19;NA;;Controle Positivo (triton-x 100);Positive_Control;;0,069
