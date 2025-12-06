@@ -2053,9 +2053,10 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
           MA_Dist,
           "t" ~ "t distribution (# of units)",
           "z" ~ "z distribution",
-          "knha" ~ "t distribution (# of replications)"
+          "knha" ~ "t distribution (# of replications)",
+          "bigexp" ~ "Big experiment"
         ),
-        levels = c("t distribution (# of units)", "z distribution", "t distribution (# of replications)")
+        levels = c("t distribution (# of units)", "z distribution", "t distribution (# of replications)", "Big experiment")
       )
     )
 
@@ -2130,6 +2131,8 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
 
     available_inclusion_levels <- unique(as.character(AGGDATA_TOG$Inclusion_Set))
     inclusion_levels <- desired_inclusion_levels[desired_inclusion_levels %in% available_inclusion_levels]
+    
+    ma_dist_levels <- c("t distribution (# of units)", "z distribution", "t distribution (# of replications)", "Big experiment")[c("t distribution (# of units)", "z distribution", "t distribution (# of replications)", "Big experiment") %in% AGGDATA_TOG$MA_Dist]
 
     spec_parameters_levels <- rev(c(
       unique(AGGDATA_TOG$Metric)[2:3],
@@ -2140,7 +2143,7 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       "Individual replication",
       inclusion_levels,
       method_levels,
-      c("t distribution (# of units)", "z distribution", "t distribution (# of replications)")[c("t distribution (# of units)", "z distribution", "t distribution (# of replications)") %in% AGGDATA_TOG$MA_Dist]
+      ma_dist_levels
     ))
 
     # Methods in black, as requested
@@ -2152,7 +2155,7 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       rep(RColorBrewer::brewer.pal(7, "Greens")[7], 1),
       rep(RColorBrewer::brewer.pal(7, "Blues")[7], length(inclusion_levels)),
       method_colors,
-      rep(RColorBrewer::brewer.pal(7, "Oranges")[7], length(c("t distribution (# of units)", "z distribution", "t distribution (# of replications)")[c("t distribution (# of units)", "z distribution", "t distribution (# of replications)") %in% AGGDATA_TOG$MA_Dist]))
+      rep(RColorBrewer::brewer.pal(7, "Oranges")[7], length(ma_dist_levels))
     ))
 
     # Deduplicate breaks while keeping order and map colors to labels
@@ -2184,6 +2187,8 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
     available_inclusion_levels <- unique(as.character(AGGDATA_TOG$Inclusion_Set))
     inclusion_levels <- desired_inclusion_levels[desired_inclusion_levels %in% available_inclusion_levels]
 
+    ma_dist_levels <- c("t distribution (# of units)", "z distribution", "t distribution (# of replications)", "Big experiment")[c("t distribution (# of units)", "z distribution", "t distribution (# of replications)", "Big experiment") %in% AGGDATA_TOG$MA_Dist]
+    
     spec_parameters_levels <- rev(c(
       unique(AGGDATA_TOG$Metric)[2:3],
       unique(AGGDATA_TOG$Metric)[1],
@@ -2194,7 +2199,7 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       inclusion_levels,
       c("PCR (log)", "PCR (linear)"),
       c("MTT (paired)", "MTT (unpaired)"),
-      unique(AGGDATA_TOG$MA_Dist)
+      ma_dist_levels
     ))
 
     spec_colors <- rev(c(
@@ -2205,7 +2210,7 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       rep(RColorBrewer::brewer.pal(7, "Blues")[7], length(inclusion_levels)),
       rep(RColorBrewer::brewer.pal(7, "Greys")[7], 2),  # PCR_Scale (2 levels)
       rep(RColorBrewer::brewer.pal(7, "Greys")[5], 2),  # MTT_Pairing (2 levels)
-      rep(RColorBrewer::brewer.pal(7, "Oranges")[7], length(unique(AGGDATA_TOG$MA_Dist)))
+      rep(RColorBrewer::brewer.pal(7, "Oranges")[7], length(ma_dist_levels))
     ))
 
     spec_breaks <- unique(spec_parameters_levels)
