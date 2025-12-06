@@ -606,8 +606,6 @@ plot_cortable_cluster <- function(FDATA, vars1, vars2, title, fn, show_label, ma
           "Subjectively replicated" = "Subjective"
         ),
       col1 = col1 |>
-        fct_relevel("Coeff. Variation", after = 6),
-      col1 = col1 |>
         fct_relevel("Citations", after = 11)
     )
 

@@ -38,21 +38,21 @@ PRED_DATA_EXP_LEVEL = PRED_DATA_EXP_LEVEL |>
     `EXP`,
     `Biological model (animal)`,
     EPM,
-    MTT,
     PCR,
+    MTT,
     `Hedges's g`,
     `P-value (calculated)`,
     `Quality of reporting index, from gaps in original protocol`,
     Landis4_Perc,
     `Normalized impact factor`,
     `Year of online publication`,
-    `Last author’s academic age`,
+    `Last author's academic age`,
     `Number of papers 5 years before publishing the article`,
     `Number of citations (first 2 years)`,
     `Position in the Folha Ranking (current)`,
     `Survey - Replication`,
-    `Survey - Effect Size`,
-    `Survey - Challenge`
+    `Survey - Challenge`,
+    `Survey - Effect Size`
   )
 
 # Rename columns
@@ -61,9 +61,9 @@ colnames(PRED_DATA_EXP_LEVEL) = c(
   "EXP",
   "Animal Model",
   "EPM",
-  "MTT",
   "PCR",
-  "Hedges’s g",
+  "MTT",
+  "Hedges's g",
   "p-value",
   "Reporting",
   "Bias Control",
@@ -74,8 +74,8 @@ colnames(PRED_DATA_EXP_LEVEL) = c(
   "Citations",
   "Institution Ranking",
   "Survey - Replication",
-  "Survey - Effect Size",
-  "Survey - Challenge"
+  "Survey - Challenge",
+  "Survey - Effect Size"
 )
 
 ##### REP level predictor data preparation #####
