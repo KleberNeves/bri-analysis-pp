@@ -641,7 +641,15 @@ plot_cortable_cluster <- function(FDATA, vars1, vars2, title, fn, show_label, ma
       col1 == "University Ranking" ~ "Lab",
       .default = "Statistics"
     )) |>
-    drop_na() |>
+    drop_na()
+  
+  # Guard against empty data after dropping NAs
+  if (nrow(plot_data) == 0) {
+    message("Warning: No valid data for correlation plot after dropping NAs. Skipping plot generation.")
+    return(NULL)
+  }
+  
+  plot_data <- plot_data |>
     mutate(group_x = fct_relevel(
       group_x,
       "Model/Method",
@@ -2295,6 +2303,15 @@ plot_kappa_exp <- function(input_path, output_path) {
       paired_data <- data_exp |>
         select(all_of(.x)) |>
         drop_na()
+      # Skip if insufficient data for kappa calculation
+      if (nrow(paired_data) < 2) {
+        return(tibble(
+          var1 = .x[1],
+          var2 = .x[2],
+          kappa = NA_real_,
+          p_value = NA_real_
+        ))
+      }
       # Calculate kappa
       kappa_result <- kappa2(paired_data)
       tibble(
@@ -2401,6 +2418,15 @@ plot_kappa_rep <- function(input_path, output_path) {
       paired_data <- data_rep |>
         select(all_of(.x)) |>
         drop_na()
+      # Skip if insufficient data for kappa calculation
+      if (nrow(paired_data) < 2) {
+        return(tibble(
+          var1 = .x[1],
+          var2 = .x[2],
+          kappa = NA_real_,
+          p_value = NA_real_
+        ))
+      }
       # Calculate kappa
       kappa_result <- kappa2(paired_data)
       tibble(
