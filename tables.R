@@ -122,9 +122,9 @@ create_tbl_by_method_pcr <- function(analysis_type, distribution) {
 
   # Header rows carrying column names (ensures no NA/"" in names)
   header_exp <- tibble(MetricShortName = "By experiment")
-  for (m in present_methods) header_exp[[m]] <- m
+  for (m in present_methods) header_exp[[m]] <- ifelse(m == "ALL_PCR_MTT", "ALL", m)
   header_rep <- tibble(MetricShortName = "By replication")
-  for (m in present_methods) header_rep[[m]] <- m
+  for (m in present_methods) header_rep[[m]] <- ifelse(m == "ALL_PCR_MTT", "ALL", m)
 
   # Combine in desired order
   tbl_by_method_all_exps <- bind_rows(
@@ -206,9 +206,9 @@ create_tbl_by_method_altpcr <- function(analysis_type, distribution) {
 
   # Header rows carrying column names (ensures no NA/"" in names)
   header_exp <- tibble(MetricShortName = "By experiment")
-  for (m in present_methods) header_exp[[m]] <- m
+  for (m in present_methods) header_exp[[m]] <- ifelse(m == "ALL_ALTPCR_MTT", "ALL", m)
   header_rep <- tibble(MetricShortName = "By replication")
-  for (m in present_methods) header_rep[[m]] <- m
+  for (m in present_methods) header_rep[[m]] <- ifelse(m == "ALL_ALTPCR_MTT", "ALL", m)
 
   # Combine in desired order
   tbl_by_method_all_exps <- bind_rows(
@@ -1926,7 +1926,9 @@ df_experiments_numbers_overview_wide_join <- df_experiments_numbers_overview_wid
   left_join(lab_agreement_summary, by = c("reason" = "validation_new")) |>
   arrange(validation) |>
   add_row(
-    status = "Total", n = 143, lab_agree = 132,
+    status = "Total", 
+    n = sum(df_experiments_numbers_overview_wide$n, na.rm = TRUE), 
+    lab_agree = sum(form1_val$decision_agree == "Sim", na.rm = TRUE),
     .before = 9
   ) |>
   arrange(desc(n)) |>
