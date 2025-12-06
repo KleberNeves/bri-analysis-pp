@@ -1724,9 +1724,18 @@ plot_cvs <- function(rep_df, orig_df, suffix, rep_summary_folder) {
   rep_df <- rep_df |>
     mutate(
       Method = str_extract(EXP, "(EPM|ALTMTT|MTT|ALTPCR|PCR)"),
+      # Map ALT variants to base technique names for display (ALTPCR -> PCR, ALTMTT -> MTT)
+      Method = case_when(
+        Method == "ALTPCR" ~ "PCR",
+        Method == "ALTMTT" ~ "MTT",
+        TRUE ~ Method
+      ),
       # Collapse ALT from EXP only for joining with original data and x-axis labeling
       EXP = str_remove(EXP, "ALT")
     )
+  
+  # Set order of techniques to match Fig. 2 (specification curve): EPM, MTT, PCR
+  rep_df$Method <- factor(rep_df$Method, levels = c("EPM", "MTT", "PCR"))
 
   by_rep <- "LAB" %in% colnames(rep_df)
 
@@ -1801,6 +1810,9 @@ plot_cvs <- function(rep_df, orig_df, suffix, rep_summary_folder) {
   }
 
   df <- rbind(df1, df2)
+  
+  # Ensure Method factor order is preserved after rbind (EPM, MTT, PCR to match Fig. 2)
+  df$Method <- factor(df$Method, levels = c("EPM", "MTT", "PCR"))
 
   # Criar ordenação baseada no CV original (maior para menor) para que apareça menor para maior após coord_flip()
   exp_order_by_cv <- df |>
