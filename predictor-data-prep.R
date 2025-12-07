@@ -46,7 +46,7 @@ PRED_DATA_EXP_LEVEL = PRED_DATA_EXP_LEVEL |>
     Landis4_Perc,
     `Normalized impact factor`,
     `Year of online publication`,
-    `Last author's academic age`,
+    `Last author’s academic age`,
     `Number of papers 5 years before publishing the article`,
     `Number of citations (first 2 years)`,
     `Position in the Folha Ranking (current)`,
