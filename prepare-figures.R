@@ -1,11 +1,19 @@
 # This script just reorganizes all figures for presentation in one folder, with meaningful names for the manuscript
 
+output_path = paste0("./output/", results_path)
+
+# Restore tables folder if it was previously renamed to "other tables"
+tables_path <- paste0(output_path, "/_manuscript figures and tables/tables")
+other_tables_path <- paste0(output_path, "/_manuscript figures and tables/other tables")
+
+if (!dir.exists(tables_path) && dir.exists(other_tables_path)) {
+  file.rename(other_tables_path, tables_path)
+  message("Restored 'other tables' back to 'tables'")
+}
 
 # Preprint ----------------------------------------------------------------
 
 figure_correspondence_table = read_excel("./other-data/Manuscript Figure Correspondence.xlsx", sheet = 1)
-
-output_path = paste0("./output/", results_path)
 
 paper_fig_path = paste0("./output/", results_path, "/_manuscript figures and tables/preprint/")
 suppressWarnings({dir.create(paper_fig_path)})
@@ -73,4 +81,10 @@ file.remove(list.files(path = paste0(output_path, "/_manuscript figures and tabl
                        full.names = TRUE,
                        ignore.case = TRUE))
 
-file.rename(paste0(output_path, "/_manuscript figures and tables/tables"), paste0(output_path, "/_manuscript figures and tables/other tables"))
+# Remove destination folder if it exists before renaming
+other_tables_path <- paste0(output_path, "/_manuscript figures and tables/other tables")
+if (dir.exists(other_tables_path)) {
+  unlink(other_tables_path, recursive = TRUE)
+}
+
+file.rename(paste0(output_path, "/_manuscript figures and tables/tables"), other_tables_path)

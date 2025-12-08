@@ -268,7 +268,7 @@ methods <- c(
 )
 
 # List of distributions to check
-distributions <- c("t", "z", "knha")
+distributions <- c("t", "z", "knha", "bigexp")
 
 # Loop through each method and distribution
 for (method in methods) {
@@ -451,6 +451,54 @@ if (length(existing_tables_knha) > 0) {
   message("No tables were generated and saved.")
 }
 
+#### bigexp -----------------------------------------------------------------------
+
+# Creating a list of existing tables for saving
+existing_tables_bigexp <- list()
+
+# Define expected table names
+table_names_bigexp <- c(
+  "tbl_by_method_primary_bigexp",
+  "tbl_by_method_all_exps_lab_units_bigexp",
+  "tbl_by_method_at_least_2_reps_bigexp",
+  "tbl_by_method_included_by_lab_bigexp",
+  "tbl_by_method_only_3_reps_bigexp"
+)
+
+# Check if each table exists before adding it to the list
+for (table in table_names_bigexp) {
+  if (exists(table)) {
+    existing_tables_bigexp <- append(existing_tables_bigexp, list(get(table)))
+
+    if (table == "tbl_by_method_primary_bigexp") {
+      save_tbl(
+        list(get(table)),
+        paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S22.docx")
+      )
+      cat("\n### Table S22 generated! ###\n")
+    }
+
+    if (table == "tbl_by_method_all_exps_lab_units_bigexp") {
+      save_tbl(
+        list(get(table)),
+        paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S23.docx")
+      )
+      cat("\n### Table S23 generated! ###\n")
+    }
+  }
+}
+
+# Save tables only if at least one was created
+if (length(existing_tables_bigexp) > 0) {
+  save_tbl(
+    existing_tables_bigexp,
+    paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table - Replication Rates - PCR - bigexp.docx")
+  )
+  cat("\n### Table - Replication Rates - PCR - bigexp generated! ###\n")
+} else {
+  message("No bigexp tables were generated and saved.")
+}
+
 ### ALTPCR ---------------------------------------------------------------------
 
 # Loop through each method and distribution
@@ -566,6 +614,38 @@ if (length(existing_tables_knha_altpcr) > 0) {
   cat("\n### Table - Replication Rates - ALTPCR - knha generated! ###\n")
 } else {
   message("No ALTPCR tables for knha-distribution were generated and saved.")
+}
+
+#### bigexp -----------------------------------------------------------------------
+
+# Creating a list of existing ALTPCR tables for bigexp
+existing_tables_bigexp_altpcr <- list()
+
+# Define expected table names
+table_names_bigexp_altpcr <- c(
+  "tbl_by_method_primary_bigexp_ALTPCR",
+  "tbl_by_method_all_exps_lab_units_bigexp_ALTPCR",
+  "tbl_by_method_at_least_2_reps_bigexp_ALTPCR",
+  "tbl_by_method_included_by_lab_bigexp_ALTPCR",
+  "tbl_by_method_only_3_reps_bigexp_ALTPCR"
+)
+
+# Check if each table exists before adding it to the list
+for (table in table_names_bigexp_altpcr) {
+  if (exists(table)) {
+    existing_tables_bigexp_altpcr <- append(existing_tables_bigexp_altpcr, list(get(table)))
+  }
+}
+
+# Save tables only if at least one was created
+if (length(existing_tables_bigexp_altpcr) > 0) {
+  save_tbl(
+    existing_tables_bigexp_altpcr,
+    paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table - Replication Rates - ALTPCR - bigexp.docx")
+  )
+  cat("\n### Table - Replication Rates - ALTPCR - bigexp generated! ###\n")
+} else {
+  message("No ALTPCR tables for bigexp were generated and saved.")
 }
 
 ## Table 2 -----------------------------------------------------
