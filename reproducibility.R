@@ -404,10 +404,10 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
   # If using a single experiment, the MA intervals are replaced with intervals calculated with the SD and SEM of the whole experiment, the bounds just calculated above
   if (params$ma_dist == "bigexp") {
     
-    rema_es = indiv_estimate
-    rema_pi_lower = summaries$pi.lb
-    rema_pi_upper = summaries$pi.ub
-    rema_pvalue = summaries$pval
+    rema_es = NA
+    rema_pi_lower = NA
+    rema_pi_upper = NA
+    rema_pvalue = NA
     
     rema_I2 = NA
     rema_tau2 = NA
