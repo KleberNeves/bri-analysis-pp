@@ -2,6 +2,8 @@
 if (!require("pacman")) install.packages("pacman"); library(pacman)
 pacman::p_boot(load = TRUE)
 pacman::p_load(
+  "bit64",
+  "evaluate",
   "likert",
   "tidyverse",
   "metafor",
