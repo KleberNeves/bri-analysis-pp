@@ -576,11 +576,7 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
     
     # If it's a single experiment, just get all the subjective evaluations and count (individual subjective evaluation does not exist)
     if (params$ma_dist == "bigexp") {
-      n_subjective_successful_eval = subjective_repro_data |>
-        filter(`Código do Experimento` == (str_remove(EXP_code, "ALT"))) |>
-        mutate(SUBJ_SUCCESS = `Na opinião do laboratório, os resultados do experimento original foram replicados com sucesso?` == "Sim") |>
-        filter(SUBJ_SUCCESS) |>
-        nrow()
+      n_subjective_successful_eval = NA
     }
     
   }

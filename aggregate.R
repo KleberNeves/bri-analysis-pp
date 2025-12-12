@@ -7,7 +7,7 @@
 
 # Given a set of replications, calculates success for each replication
 make_summary_subset = function (rep_summaries_in, rep_summaries_individual_in, filtering = NULL, filtering_label = filtering) {
-  
+
   # Replication success by experiment (group of replications)
   rep_summaries = rep_summaries_in
   if (!is.null(filtering)) {
@@ -167,18 +167,18 @@ make_summary_subset = function (rep_summaries_in, rep_summaries_individual_in, f
     select(REP_Orig_in_REMA_PI, REP_REMA_in_Orig_CI, REP_FEMA_SSS_Orig, REP_Voting, REP_Subjective) |>
     `colnames<-`(c("Orig. in REMA PI","REMA in Orig. CI","FEMA SSS","Voting", "Subjective"))
   
+  REP_AGREE = REP_AGREE |>
+    select(where(~ any(!is.na(.))))
+  
   agreements_exp = calc_agreement(REP_AGREE)
   
   # Agreement by replication
-  if ("All LABs" %in% rep_success_individual_complete$LAB) {
-    REP_AGREE = rep_success_individual_complete |>
-      select(REP_Individual_Rep_in_Orig_CI, REP_Individual_SSS) |>
-      `colnames<-`(c("Rep. in orig. CI","Rep. SSS"))
-  } else {
-    REP_AGREE = rep_success_individual_complete |>
-      select(REP_Individual_Rep_in_Orig_CI, REP_Individual_SSS, REP_Individual_IndivSubjective) |>
-      `colnames<-`(c("Rep. in orig. CI","Rep. SSS","Rep. Subjective"))
-  }
+  REP_AGREE = rep_success_individual_complete |>
+    select(REP_Individual_Rep_in_Orig_CI, REP_Individual_SSS, REP_Individual_IndivSubjective) |>
+    `colnames<-`(c("Rep. in orig. CI","Rep. SSS","Rep. Subjective"))
+  
+  REP_AGREE = REP_AGREE |>
+    select(where(~ any(!is.na(.))))
   
   agreements_individual = calc_agreement(REP_AGREE)
   
