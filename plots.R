@@ -605,8 +605,6 @@ plot_cortable_cluster <- function(FDATA, vars1, vars2, title, fn, show_label, ma
           "≥50% subjectively replicated" = "Subjective (with ties)",
           "Subjectively replicated" = "Subjective"
         ),
-      col1 = col1 |>
-        fct_relevel("Citations", after = 11)
     )
 
   # Plots spearman correlation
@@ -703,10 +701,10 @@ plot_cortable_cluster <- function(FDATA, vars1, vars2, title, fn, show_label, ma
       low = bri_color[["mid"]],
       high = bri_color[["low"]],
       na.value = bri_color[["mid"]],
-      name = "Negative correlation\n(-log10(p-value))",
-      breaks = neg_scale$breaks,
-      labels = scales::label_number(accuracy = 0.1)(neg_scale$breaks),
-      limits = neg_scale$limits,
+      name = "Negative correlation\n(p-value)",
+      breaks = c(0, 1, 2, 3),
+      labels = c(expression(1), expression(10^-1), expression(10^-2), expression(10^-3)),
+      limits = c(0, 3),
       guide = guide_colorbar(order = 1, barwidth = unit(0.6, "cm"), barheight = unit(2.5, "cm"), direction = "vertical")
     ) +
     
@@ -719,10 +717,10 @@ plot_cortable_cluster <- function(FDATA, vars1, vars2, title, fn, show_label, ma
       low = bri_color[["mid"]],
       high = bri_color[["high"]],
       na.value = bri_color[["mid"]],
-      name = "Positive correlation\n(-log10(p-value))",
-      breaks = pos_scale$breaks,
-      labels = scales::label_number(accuracy = 0.1)(pos_scale$breaks),
-      limits = pos_scale$limits,
+      name = "Positive correlation\n(p-value)",
+      breaks = c(0, 1, 2, 3),
+      labels = c(expression(1), expression(10^-1), expression(10^-2), expression(10^-3)),
+      limits = c(0, 3),
       guide = guide_colorbar(order = 2, barwidth = unit(0.6, "cm"), barheight = unit(2.5, "cm"), direction = "vertical")
     ) +
     
@@ -2064,9 +2062,9 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
           "t" ~ "t distribution (# of units)",
           "z" ~ "z distribution",
           "knha" ~ "t distribution (# of replications)",
-          "bigexp" ~ "Big experiment"
+          "bigexp" ~ "Single mean"
         ),
-        levels = c("t distribution (# of units)", "z distribution", "t distribution (# of replications)", "Big experiment")
+        levels = c("t distribution (# of units)", "z distribution", "t distribution (# of replications)", "Single mean")
       )
     )
 
@@ -2142,7 +2140,7 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
     available_inclusion_levels <- unique(as.character(AGGDATA_TOG$Inclusion_Set))
     inclusion_levels <- desired_inclusion_levels[desired_inclusion_levels %in% available_inclusion_levels]
     
-    ma_dist_levels <- c("t distribution (# of units)", "z distribution", "t distribution (# of replications)", "Big experiment")[c("t distribution (# of units)", "z distribution", "t distribution (# of replications)", "Big experiment") %in% AGGDATA_TOG$MA_Dist]
+    ma_dist_levels <- c("t distribution (# of units)", "z distribution", "t distribution (# of replications)", "Single mean")[c("t distribution (# of units)", "z distribution", "t distribution (# of replications)", "Single mean") %in% AGGDATA_TOG$MA_Dist]
 
     spec_parameters_levels <- rev(c(
       unique(AGGDATA_TOG$Metric)[2:3],
@@ -2189,7 +2187,7 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       filter(str_detect(Method, "^ALL_")) |>
       mutate(
         PCR_Scale = if_else(str_detect(Method, "ALTPCR"), "PCR (linear)", "PCR (log)"),
-        MTT_Pairing = if_else(str_detect(Method, "ALTMTT"), "MTT (unpaired)", "MTT (paired)")
+        MTT_Pairing = if_else(str_detect(Method, "ALTMTT"), "MTT (original)", "MTT (paired)")
       )
 
     spec_parameters <- c("Inclusion_Set", "Level", "MA_Dist", "Metric", "PCR_Scale", "MTT_Pairing")
@@ -2197,7 +2195,7 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
     available_inclusion_levels <- unique(as.character(AGGDATA_TOG$Inclusion_Set))
     inclusion_levels <- desired_inclusion_levels[desired_inclusion_levels %in% available_inclusion_levels]
 
-    ma_dist_levels <- c("t distribution (# of units)", "z distribution", "t distribution (# of replications)", "Big experiment")[c("t distribution (# of units)", "z distribution", "t distribution (# of replications)", "Big experiment") %in% AGGDATA_TOG$MA_Dist]
+    ma_dist_levels <- c("t distribution (# of units)", "z distribution", "t distribution (# of replications)", "Single mean")[c("t distribution (# of units)", "z distribution", "t distribution (# of replications)", "Single mean") %in% AGGDATA_TOG$MA_Dist]
     
     spec_parameters_levels <- rev(c(
       unique(AGGDATA_TOG$Metric)[2:3],
@@ -2208,7 +2206,7 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       "Individual replication",
       inclusion_levels,
       c("PCR (log)", "PCR (linear)"),
-      c("MTT (paired)", "MTT (unpaired)"),
+      c("MTT (paired)", "MTT (original)"),
       ma_dist_levels
     ))
 
