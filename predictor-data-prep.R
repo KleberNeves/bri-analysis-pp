@@ -84,6 +84,12 @@ colnames(PRED_DATA_EXP_LEVEL) = c(
 PRED_DATA_REP_LEVEL = read_excel("other-data/inclusion_sets.xlsx", na = c("","NA", "not applicable", "-"))
 
 PRED_DATA_REP_LEVEL = PRED_DATA_REP_LEVEL |>
+  # Exclude validation scores from experiments discussed late via e-mail (scores don't reflect actual experiment)
+  mutate(`Validation - Mean score` = if_else(
+    `Validation - Discussed?` == "E-mail",
+    NA_real_,
+    `Validation - Mean score`
+  )) |>
   select(
     `EXP`,
     `LAB`,
