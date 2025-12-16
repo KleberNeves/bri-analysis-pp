@@ -126,3 +126,10 @@ run_all_sims("knha")
 write_tsv(power_sim_check, paste0("./post-hoc-power-results/Post Hoc Power Simulations - Data Generation Check ", "knha", ".tsv"))
 write_tsv(power_check_all_data, paste0("./post-hoc-power-results/Post Hoc Power Simulations - Data Generation Full Check ", "knha", ".tsv"))
 
+power_sim_check = tibble()
+power_check_all_data = tibble()
+
+run_all_sims("bigexp")
+write_tsv(power_sim_check, paste0("./post-hoc-power-results/Post Hoc Power Simulations - Data Generation Check ", "bigexp", ".tsv"))
+write_tsv(power_check_all_data, paste0("./post-hoc-power-results/Post Hoc Power Simulations - Data Generation Full Check ", "bigexp", ".tsv"))
+
