@@ -104,7 +104,7 @@ run_all_meta_analyses = function (inclusion_set_column, save_results_to, params,
   rep_summaries_individual = map_dfr(analysis_results, "individual_data")
   
   if (simulated) {
-    if (nrow(rep_summaries_individual) < 95) return (NA)
+    if (params$ma_dist != "bigexp" && nrow(rep_summaries_individual) < 95) return (NA)
     
     sim_alerts = unlist(map(analysis_results, "sim_failed"))
     
