@@ -15,7 +15,7 @@ if (!dir.exists(tables_path) && dir.exists(other_tables_path)) {
 
 figure_correspondence_table = read_excel("./other-data/Manuscript Figure Correspondence.xlsx", sheet = 1)
 
-paper_fig_path = paste0("./output/", results_path, "/_manuscript figures and tables/preprint/")
+paper_fig_path = paste0("./output/", results_path, "/_manuscript figures and tables/manuscript/")
 suppressWarnings({dir.create(paper_fig_path)})
 suppressWarnings({dir.create(paste0(paper_fig_path, "/tables"))})
 
