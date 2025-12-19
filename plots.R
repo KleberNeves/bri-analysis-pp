@@ -2174,11 +2174,9 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
     metric_order <- c(
       "Original in replication 95% PI",
       "Replication in original 95% CI",
-      "Same-sign significance (p < 0.05)",
-      "> 50% subjectively replicated",
-      ">= 50% subjectively replicated",
-      "> 50% significant",
-      ">= 50% significant"
+      "Same-sign significance (p < 0.05)", "Same-sign significance (p<0.05)",
+      "> 50% subjectively replicated", ">50% subjectively replicated", ">= 50% subjectively replicated", "≥50% subjectively replicated",
+      "> 50% significant", ">50% significant", ">= 50% significant", "≥50% significant"
     )
     metric_order <- metric_order[metric_order %in% unique(AGGDATA_TOG$Metric)]
     
@@ -2188,6 +2186,9 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       "Same-sign significance (Indiv)"
     )
     indiv_metric_order <- indiv_metric_order[indiv_metric_order %in% unique(AGGDATA_TOG$Metric)]
+    
+    # Filter data to remove any metrics not in our valid list (fixes NA issue)
+    AGGDATA_TOG <- AGGDATA_TOG |> filter(Metric %in% c(metric_order, indiv_metric_order))
     
     inclusion_order <- c(
       "All experiments",
@@ -2266,11 +2267,9 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
     metric_order <- c(
       "Original in replication 95% PI",
       "Replication in original 95% CI",
-      "Same-sign significance (p < 0.05)",
-      "> 50% subjectively replicated",
-      ">= 50% subjectively replicated",
-      "> 50% significant",
-      ">= 50% significant"
+      "Same-sign significance (p < 0.05)", "Same-sign significance (p<0.05)",
+      "> 50% subjectively replicated", ">50% subjectively replicated", ">= 50% subjectively replicated", "≥50% subjectively replicated",
+      "> 50% significant", ">50% significant", ">= 50% significant", "≥50% significant"
     )
     metric_order <- metric_order[metric_order %in% unique(AGGDATA_TOG$Metric)]
     
@@ -2280,6 +2279,9 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       "Same-sign significance (Indiv)"
     )
     indiv_metric_order <- indiv_metric_order[indiv_metric_order %in% unique(AGGDATA_TOG$Metric)]
+    
+    # Filter data to remove any metrics not in our valid list (fixes NA issue)
+    AGGDATA_TOG <- AGGDATA_TOG |> filter(Metric %in% c(metric_order, indiv_metric_order))
     
     inclusion_order <- c(
       "All experiments",

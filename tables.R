@@ -2339,8 +2339,8 @@ save_tbl(
 cat("\n### Table S16 generated! ###\n")
 
 
-## Table S17 -----------------------------------------------------------------
-tbl_s17 <- df_by_experiment |>
+## Table S20 -----------------------------------------------------------------
+tbl_s20 <- df_by_experiment |>
   filter(Method == "PCR" | Method == "ALTPCR") |>
   filter(MA_Dist == "t") |>
   filter(Inclusion_Set == "all_exps_lab_units" | Inclusion_Set == "primary") |>
@@ -2383,8 +2383,8 @@ tbl_s17 <- df_by_experiment |>
   ) |>
   slice(1:7, 10, 9, 8)
 
-ordered_cols_tbl_s17 <- tibble(
-  colname = colnames(tbl_s17),
+ordered_cols_tbl_s20 <- tibble(
+  colname = colnames(tbl_s20),
   priority = case_when(
     str_starts(colname, "MetricShortName") ~ 1,
     str_starts(colname, "primary") ~ 2,
@@ -2395,33 +2395,33 @@ ordered_cols_tbl_s17 <- tibble(
   arrange(priority) |>
   pull(colname)
 
-tbl_s17 <- tbl_s17 |>
-  select(all_of(ordered_cols_tbl_s17)) |>
+tbl_s20 <- tbl_s20 |>
+  select(all_of(ordered_cols_tbl_s20)) |>
   dplyr::rename(`Primary (Log values)` = primary_PCR_t) |>
   dplyr::rename(`Primary (Linear values)` = primary_ALTPCR_t) |>
   dplyr::rename(`All experiments (Log values)` = all_exps_lab_units_PCR_t) |>
   dplyr::rename(`All experiments (Linear values)` = all_exps_lab_units_ALTPCR_t)
 
-footer_text_tbl_s17 <- "Log values columns show results of analysis aggregating ΔCt values for real-time PCR or relative expression in log2 scale for conventional PCR, as in the primary analysis. Linear values columns show results aggregating linearized values (usually 2-ΔΔCt) for real-time PCR and relative expression in linear scale for conventional PCR, as originally planned in the protocols. Same-sign significance is based on a fixed meta-analysis estimate, while effect size comparisons are based on random-effects meta-analysis. All statistical tests use the t distribution. PI, prediction interval, CI, confidence interval. For more information on replication criteria, see the registered replication protocol at https://osf.io/9rnuj."
+footer_text_tbl_s20 <- "Log values columns show results of analysis aggregating ΔCt values for real-time PCR or relative expression in log2 scale for conventional PCR, as in the primary analysis. Linear values columns show results aggregating linearized values (usually 2-ΔΔCt) for real-time PCR and relative expression in linear scale for conventional PCR, as originally planned in the protocols. Same-sign significance is based on a fixed meta-analysis estimate, while effect size comparisons are based on random-effects meta-analysis. All statistical tests use the t distribution. PI, prediction interval, CI, confidence interval. For more information on replication criteria, see the registered replication protocol at https://osf.io/9rnuj."
 
-tbl_s17 <- tbl_s17 |>
+tbl_s20 <- tbl_s20 |>
   slice(-1) |>
   flextable() |>
   bold(j = 2) |>
   bold(i = 6) |>
   hline(i = 5:6) |>
   set_header_labels(MetricShortName = "By experiment") |>
-  add_footer_lines(value = as_paragraph(footer_text_tbl_2)) |>
-  add_header_lines(values = paste0("Table S17 - Replication rates for PCR experiments using different aggregation methods. ")) |>
+  add_footer_lines(value = as_paragraph(footer_text_tbl_s20)) |>
+  add_header_lines(values = paste0("Table S20 - Replication rates for PCR experiments using different aggregation methods. ")) |>
   bold(i = 2, part = "header") |>
   set_table_properties(layout = "autofit")
 
 ### Saving ----
 save_tbl(
-  tbl_s17,
-  paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S17.docx")
+  tbl_s20,
+  paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S20.docx")
 )
-cat("\n### Table S17 generated! ###\n")
+cat("\n### Table S20 generated! ###\n")
 
 ## Table S21 -----------------------------------------------------------------
 tbl_s21 <- df_by_experiment |>
@@ -2508,12 +2508,12 @@ save_tbl(
 cat("\n### Table S21 generated! ###\n")
 
 
-## Table S20 ---------------------------------------------------------------
+## Table S17 ---------------------------------------------------------------
 df_coord_difficulties <- read_excel("other-data/Coordinating team assessment of difficulties.xlsx") |>
   clean_names() |>
   select(categoria, dificuldade, soma_um)
 
-tbl_s20 <- df_coord_difficulties |>
+tbl_s17 <- df_coord_difficulties |>
   group_by(categoria) |>
   reframe(
     dificuldade = dificuldade,
@@ -2559,11 +2559,11 @@ tbl_s20 <- df_coord_difficulties |>
 
 ### Saving ----
 save_tbl(
-  list(tbl_s20),
-  paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S20.docx")
+  list(tbl_s17),
+  paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S17.docx")
 )
 
-cat("\n### Table S20 generated! ###\n")
+cat("\n### Table S17 generated! ###\n")
 
 ## Text-Cited Numbers ------------------------------------------------------
 
