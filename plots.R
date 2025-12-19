@@ -660,6 +660,20 @@ plot_cortable_cluster <- function(FDATA, vars1, vars2, title, fn, show_label, ma
       "Lab",
       "Prediction"
     )) |>
+    # Force correct order within each facet
+    mutate(col1 = fct_relevel(
+      col1,
+      "Animal", "EPM", "MTT", "PCR",
+      "Hedges's g", "p-value", "Coeff. Variation",
+      "Protocol", "Bias Control",
+      "Impact Factor", "Year", "Citations",
+      "Academic Age", "Publications",
+      "Protocol Deviation\n(Lab)", "Protocol Deviation\n(Committee)",
+      "Academic Age\n(Protocol Team)", "Publications\n(Protocol Team)",
+      "Academic Age\n(Data Collection Team)", "Publications\n(Data Collection Team)",
+      "University Ranking",
+      "Survey\n(Replication)", "Survey\n(Effect Size)", "Survey\n(Challenge)"
+    )) |>
     mutate(
       # Create separate fill variables for positive and negative correlations using -log10(p)
       fill_negative = ifelse(rho < 0, -log10(capped.p_rho), NA_real_),
@@ -794,6 +808,20 @@ plot_cortable_cluster <- function(FDATA, vars1, vars2, title, fn, show_label, ma
       # "Inst.",
       # "Lab",
       "Prediction"
+    )) |>
+    # Force correct order within each facet
+    mutate(col1 = fct_relevel(
+      col1,
+      "Animal", "EPM", "MTT", "PCR",
+      "Hedges's g", "p-value", "Coeff. Variation",
+      "Protocol", "Bias Control",
+      "Impact Factor", "Year", "Citations",
+      "Academic Age", "Publications",
+      "Protocol Deviation\n(Lab)", "Protocol Deviation\n(Committee)",
+      "Academic Age\n(Protocol Team)", "Publications\n(Protocol Team)",
+      "Academic Age\n(Data Collection Team)", "Publications\n(Data Collection Team)",
+      "Institution\nRanking",
+      "Survey\n(Replication)", "Survey\n(Effect Size)", "Survey\n(Challenge)"
     )) |>
     ggplot() +
     aes(
@@ -2142,16 +2170,53 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
     
     ma_dist_levels <- c("t distribution (# of units)", "z distribution", "t distribution (# of replications)", "Single mean")[c("t distribution (# of units)", "z distribution", "t distribution (# of replications)", "Single mean") %in% AGGDATA_TOG$MA_Dist]
 
+    # Fixed order for specification curve y-axis (user-specified)
+    metric_order <- c(
+      "Original in replication 95% PI",
+      "Replication in original 95% CI",
+      "Same-sign significance (p < 0.05)",
+      "> 50% subjectively replicated",
+      ">= 50% subjectively replicated",
+      "> 50% significant",
+      ">= 50% significant"
+    )
+    metric_order <- metric_order[metric_order %in% unique(AGGDATA_TOG$Metric)]
+    
+    indiv_metric_order <- c(
+      "Subjectively replicated (Indiv)",
+      "Replication in original CI (Indiv)",
+      "Same-sign significance (Indiv)"
+    )
+    indiv_metric_order <- indiv_metric_order[indiv_metric_order %in% unique(AGGDATA_TOG$Metric)]
+    
+    inclusion_order <- c(
+      "All experiments",
+      "≥2 replications",
+      "Lab's choice",
+      "3 replications",
+      "≥80% power (t - # of replications)",
+      "≥80% power (t - # of units)",
+      "≥80% power (z)",
+      "Primary"
+    )
+    inclusion_order <- inclusion_order[inclusion_order %in% inclusion_levels]
+    
+    ma_dist_order <- c(
+      "t distribution (# of replications)",
+      "t distribution (# of units)",
+      "z distribution",
+      "Single mean"
+    )
+    ma_dist_order <- ma_dist_order[ma_dist_order %in% ma_dist_levels]
+    
     spec_parameters_levels <- rev(c(
-      unique(AGGDATA_TOG$Metric)[2:3],
-      unique(AGGDATA_TOG$Metric)[1],
-      unique(AGGDATA_TOG$Metric)[4:7],
+      metric_order,
       "Aggregate of replications",
-      unique(AGGDATA_TOG$Metric)[8:10],
+      indiv_metric_order,
       "Individual replication",
-      inclusion_levels,
+      inclusion_order,
       method_levels,
-      ma_dist_levels
+      ma_dist_order
     ))
 
     # Methods in black, as requested
@@ -2197,17 +2262,57 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
 
     ma_dist_levels <- c("t distribution (# of units)", "z distribution", "t distribution (# of replications)", "Single mean")[c("t distribution (# of units)", "z distribution", "t distribution (# of replications)", "Single mean") %in% AGGDATA_TOG$MA_Dist]
     
+    # Fixed order for specification curve y-axis (user-specified)
+    metric_order <- c(
+      "Original in replication 95% PI",
+      "Replication in original 95% CI",
+      "Same-sign significance (p < 0.05)",
+      "> 50% subjectively replicated",
+      ">= 50% subjectively replicated",
+      "> 50% significant",
+      ">= 50% significant"
+    )
+    metric_order <- metric_order[metric_order %in% unique(AGGDATA_TOG$Metric)]
+    
+    indiv_metric_order <- c(
+      "Subjectively replicated (Indiv)",
+      "Replication in original CI (Indiv)",
+      "Same-sign significance (Indiv)"
+    )
+    indiv_metric_order <- indiv_metric_order[indiv_metric_order %in% unique(AGGDATA_TOG$Metric)]
+    
+    inclusion_order <- c(
+      "All experiments",
+      "≥2 replications",
+      "Lab's choice",
+      "3 replications",
+      "≥80% power (t - # of replications)",
+      "≥80% power (t - # of units)",
+      "≥80% power (z)",
+      "Primary"
+    )
+    inclusion_order <- inclusion_order[inclusion_order %in% inclusion_levels]
+    
+    pcr_order <- c("PCR (log)", "PCR (linear)")
+    mtt_order <- c("MTT (paired)", "MTT (original)")
+    
+    ma_dist_order <- c(
+      "t distribution (# of replications)",
+      "t distribution (# of units)",
+      "z distribution",
+      "Single mean"
+    )
+    ma_dist_order <- ma_dist_order[ma_dist_order %in% ma_dist_levels]
+    
     spec_parameters_levels <- rev(c(
-      unique(AGGDATA_TOG$Metric)[2:3],
-      unique(AGGDATA_TOG$Metric)[1],
-      unique(AGGDATA_TOG$Metric)[4:7],
+      metric_order,
       "Aggregate of replications",
-      unique(AGGDATA_TOG$Metric)[8:10],
+      indiv_metric_order,
       "Individual replication",
-      inclusion_levels,
-      c("PCR (log)", "PCR (linear)"),
-      c("MTT (paired)", "MTT (original)"),
-      ma_dist_levels
+      inclusion_order,
+      pcr_order,
+      mtt_order,
+      ma_dist_order
     ))
 
     spec_colors <- rev(c(
