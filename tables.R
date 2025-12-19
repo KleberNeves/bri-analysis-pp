@@ -2423,8 +2423,8 @@ save_tbl(
 )
 cat("\n### Table S20 generated! ###\n")
 
-## Table S21 -----------------------------------------------------------------
-tbl_s21 <- df_by_experiment |>
+## Table S19 -----------------------------------------------------------------
+tbl_s19 <- df_by_experiment |>
   filter(Method == "MTT" | Method == "ALTMTT") |>
   filter(MA_Dist == "t") |>
   filter(Inclusion_Set == "all_exps_lab_units" | Inclusion_Set == "primary") |>
@@ -2467,8 +2467,8 @@ tbl_s21 <- df_by_experiment |>
   ) |>
   slice(1:7, 10, 9, 8)
 
-ordered_cols_tbl_s21 <- tibble(
-  colname = colnames(tbl_s21),
+ordered_cols_tbl_s19 <- tibble(
+  colname = colnames(tbl_s19),
   priority = case_when(
     str_starts(colname, "MetricShortName") ~ 1,
     str_starts(colname, "primary") ~ 2,
@@ -2479,33 +2479,116 @@ ordered_cols_tbl_s21 <- tibble(
   arrange(priority) |>
   pull(colname)
 
-tbl_s21 <- tbl_s21 |>
-  select(all_of(ordered_cols_tbl_s21)) |>
+tbl_s19 <- tbl_s19 |>
+  select(all_of(ordered_cols_tbl_s19)) |>
   dplyr::rename(`Primary (Paired)` = primary_MTT_t) |>
-  dplyr::rename(`Primary (Unpaired)` = primary_ALTMTT_t) |>
+  dplyr::rename(`Primary (Original)` = primary_ALTMTT_t) |>
   dplyr::rename(`All experiments (Paired)` = all_exps_lab_units_MTT_t) |>
-  dplyr::rename(`All experiments (Unpaired)` = all_exps_lab_units_ALTMTT_t)
+  dplyr::rename(`All experiments (Original)` = all_exps_lab_units_ALTMTT_t)
 
-footer_text_tbl_s21 <- "Paired columns show results of MTT analyzed with paired comparisons (MTT), while Unpaired columns show the alternative non-paired analysis (ALTMTT). Same-sign significance is based on a fixed meta-analysis estimate, while effect size comparisons are based on random-effects meta-analysis. All statistical tests use the t distribution. PI, prediction interval; CI, confidence interval. For more information on replication criteria, see https://osf.io/9rnuj."
+### Coefficient of variation row for MTT replications ----
+# Load replication-level assessment data for primary and all experiments
+df_rep_primary_mtt <- read_tsv(paste0("output/", results_path, "/primary t/Replication Assessment by Replication.tsv"), show_col_types = FALSE) |>
+  filter(str_detect(EXP, "^MTT")) |>
+  mutate(Method = "MTT")
 
-tbl_s21 <- tbl_s21 |>
+df_rep_primary_altmtt <- read_tsv(paste0("output/", results_path, "/primary t/Replication Assessment by Replication.tsv"), show_col_types = FALSE) |>
+  filter(str_detect(EXP, "^ALTMTT")) |>
+  mutate(Method = "ALTMTT")
+
+df_rep_allexp_mtt <- read_tsv(paste0("output/", results_path, "/all_exps_lab_units t/Replication Assessment by Replication.tsv"), show_col_types = FALSE) |>
+  filter(str_detect(EXP, "^MTT")) |>
+  mutate(Method = "MTT")
+
+df_rep_allexp_altmtt <- read_tsv(paste0("output/", results_path, "/all_exps_lab_units t/Replication Assessment by Replication.tsv"), show_col_types = FALSE) |>
+  filter(str_detect(EXP, "^ALTMTT")) |>
+  mutate(Method = "ALTMTT")
+
+# Calculate median (range) for each combination
+cv_primary_paired <- df_rep_primary_mtt |>
+  summarise(
+    cv_summary = paste0(
+      sprintf("%.2f", median(replication_cv, na.rm = TRUE)),
+      " (",
+      sprintf("%.2f", min(replication_cv, na.rm = TRUE)),
+      ", ",
+      sprintf("%.2f", max(replication_cv, na.rm = TRUE)),
+      ")"
+    )
+  ) |>
+  pull(cv_summary)
+
+cv_primary_original <- df_rep_primary_altmtt |>
+  summarise(
+    cv_summary = paste0(
+      sprintf("%.2f", median(replication_cv, na.rm = TRUE)),
+      " (",
+      sprintf("%.2f", min(replication_cv, na.rm = TRUE)),
+      ", ",
+      sprintf("%.2f", max(replication_cv, na.rm = TRUE)),
+      ")"
+    )
+  ) |>
+  pull(cv_summary)
+
+cv_allexp_paired <- df_rep_allexp_mtt |>
+  summarise(
+    cv_summary = paste0(
+      sprintf("%.2f", median(replication_cv, na.rm = TRUE)),
+      " (",
+      sprintf("%.2f", min(replication_cv, na.rm = TRUE)),
+      ", ",
+      sprintf("%.2f", max(replication_cv, na.rm = TRUE)),
+      ")"
+    )
+  ) |>
+  pull(cv_summary)
+
+cv_allexp_original <- df_rep_allexp_altmtt |>
+  summarise(
+    cv_summary = paste0(
+      sprintf("%.2f", median(replication_cv, na.rm = TRUE)),
+      " (",
+      sprintf("%.2f", min(replication_cv, na.rm = TRUE)),
+      ", ",
+      sprintf("%.2f", max(replication_cv, na.rm = TRUE)),
+      ")"
+    )
+  ) |>
+  pull(cv_summary)
+
+# Add CV row to the table data
+cv_row <- tibble(
+  MetricShortName = "Coefficient of variation (replications)",
+  `Primary (Paired)` = cv_primary_paired,
+  `Primary (Original)` = cv_primary_original,
+  `All experiments (Paired)` = cv_allexp_paired,
+  `All experiments (Original)` = cv_allexp_original
+)
+
+tbl_s19 <- tbl_s19 |>
+  add_row(cv_row)
+
+footer_text_tbl_s19 <- "Paired columns show results of MTT analyzed with paired comparisons (MTT), while Original columns show the alternative non-paired analysis (ALTMTT). Same-sign significance is based on a fixed meta-analysis estimate, while effect size comparisons are based on random-effects meta-analysis. All statistical tests use the t distribution. PI, prediction interval; CI, confidence interval. Coefficient of variation is reported as median (range). For more information on replication criteria, see https://osf.io/9rnuj."
+
+tbl_s19 <- tbl_s19 |>
   slice(-1) |>
   flextable() |>
   bold(j = 2) |>
   bold(i = 6) |>
   hline(i = 5:6) |>
   set_header_labels(MetricShortName = "By experiment") |>
-  add_footer_lines(value = as_paragraph(footer_text_tbl_s21)) |>
-  add_header_lines(values = paste0("Table S21 - Replication rates for MTT experiments using paired vs unpaired analyses. ")) |>
+  add_footer_lines(value = as_paragraph(footer_text_tbl_s19)) |>
+  add_header_lines(values = paste0("Table S19 - Replication rates for MTT experiments using paired vs original (non-paired) analyses. ")) |>
   bold(i = 2, part = "header") |>
   set_table_properties(layout = "autofit")
 
 ### Saving ----
 save_tbl(
-  tbl_s21,
-  paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S21.docx")
+  tbl_s19,
+  paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S19.docx")
 )
-cat("\n### Table S21 generated! ###\n")
+cat("\n### Table S19 generated! ###\n")
 
 
 ## Table S17 ---------------------------------------------------------------

@@ -1225,7 +1225,7 @@ difficulties.labels.fig[["8"]] <- "Other"
 
 bri_ggsave(paste0(output_path, "/self-assessment/", "Figure S9.png"), plot = fig_s9, width = 20, height = 25, units = "cm")
 
-## Table S19 ---------------------------------------------------------------
+## Table S21 ---------------------------------------------------------------
 
 
 # Vector with the desired order. Note that strings that begin and end with "**"
@@ -1283,7 +1283,7 @@ final_tbl <- final_tbl |>
   )
 
 # Replace NA values in 'labels' with 'Label' and finalize the selection.
-tbl_s19 <- final_tbl |>
+tbl_s21 <- final_tbl |>
   mutate(labels = if_else(is.na(labels), Label, labels)) |>
   select(labels, Count) |>
   rename(Label = labels) |>
@@ -1294,10 +1294,10 @@ tbl_s19 <- final_tbl |>
   add_footer_lines("Table shows the various categories and subcategories for general difficulties (in order of general category frequency, as in Figure S3), with illustrative examples of participant responses for each subcategory.")
 
 save_tbl(
-  list(tbl_s19),
-  paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S19.docx")
+  list(tbl_s21),
+  paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S21.docx")
 )
-cat("\n### Table S19 generated! ###\n")
+cat("\n### Table S21 generated! ###\n")
 
 ## Self-assessments ----
 
