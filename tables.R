@@ -473,9 +473,9 @@ for (table in table_names_bigexp) {
     if (table == "tbl_by_method_primary_bigexp") {
       save_tbl(
         list(get(table)),
-        paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S22.docx")
+        paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S17.docx")
       )
-      cat("\n### Table S22 generated! ###\n")
+      cat("\n### Table S17 generated! ###\n")
     }
 
     if (table == "tbl_by_method_all_exps_lab_units_bigexp") {
@@ -2591,12 +2591,12 @@ save_tbl(
 cat("\n### Table S19 generated! ###\n")
 
 
-## Table S17 ---------------------------------------------------------------
+## Table S22 ---------------------------------------------------------------
 df_coord_difficulties <- read_excel("other-data/Coordinating team assessment of difficulties.xlsx") |>
   clean_names() |>
   select(categoria, dificuldade, soma_um)
 
-tbl_s17 <- df_coord_difficulties |>
+tbl_s22 <- df_coord_difficulties |>
   group_by(categoria) |>
   reframe(
     dificuldade = dificuldade,
@@ -2642,11 +2642,11 @@ tbl_s17 <- df_coord_difficulties |>
 
 ### Saving ----
 save_tbl(
-  list(tbl_s17),
-  paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S17.docx")
+  list(tbl_s22),
+  paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S22.docx")
 )
 
-cat("\n### Table S17 generated! ###\n")
+cat("\n### Table S22 generated! ###\n")
 
 ## Text-Cited Numbers ------------------------------------------------------
 
