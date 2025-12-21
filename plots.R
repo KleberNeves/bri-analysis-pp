@@ -2037,7 +2037,8 @@ plot_power_histograms <- function(dfi) {
     summarise(
       power_z = mean(`post hoc power Z`, na.rm = T),
       power_t = mean(`post hoc power T`, na.rm = T),
-      power_knha = mean(`post hoc power knha`, na.rm = T)
+      power_knha = mean(`post hoc power knha`, na.rm = T),
+      power_bigexp = mean(`post hoc power bigexp`, na.rm = T)
     )
 
 
@@ -2050,14 +2051,18 @@ plot_power_histograms <- function(dfi) {
   p_power_knha <- plot_single_histogram(dfs, "power_knha", "Post-hoc power (t distribution - # of replications)", "# of experiments")
   bri_ggsave(paste0("./output/", results_path, "/Power Histograms/post hoc power, by experiment, knha.png"), plot = p_power_knha, width = 12, height = 4)
 
+  p_power_bigexp <- plot_single_histogram(dfs, "power_bigexp", "Post-hoc power (single mean)", "# of experiments")
+  bri_ggsave(paste0("./output/", results_path, "/Power Histograms/post hoc power, by experiment, bigexp.png"), plot = p_power_bigexp, width = 12, height = 4)
+
   p_power_combined <- ggarrange(
     plotlist = list(
       p_power_t + xlab("Post-hoc power (t distribution - # of units)"),
       p_power_z + xlab("Post-hoc power (z distribution)"), 
-      p_power_knha + xlab("Post-hoc power (t distribution - # of replications)")), 
+      p_power_knha + xlab("Post-hoc power (t distribution - # of replications)"),
+      p_power_bigexp + xlab("Post-hoc power (single mean)")), 
     ncol = 1, 
     labels = "AUTO", common.legend = T)
-  bri_ggsave(paste0("./output/", results_path, "/Power Histograms/post hoc power, by experiment, combined.png"), plot = p_power_combined, width = 12, height = 10)
+  bri_ggsave(paste0("./output/", results_path, "/Power Histograms/post hoc power, by experiment, combined.png"), plot = p_power_combined, width = 12, height = 12)
 }
 
 # Plots specification curves

@@ -192,7 +192,50 @@ run_predictor_analysis_both_level <- function(replication_datapath, make_plots) 
   plot_cortable_alternative(FDATA, FDATA_EXP, FDATA_REP, vars1, vars2, "Correlation between predictors", paste0(replication_datapath, "/predictors/both/predictor x predictor"), show_label = T, make_individual_plots = F)
 }
 
+# Function to run predictor x predictor analysis for ALL experiments (Done=Yes, UNIT=BRI)
+# This ensures correlations between predictors include all 143 replications, not just those in analysis sets.
+run_predictor_analysis_all_exps <- function(replication_datapath) {
+  # Read inclusion sets and filter for Done=Yes and UNIT=BRI
+  inclusion_sets <- read_excel("other-data/inclusion_sets.xlsx")
+  all_exps <- inclusion_sets |>
+    filter(Done == "Yes", UNIT == "BRI") |>
+    select(EXP, LAB) |>
+    distinct()
+  
+  # Create output directory
+  dir.create(paste0(replication_datapath, "/predictors/all_exps"), showWarnings = FALSE, recursive = TRUE)
+  
+  # Prepare experiment-level predictor data (all 60 experiments)
+  FDATA_EXP <- PRED_DATA_EXP_LEVEL |>
+    filter(EXP %in% unique(all_exps$EXP)) |>
+    select(-DOI) |>
+    rename(`University Ranking (Experiment)` = `Institution Ranking`)
+  
+  # Prepare replication-level predictor data (all 143 replications)
+  FDATA_REP <- PRED_DATA_REP_LEVEL |>
+    inner_join(all_exps, by = c("EXP", "LAB")) |>
+    rename(`University Ranking (Replication)` = `Institution Ranking`)
+  
+  # Combine for correlation analysis
+  FDATA <- full_join(FDATA_EXP, FDATA_REP, by = "EXP")
+  write_tsv(FDATA, paste0(replication_datapath, "/predictors/all_exps/Table for Predictor Correlations.tsv"))
+  
+  # List predictor variables
+  global_vars <- setdiff(colnames(FDATA_EXP), "EXP")
+  individual_vars <- setdiff(colnames(FDATA_REP), c("EXP", "LAB"))
+  vars1 <- c(global_vars, individual_vars)
+  vars2 <- vars1
+  
+  # Generate predictor x predictor plot
+  print("Building correlation table for ALL experiments, predictors x predictors ...")
+  plot_cortable_alternative(FDATA, FDATA_EXP, FDATA_REP, vars1, vars2, 
+    "Correlation between predictors (all experiments)", 
+    paste0(replication_datapath, "/predictors/all_exps/predictor x predictor"), 
+    show_label = TRUE, make_individual_plots = FALSE)
+}
+
 # Function to run a correlation between two predictors/outcomes
+
 run_correlation = function (FDATA, c1, c2, fn, make_plot) {
   print(paste(c1, c2, sep = " X "))
   
