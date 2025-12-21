@@ -104,6 +104,82 @@ create_tbl_by_method_pcr <- function(analysis_type, distribution) {
     select(MetricShortName, Method, Value_Denominator) |>
     pivot_wider(names_from = Method, values_from = Value_Denominator)
 
+  # For bigexp distribution, add missing rows for commensurability with other tables
+  if (distribution == "bigexp") {
+    # Get data from t distribution for missing metrics
+    exp_wide_t <- df_by_experiment |>
+      filter(Inclusion_Set == analysis_type) |>
+      filter(Method != "ALL_ALTPCR" & Method != "ALL_ALTMTT" & Method != "ALL_ALTPCR_ALTMTT" & Method != "ALTMTT") |>
+      filter(MA_Dist == "t") |>
+      mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
+      select(MetricShortName, Method, Value_Denominator) |>
+      pivot_wider(names_from = Method, values_from = Value_Denominator)
+    
+    rep_wide_t <- df_by_replication |>
+      filter(Method != "ALL_ALTPCR" & Method != "ALL_ALTMTT" & Method != "ALL_ALTPCR_ALTMTT" & Method != "ALTMTT") |>
+      filter(Inclusion_Set == analysis_type) |>
+      filter(MA_Dist == "t") |>
+      mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
+      select(MetricShortName, Method, Value_Denominator) |>
+      pivot_wider(names_from = Method, values_from = Value_Denominator)
+    
+    # Define all expected metrics for experiment level
+    expected_exp_metrics <- c(
+      "FEMA is significant and has same signal as original",
+      "Original estimate within PI of REMA",
+      "REMA estimate within CI of Original",
+      "Subjective assessment majority vote (with ties as success)",
+      "t-test majority vote (with ties as success)"
+    )
+    
+    # Define all expected metrics for replication level
+    expected_rep_metrics <- c(
+      "Subjective assessment, individual",
+      "Replication is significant and has same sign as original",
+      "Replication estimate within CI of Original"
+    )
+    
+    # Get available columns (methods)
+    available_methods <- setdiff(colnames(exp_wide), "MetricShortName")
+    
+    # Add missing experiment-level metrics as NA (don't use t distribution for experiment level)
+    for (metric in expected_exp_metrics) {
+      if (!(metric %in% exp_wide$MetricShortName)) {
+        new_row <- tibble(MetricShortName = metric)
+        for (m in available_methods) new_row[[m]] <- "NA"
+        exp_wide <- bind_rows(exp_wide, new_row)
+      }
+    }
+    
+    # Add missing replication-level metrics (use t distribution values)
+    available_rep_methods <- setdiff(colnames(rep_wide), "MetricShortName")
+    for (metric in expected_rep_metrics) {
+      if (!(metric %in% rep_wide$MetricShortName)) {
+        # Check if metric is available in t distribution
+        if (metric %in% rep_wide_t$MetricShortName) {
+          new_row <- rep_wide_t |> filter(MetricShortName == metric) |> select(MetricShortName, any_of(available_rep_methods))
+          rep_wide <- bind_rows(rep_wide, new_row)
+        } else {
+          new_row <- tibble(MetricShortName = metric)
+          for (m in available_rep_methods) new_row[[m]] <- "NA"
+          rep_wide <- bind_rows(rep_wide, new_row)
+        }
+      }
+    }
+    
+    # Reorder exp_wide according to expected_exp_metrics order
+    exp_wide <- exp_wide |>
+      mutate(order = match(MetricShortName, expected_exp_metrics)) |>
+      arrange(order) |>
+      select(-order)
+    
+    # Reorder rep_wide according to expected_rep_metrics order
+    rep_wide <- rep_wide |>
+      mutate(order = match(MetricShortName, expected_rep_metrics)) |>
+      arrange(order) |>
+      select(-order)
+  }
+
   # Desired method order and present columns
   desired_methods <- c("ALL_PCR_MTT", "MTT", "PCR", "ALTPCR", "EPM")
   present_methods_exp <- desired_methods[desired_methods %in% colnames(exp_wide)]
