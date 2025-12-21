@@ -123,20 +123,20 @@ create_tbl_by_method_pcr <- function(analysis_type, distribution) {
       select(MetricShortName, Method, Value_Denominator) |>
       pivot_wider(names_from = Method, values_from = Value_Denominator)
     
-    # Define all expected metrics for experiment level
+    # Define all expected metrics for experiment level (in desired order)
     expected_exp_metrics <- c(
-      "FEMA is significant and has same signal as original",
-      "Original estimate within PI of REMA",
       "REMA estimate within CI of Original",
-      "Subjective assessment majority vote (with ties as success)",
-      "t-test majority vote (with ties as success)"
+      "Original estimate within PI of REMA",
+      "FEMA is significant and has same signal as original",
+      "t-test majority vote (with ties as success)",
+      "Subjective assessment majority vote (with ties as success)"
     )
     
-    # Define all expected metrics for replication level
+    # Define all expected metrics for replication level (in desired order)
     expected_rep_metrics <- c(
-      "Subjective assessment, individual",
+      "Replication estimate within CI of Original",
       "Replication is significant and has same sign as original",
-      "Replication estimate within CI of Original"
+      "Subjective assessment, individual"
     )
     
     # Get available columns (methods)
