@@ -2724,6 +2724,132 @@ save_tbl(
 
 cat("\n### Table S22 generated! ###\n")
 
+## Table S24 ---------------------------------------------------------------
+# Survey participant demographics
+
+### Data loading and cleaning ----
+df_participants <- read.csv2("other-data/survey-data/joined_participant_information_anonymous.csv") |>
+  mutate(
+    # Fix gender
+    Gender = if_else(str_detect(Gender_other, "non-binary"), "Non-binary", Gender, Gender),
+    # Convert numeric fields
+    Institutional_age = as.numeric(Institutional_age),
+    General_rep_rate = as.numeric(General_rep_rate),
+    # Consolidate positions
+    Institutional_position = case_when(
+      Institutional_position_other == "Research Analyst" ~ "Research associate",
+      Institutional_position %in% c("Post-doctoral researcher", "Research associate") ~ "Post-doc/Research associate",
+      TRUE ~ Institutional_position
+    ),
+    # Fix academic title
+    Highest_academic_title = if_else(Highest_academic_title_other == "Pos Doc", "PhD", Highest_academic_title, Highest_academic_title),
+    # Shorten country name
+    Country_of_birth = str_replace(Country_of_birth, "United Kingdom of Great Britain and Northern Ireland", "United Kingdom")
+  ) |>
+  rename(Practical_knowledge = Practical_knowledge_technique, Theoretical_knowledge = Theoretical_knowledge_technique) |>
+  # Add geographical region
+  mutate(Geographical_location = case_when(
+    Country_of_living == "Brazil" ~ "Brazil",
+    Country_of_living %in% c("Germany", "United Kingdom of Great Britain and Northern Ireland", "Sweden", 
+                              "Netherlands", "Austria", "Switzerland", "France", "Belgium", "Finland") ~ "Europe",
+    Country_of_living == "Australia" ~ "Oceania",
+    Country_of_living == "Canada" ~ "North America",
+    TRUE ~ "Not specified"
+  ))
+
+### Summary functions ----
+summarize_vars <- function(df, group_col = NULL) {
+  num_vars <- c("Age", "Years_in_research", "General_rep_rate")
+  
+  # Numerical: median (range)
+  num_summary <- df |>
+    summarise(across(all_of(num_vars), list(
+      stat = ~sprintf("%.0f (%.0f - %.0f)", median(.x, na.rm = TRUE), min(.x, na.rm = TRUE), max(.x, na.rm = TRUE))
+    ))) |>
+    pivot_longer(everything(), names_to = "Variable", values_to = "Stat") |>
+    mutate(Variable = str_remove(Variable, "_stat"), Label = Variable)
+  
+  # Categorical: n (%)
+  cat_vars <- c("Gender", "BRI_member", "Geographical_location", "Highest_academic_title", 
+                "Institutional_position", "Theoretical_knowledge", "Practical_knowledge", 
+                "Stats_knowledge", "Research_area1")
+  
+  cat_summary <- map_df(cat_vars, function(v) {
+    df |>
+      count(Label = as.character(.data[[v]])) |>
+      filter(!is.na(Label)) |>
+      mutate(Variable = v, Stat = sprintf("%d (%d%%)", n, round(100 * n / sum(n)))) |>
+      select(Variable, Label, Stat)
+  })
+  
+  bind_rows(num_summary, cat_summary)
+}
+
+### Generate summaries by technique ----
+techniques <- c("Combined", "MTT", "PCR", "EPM")
+
+all_summaries <- map_df(techniques, function(tech) {
+  df_tech <- if (tech == "Combined") df_participants else filter(df_participants, Technique == tech)
+  summarize_vars(df_tech) |> mutate(Technique = tech)
+})
+
+### Format table ----
+# Define display order for labels
+label_order <- tribble(
+  ~Variable, ~Label, ~order,
+  "BRI_member", "Yes", 1, "BRI_member", "No", 2,
+  "Geographical_location", "Brazil", 1, "Geographical_location", "Europe", 2,
+  "Geographical_location", "North America", 3, "Geographical_location", "Oceania", 4,
+  "Highest_academic_title", "PhD", 1, "Highest_academic_title", "Master's", 2,
+  "Institutional_position", "Professor", 1, "Institutional_position", "Post-doc/Research associate", 2,
+  "Institutional_position", "PhD student", 3
+)
+
+# Variable display order
+var_order <- c("Age", "Gender", "BRI_member", "Geographical_location", "Years_in_research",
+               "Highest_academic_title", "Institutional_position", "Research_area1",
+               "Theoretical_knowledge", "Practical_knowledge", "Stats_knowledge", "General_rep_rate")
+
+tbl_s24_data <- all_summaries |>
+  left_join(label_order, by = c("Variable", "Label")) |>
+  arrange(factor(Variable, levels = var_order), order) |>
+  select(-order) |>
+  pivot_wider(names_from = Technique, values_from = Stat, values_fill = "0 (0%)") |>
+  # Rename Research_area1 for display
+  mutate(Variable = if_else(Variable == "Research_area1", "Research_area", Variable)) |>
+  # Collapse rows by variable
+  group_by(Variable) |>
+  summarise(
+    Labels = str_c(Label, collapse = "\n"),
+    across(all_of(techniques), ~ str_c(.x, collapse = "\n")),
+    .groups = "drop"
+  ) |>
+  # Format labels
+  mutate(
+    is_numeric = Variable %in% c("Age", "Years_in_research", "General_rep_rate"),
+    Labels = if_else(is_numeric, Variable, paste0(Variable, "\n", Labels)),
+    across(all_of(techniques), ~ if_else(is_numeric, .x, paste0("\n", .x)))
+  ) |>
+  arrange(factor(Variable, levels = var_order)) |>
+  select(-Variable, -is_numeric) |>
+  mutate(Labels = str_replace_all(Labels, "_", " ")) |>
+  rename("Combined\nn=70" = Combined, "MTT\nn=22" = MTT, "PCR\nn=18" = PCR, "EPM\nn=30" = EPM)
+
+### Create flextable ----
+tbl_s24 <- tbl_s24_data |>
+  flextable() |>
+  add_header_lines(values = "Table S24 – Survey participant demographics") |>
+  bold(i = 1, part = "header") |>
+  set_table_properties(layout = "autofit")
+
+### Saving ----
+save_tbl(
+  list(tbl_s24),
+  paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S24.docx")
+)
+
+cat("\n### Table S24 generated! ###\n")
+
 ## Text-Cited Numbers ------------------------------------------------------
 
 ### General ------------------------------------------------------------------
