@@ -554,13 +554,7 @@ for (table in table_names_bigexp) {
       cat("\n### Table S17 generated! ###\n")
     }
 
-    if (table == "tbl_by_method_all_exps_lab_units_bigexp") {
-      save_tbl(
-        list(get(table)),
-        paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S23.docx")
-      )
-      cat("\n### Table S23 generated! ###\n")
-    }
+
   }
 }
 
@@ -2413,6 +2407,174 @@ save_tbl(
   paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S16.docx")
 )
 cat("\n### Table S16 generated! ###\n")
+
+## Table S18 (bigexp equivalent of Table 2) -----------------------------------------------------
+# Build experiment-level data from bigexp
+tbl_s18_exp <- df_by_experiment |>
+  filter(Method == "ALL_PCR_MTT") |>
+  filter(MA_Dist == "bigexp") |>
+  mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
+  select(MetricShortName, Method, Value_Denominator, Inclusion_Set) |>
+  pivot_wider(names_from = c(Inclusion_Set, Method), values_from = Value_Denominator)
+
+# Build replication-level data from bigexp
+tbl_s18_rep <- df_by_replication |>
+  filter(Method == "ALL_PCR_MTT") |>
+  filter(MA_Dist == "bigexp") |>
+  mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
+  select(MetricShortName, Method, Value_Denominator, Inclusion_Set) |>
+  pivot_wider(names_from = c(Inclusion_Set, Method), values_from = Value_Denominator)
+
+# Get replication-level data from t distribution for missing metrics
+tbl_s18_rep_t <- df_by_replication |>
+  filter(Method == "ALL_PCR_MTT") |>
+  filter(MA_Dist == "t") |>
+  mutate(Value_Denominator = paste0(round(successful), "/", N, " (", Value, ")")) |>
+  select(MetricShortName, Method, Value_Denominator, Inclusion_Set) |>
+  pivot_wider(names_from = c(Inclusion_Set, Method), values_from = Value_Denominator)
+
+# Define expected metrics and their sources
+expected_exp_metrics <- c(
+  "REMA estimate within CI of Original",
+  "Original estimate within PI of REMA",
+  "FEMA is significant and has same signal as original",
+  "t-test majority vote (with ties as success)",
+  "Subjective assessment majority vote (with ties as success)"
+)
+
+expected_rep_metrics <- c(
+  "Replication estimate within CI of Original",
+  "Replication is significant and has same sign as original",
+  "Subjective assessment, individual"
+)
+
+# Get available columns (analysis sets)
+available_cols_exp <- setdiff(colnames(tbl_s18_exp), "MetricShortName")
+available_cols_rep <- setdiff(colnames(tbl_s18_rep), "MetricShortName")
+
+# Add missing experiment-level metrics as NA
+for (metric in expected_exp_metrics) {
+  if (!(metric %in% tbl_s18_exp$MetricShortName)) {
+    new_row <- tibble(MetricShortName = metric)
+    for (col in available_cols_exp) new_row[[col]] <- "NA"
+    tbl_s18_exp <- bind_rows(tbl_s18_exp, new_row)
+  }
+}
+
+# Add missing replication-level metrics from t distribution
+for (metric in expected_rep_metrics) {
+  if (!(metric %in% tbl_s18_rep$MetricShortName)) {
+    if (metric %in% tbl_s18_rep_t$MetricShortName) {
+      new_row <- tbl_s18_rep_t |> 
+        filter(MetricShortName == metric) |> 
+        select(MetricShortName, any_of(available_cols_rep))
+      tbl_s18_rep <- bind_rows(tbl_s18_rep, new_row)
+    } else {
+      new_row <- tibble(MetricShortName = metric)
+      for (col in available_cols_rep) new_row[[col]] <- "NA"
+      tbl_s18_rep <- bind_rows(tbl_s18_rep, new_row)
+    }
+  }
+}
+
+# Reorder according to expected order
+tbl_s18_exp <- tbl_s18_exp |>
+  mutate(order = match(MetricShortName, expected_exp_metrics)) |>
+  arrange(order) |>
+  select(-order)
+
+tbl_s18_rep <- tbl_s18_rep |>
+  mutate(order = match(MetricShortName, expected_rep_metrics)) |>
+  arrange(order) |>
+  select(-order)
+
+# Combine experiment and replication level data
+tbl_s18 <- tbl_s18_exp |>
+  add_row(
+    data.frame(MetricShortName = "By experiment"),
+    .before = 0
+  ) |>
+  add_row(
+    tbl_s18_rep |>
+      add_row(
+        data.frame(MetricShortName = "By replication"),
+        .before = 0
+      )
+  ) |>
+  mutate(
+    MetricShortName = case_when(
+      MetricShortName == "FEMA is significant and has same signal as original" ~ "Same-sign significance (p<0.05)",
+      MetricShortName == "Original estimate within PI of REMA" ~ "Original in replication's 95% PI",
+      MetricShortName == "REMA estimate within CI of Original" ~ "Replication in original 95% CI",
+      MetricShortName == "Subjective assessment majority vote (with ties as success)" ~ "≥50% subjectively replicated",
+      MetricShortName == "t-test majority vote (with ties as success)" ~ "≥50% replications significant",
+      MetricShortName == "Subjective assessment, individual" ~ "Subjectively replicated",
+      MetricShortName == "Replication estimate within CI of Original" ~ "Replication in original 95% CI",
+      MetricShortName == "Replication is significant and has same sign as original" ~ "Same-sign significance (p<0.05)",
+      TRUE ~ MetricShortName
+    )
+  )
+
+# Order columns
+ordered_cols_tbl_s18 <- tibble(
+  colname = colnames(tbl_s18),
+  priority = case_when(
+    str_starts(colname, "MetricShortName") ~ 1,
+    str_starts(colname, "primary") ~ 2,
+    str_starts(colname, "included_by_lab") ~ 3,
+    str_starts(colname, "all_exps_lab_units") ~ 4,
+    str_starts(colname, "at_least_2_reps") ~ 5,
+    str_starts(colname, "only_3_reps") ~ 6,
+    TRUE ~ 7
+  )
+) |>
+  arrange(priority) |>
+  pull(colname)
+
+tbl_s18 <- tbl_s18 |>
+  select(all_of(ordered_cols_tbl_s18))
+
+# Rename columns to human-readable names (only if they exist)
+if ("primary_ALL_PCR_MTT" %in% colnames(tbl_s18)) {
+  tbl_s18 <- tbl_s18 |> dplyr::rename(`Primary` = primary_ALL_PCR_MTT)
+}
+if ("included_by_lab_ALL_PCR_MTT" %in% colnames(tbl_s18)) {
+  tbl_s18 <- tbl_s18 |> dplyr::rename(`Lab's choice` = included_by_lab_ALL_PCR_MTT)
+}
+if ("all_exps_lab_units_ALL_PCR_MTT" %in% colnames(tbl_s18)) {
+  tbl_s18 <- tbl_s18 |> dplyr::rename(`All Exps` = all_exps_lab_units_ALL_PCR_MTT)
+}
+if ("at_least_2_reps_ALL_PCR_MTT" %in% colnames(tbl_s18)) {
+  tbl_s18 <- tbl_s18 |> dplyr::rename(`≥ 2 copies` = at_least_2_reps_ALL_PCR_MTT)
+}
+if ("only_3_reps_ALL_PCR_MTT" %in% colnames(tbl_s18)) {
+  tbl_s18 <- tbl_s18 |> dplyr::rename(`3 copies` = only_3_reps_ALL_PCR_MTT)
+}
+if ("only_80_power_a_posteriori_T_ALL_PCR_MTT" %in% colnames(tbl_s18)) {
+  tbl_s18 <- tbl_s18 |> dplyr::rename(`≥80% power` = only_80_power_a_posteriori_T_ALL_PCR_MTT)
+}
+
+footer_text_tbl_s18 <- "Replication rates for the primary and secondary analyses using the bigexp distribution (experiment-level analysis). Effect size comparisons are based on random-effects meta-analysis, while same-sign significance is based on a fixed meta-analysis estimate. Metrics marked 'NA' are not available in the bigexp analysis. Replication-level metrics use values from the t distribution analysis (Table 2) for commensurability. Subsets for secondary analyses include all experiments judged valid by the replicating lab (Lab's Choice), all concluded experiments (All Exps), both using the experimental unit as defined by the lab, and only experiments with at least 2 and 3 replications. PI, prediction interval; CI, confidence interval. For more information on replication criteria, see https://osf.io/9rnuj."
+
+tbl_s18 <- tbl_s18 |>
+  slice(-1) |>
+  flextable() |>
+  bold(j = 2) |>
+  bold(i = 6) |>
+  hline(i = 5:6) |>
+  set_header_labels(MetricShortName = "By experiment") |>
+  add_footer_lines(value = as_paragraph(footer_text_tbl_s18)) |>
+  add_header_lines(values = paste0("Table S18 - Replication rates for different analysis sets using the bigexp distribution")) |>
+  bold(i = 2, part = "header") |>
+  set_table_properties(layout = "autofit")
+
+### Saving -----
+
+save_tbl(
+  tbl_s18,
+  paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S18.docx")
+)
+cat("\n### Table S18 generated! ###\n")
 
 
 ## Table S20 -----------------------------------------------------------------

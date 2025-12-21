@@ -2105,7 +2105,8 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
     "3 replications",
     "≥80% power (t - # of units)",
     "≥80% power (z)",
-    "≥80% power (t - # of replications)"
+    "≥80% power (t - # of replications)",
+    "≥80% power (single mean)"
   )
 
   AGGDATA <- AGGDATA |>
@@ -2120,7 +2121,8 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
         "at_least_2_reps" ~ "≥2 replications",
         "only_80_power_a_posteriori_T" ~ "≥80% power (t - # of units)",
         "only_80_power_a_posteriori_Z" ~ "≥80% power (z)",
-        "only_80_power_a_posteriori_KNHA" ~ "≥80% power (t - # of replications)"
+        "only_80_power_a_posteriori_KNHA" ~ "≥80% power (t - # of replications)",
+        "only_80_power_a_posteriori_bigexp" ~ "≥80% power (single mean)"
       ),
       Inclusion_Set = factor(
         Inclusion_Set,
@@ -2198,6 +2200,7 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       "≥80% power (t - # of replications)",
       "≥80% power (t - # of units)",
       "≥80% power (z)",
+      "≥80% power (single mean)",
       "Primary"
     )
     inclusion_order <- inclusion_order[inclusion_order %in% inclusion_levels]
@@ -2291,6 +2294,7 @@ plot_specification_curve <- function(results_path, include_method, suffix = "") 
       "≥80% power (t - # of replications)",
       "≥80% power (t - # of units)",
       "≥80% power (z)",
+      "≥80% power (single mean)",
       "Primary"
     )
     inclusion_order <- inclusion_order[inclusion_order %in% inclusion_levels]

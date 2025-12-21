@@ -54,7 +54,7 @@ for (setcol in list_of_sets) {
   message("\n\n\n\n")
   message(setcol)
   
-  if (!(setcol %in% c("analysis_only_80_power_a_posteriori_T", "analysis_only_80_power_a_posteriori_KNHA"))) {
+  if (!(setcol %in% c("analysis_only_80_power_a_posteriori_T", "analysis_only_80_power_a_posteriori_KNHA", "analysis_only_80_power_a_posteriori_bigexp"))) {
     # Run analysis with z distribution only with inclusion sets also using z
     run_all_meta_analyses(
       inclusion_set_column = setcol, save_results_to = results_path,
@@ -62,7 +62,7 @@ for (setcol in list_of_sets) {
     )
   }
 
-  if (!(setcol %in% c("analysis_only_80_power_a_posteriori_Z", "analysis_only_80_power_a_posteriori_KNHA"))) {
+  if (!(setcol %in% c("analysis_only_80_power_a_posteriori_Z", "analysis_only_80_power_a_posteriori_KNHA", "analysis_only_80_power_a_posteriori_bigexp"))) {
     # Run analysis with t distribution only with inclusion sets also using t
     run_all_meta_analyses(
       inclusion_set_column = setcol, save_results_to = results_path,
@@ -70,7 +70,7 @@ for (setcol in list_of_sets) {
     )
   }
 
-  if (!(setcol %in% c("analysis_only_80_power_a_posteriori_Z", "analysis_only_80_power_a_posteriori_T"))) {
+  if (!(setcol %in% c("analysis_only_80_power_a_posteriori_Z", "analysis_only_80_power_a_posteriori_T", "analysis_only_80_power_a_posteriori_bigexp"))) {
     # Run analysis with t distribution only with inclusion sets also using t
     run_all_meta_analyses(
       inclusion_set_column = setcol, save_results_to = results_path,

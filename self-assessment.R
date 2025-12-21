@@ -287,10 +287,10 @@ bri_ggsave(
 )
 
 #---
-## Table S18 ----
+## Table S23 ----
 #---
 
-tbl_s18 <- cat_protocol |>
+tbl_s23 <- cat_protocol |>
   mutate(protocol_labels = protocol_labels_fig) |>
   slice(1:5) |>
   arrange(desc(category_counts)) |>
@@ -352,10 +352,10 @@ tbl_s18 <- cat_protocol |>
   add_footer_lines("Table shows the various categories and subcategories for protocol deviations (in order of general category frequency, as in Figure 5), with illustrative examples of lab responses for each subcategory.")
 
 save_tbl(
-  list(tbl_s18),
-  paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S18.docx")
+  list(tbl_s23),
+  paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S23.docx")
 )
-cat("\n### Table S18 generated! ###\n")
+cat("\n### Table S23 generated! ###\n")
 
 #---
 ## Plot 5 - Could the deviations have been prevented? ----
