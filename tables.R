@@ -1063,7 +1063,7 @@ coefficient_variation_ratio_mtt <- coefficient_variation_ratio_exp$median_range_
 
 ### Mean effect size difference (original vs. individual replications) ---------
 
-mean_absolute_diff_original_vs_individual_all <- df_assessment_by_experiment |>
+mean_effect_size_diff_original_vs_individual_all <- df_assessment_by_experiment |>
   filter(category %in% c("EPM","PCR","MTT")) |>
   summarise(
     median_range_median_mean_abs_diff_reps_orig = paste0(
@@ -1076,7 +1076,7 @@ mean_absolute_diff_original_vs_individual_all <- df_assessment_by_experiment |>
     )
   )
 
-mean_absolute_diff_original_vs_individual_exp <- df_assessment_by_experiment |>
+mean_effect_size_diff_original_vs_individual_exp <- df_assessment_by_experiment |>
   filter(category %in% c("EPM","PCR","MTT")) |>
   group_by(category) |>
   summarise(
@@ -1090,15 +1090,15 @@ mean_absolute_diff_original_vs_individual_exp <- df_assessment_by_experiment |>
     )
   )
 
-mean_absolute_diff_original_vs_individual_all <- mean_absolute_diff_original_vs_individual_all[[1]]
-mean_absolute_diff_original_vs_individual_epm <- mean_absolute_diff_original_vs_individual_exp$median_range_median_mean_abs_diff_reps_orig[mean_absolute_diff_original_vs_individual_exp$category == "EPM"]
-mean_absolute_diff_original_vs_individual_pcr <- mean_absolute_diff_original_vs_individual_exp$median_range_median_mean_abs_diff_reps_orig[mean_absolute_diff_original_vs_individual_exp$category == "PCR"]
-mean_absolute_diff_original_vs_individual_mtt <- mean_absolute_diff_original_vs_individual_exp$median_range_median_mean_abs_diff_reps_orig[mean_absolute_diff_original_vs_individual_exp$category == "MTT"]
+mean_effect_size_diff_original_vs_individual_all <- mean_effect_size_diff_original_vs_individual_all[[1]]
+mean_effect_size_diff_original_vs_individual_epm <- mean_effect_size_diff_original_vs_individual_exp$median_range_median_mean_abs_diff_reps_orig[mean_effect_size_diff_original_vs_individual_exp$category == "EPM"]
+mean_effect_size_diff_original_vs_individual_pcr <- mean_effect_size_diff_original_vs_individual_exp$median_range_median_mean_abs_diff_reps_orig[mean_effect_size_diff_original_vs_individual_exp$category == "PCR"]
+mean_effect_size_diff_original_vs_individual_mtt <- mean_effect_size_diff_original_vs_individual_exp$median_range_median_mean_abs_diff_reps_orig[mean_effect_size_diff_original_vs_individual_exp$category == "MTT"]
 
 
 ### Mean effect size difference (between individual replications) ---------
 
-mean_absolute_diff_between_individual_all <- df_assessment_by_experiment |>
+mean_effect_size_diff_between_individual_all <- df_assessment_by_experiment |>
   filter(category %in% c("EPM","PCR","MTT")) |>
   summarise(
     median_range_median_mean_abs_diff_reps = paste0(
@@ -1111,7 +1111,7 @@ mean_absolute_diff_between_individual_all <- df_assessment_by_experiment |>
     )
   )
 
-mean_absolute_diff_between_individual_exp <- df_assessment_by_experiment |>
+mean_effect_size_diff_between_individual_exp <- df_assessment_by_experiment |>
   filter(category %in% c("EPM","PCR","MTT")) |>
   group_by(category) |>
   summarise(
@@ -1125,10 +1125,10 @@ mean_absolute_diff_between_individual_exp <- df_assessment_by_experiment |>
     )
   )
 
-mean_absolute_diff_between_individual_all <- mean_absolute_diff_between_individual_all[[1]]
-mean_absolute_diff_between_individual_epm <- mean_absolute_diff_between_individual_exp$median_range_median_mean_abs_diff_reps[mean_absolute_diff_between_individual_exp$category == "EPM"]
-mean_absolute_diff_between_individual_pcr <- mean_absolute_diff_between_individual_exp$median_range_median_mean_abs_diff_reps[mean_absolute_diff_between_individual_exp$category == "PCR"]
-mean_absolute_diff_between_individual_mtt <- mean_absolute_diff_between_individual_exp$median_range_median_mean_abs_diff_reps[mean_absolute_diff_between_individual_exp$category == "MTT"]
+mean_effect_size_diff_between_individual_all <- mean_effect_size_diff_between_individual_all[[1]]
+mean_effect_size_diff_between_individual_epm <- mean_effect_size_diff_between_individual_exp$median_range_median_mean_abs_diff_reps[mean_effect_size_diff_between_individual_exp$category == "EPM"]
+mean_effect_size_diff_between_individual_pcr <- mean_effect_size_diff_between_individual_exp$median_range_median_mean_abs_diff_reps[mean_effect_size_diff_between_individual_exp$category == "PCR"]
+mean_effect_size_diff_between_individual_mtt <- mean_effect_size_diff_between_individual_exp$median_range_median_mean_abs_diff_reps[mean_effect_size_diff_between_individual_exp$category == "MTT"]
 
 
 ### Ratio of mean absolute differences ----------------------------------------
@@ -1344,15 +1344,15 @@ tbl_3 <- tribble(
   coefficient_variation_ratio_pcr,
   coefficient_variation_ratio_epm,
   "Mean effect size difference (original vs. individual replications)",
-  mean_absolute_diff_original_vs_individual_all[[1]],
-  mean_absolute_diff_original_vs_individual_mtt,
-  mean_absolute_diff_original_vs_individual_pcr,
-  mean_absolute_diff_original_vs_individual_epm,
+  mean_effect_size_diff_original_vs_individual_all[[1]],
+  mean_effect_size_diff_original_vs_individual_mtt,
+  mean_effect_size_diff_original_vs_individual_pcr,
+  mean_effect_size_diff_original_vs_individual_epm,
   "Mean effect size difference (between individual replications)",
-  mean_absolute_diff_between_individual_all[[1]],
-  mean_absolute_diff_between_individual_mtt,
-  mean_absolute_diff_between_individual_pcr,
-  mean_absolute_diff_between_individual_epm,
+  mean_effect_size_diff_between_individual_all[[1]],
+  mean_effect_size_diff_between_individual_mtt,
+  mean_effect_size_diff_between_individual_pcr,
+  mean_effect_size_diff_between_individual_epm,
   "Ratio of mean absolute differences (paired)",
   ratio_mean_absolute_diff_all[[1]],
   ratio_mean_absolute_diff_mtt,
