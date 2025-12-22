@@ -1061,7 +1061,7 @@ coefficient_variation_ratio_pcr <- coefficient_variation_ratio_exp$median_range_
 coefficient_variation_ratio_mtt <- coefficient_variation_ratio_exp$median_range_median_cv_ratio[coefficient_variation_ratio_exp$category == "MTT"]
 
 
-### Mean absolute difference (original vs. individual replications) ---------
+### Mean effect size difference (original vs. individual replications) ---------
 
 mean_absolute_diff_original_vs_individual_all <- df_assessment_by_experiment |>
   filter(category %in% c("EPM","PCR","MTT")) |>
@@ -1096,7 +1096,7 @@ mean_absolute_diff_original_vs_individual_pcr <- mean_absolute_diff_original_vs_
 mean_absolute_diff_original_vs_individual_mtt <- mean_absolute_diff_original_vs_individual_exp$median_range_median_mean_abs_diff_reps_orig[mean_absolute_diff_original_vs_individual_exp$category == "MTT"]
 
 
-### Mean absolute difference (between individual replications) ---------
+### Mean effect size difference (between individual replications) ---------
 
 mean_absolute_diff_between_individual_all <- df_assessment_by_experiment |>
   filter(category %in% c("EPM","PCR","MTT")) |>
@@ -1343,12 +1343,12 @@ tbl_3 <- tribble(
   coefficient_variation_ratio_mtt,
   coefficient_variation_ratio_pcr,
   coefficient_variation_ratio_epm,
-  "Mean absolute difference (original vs. individual replications)",
+  "Mean effect size difference (original vs. individual replications)",
   mean_absolute_diff_original_vs_individual_all[[1]],
   mean_absolute_diff_original_vs_individual_mtt,
   mean_absolute_diff_original_vs_individual_pcr,
   mean_absolute_diff_original_vs_individual_epm,
-  "Mean absolute difference (between individual replications)",
+  "Mean effect size difference (between individual replications)",
   mean_absolute_diff_between_individual_all[[1]],
   mean_absolute_diff_between_individual_mtt,
   mean_absolute_diff_between_individual_pcr,
@@ -2028,7 +2028,7 @@ tbl_s4 <- tbl_s4 |>
   bold(j = 1) |>
   bold(i = 7) |>
   delete_rows(i = 1, part = "header") |>
-  add_footer_lines("Number of replications per experiment before (top, n = 143 replications) and after (bottom, n = 96 replications) the validation process. Cells display the number of experiments for each method with three, two, one or zero independent replications in these two samples.") |>
+  add_footer_lines("Number of replications per experiment before (top) and after (bottom) the validation process. Cells display the number of experiments for each method with three, two, one or zero independent replications in these two samples.") |>
   add_name("Table - Number of Replications per Experiment") |>
   set_table_properties(layout = "autofit")
 
