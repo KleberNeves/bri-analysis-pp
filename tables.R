@@ -41,8 +41,8 @@ df_replication_rate <- read_tsv(paste0("output/", results_path, "/Replication Ra
 
 ### By experiment -----------------------------------------------------------
 desired_order_exp <- c(
-  "REMA estimate within CI of Original",
   "Original estimate within PI of REMA",
+  "REMA estimate within CI of Original",
   "FEMA is significant and has same signal as original",
   "t-test majority vote (with ties as success)",
   "Subjective assessment majority vote (with ties as success)"
@@ -758,7 +758,7 @@ tbl_2 <- df_by_experiment |>
       TRUE ~ MetricShortName
     )
   ) |>
-  slice(1:7, 10, 9, 8)
+  slice(1:7, 8, 9, 10)
 
 ordered_cols_tbl_2 <- tibble(
   colname = colnames(tbl_2),
@@ -2270,7 +2270,7 @@ tbl_s14 <- df_by_experiment |>
       TRUE ~ MetricShortName
     )
   ) |>
-  slice(1:7, 10, 9, 8)
+  slice(1:7, 8, 9, 10)
 
 ordered_cols_tbl_s14 <- tibble(
   colname = colnames(tbl_s14),
@@ -2359,7 +2359,7 @@ tbl_s16 <- df_by_experiment |>
       TRUE ~ MetricShortName
     )
   ) |>
-  slice(1:7, 10, 9, 8)
+  slice(1:7, 8, 9, 10)
 
 ordered_cols_tbl_s16 <- tibble(
   colname = colnames(tbl_s16),
@@ -2619,7 +2619,7 @@ tbl_s20 <- df_by_experiment |>
       TRUE ~ MetricShortName
     )
   ) |>
-  slice(1:7, 10, 9, 8)
+  slice(1:7, 8, 9, 10)
 
 ordered_cols_tbl_s20 <- tibble(
   colname = colnames(tbl_s20),
@@ -2703,7 +2703,7 @@ tbl_s19 <- df_by_experiment |>
       TRUE ~ MetricShortName
     )
   ) |>
-  slice(1:7, 10, 9, 8)
+  slice(1:7, 8, 9, 10)
 
 ordered_cols_tbl_s19 <- tibble(
   colname = colnames(tbl_s19),
