@@ -194,16 +194,17 @@ run_predictor_analysis_both_level <- function(replication_datapath, make_plots) 
 
 # Function to run predictor x predictor analysis for ALL experiments (Done=Yes, UNIT=BRI)
 # This ensures correlations between predictors include all 143 replications, not just those in analysis sets.
-run_predictor_analysis_all_exps <- function(replication_datapath) {
-  # Read inclusion sets and filter for Done=Yes and UNIT=BRI
-  inclusion_sets <- read_excel("other-data/inclusion_sets.xlsx")
+# Accepts a vector of paths and saves output to all of them (runs analysis only once)
+# Uses global inclusion_sets variable (must be already loaded in main.R)
+run_predictor_analysis_all_exps <- function(replication_datapaths) {
+  # Filter for UNIT=BRI to get all 143 replications
   all_exps <- inclusion_sets |>
-    filter(Done == "Yes", UNIT == "BRI") |>
+    filter(UNIT == "BRI") |>
     select(EXP, LAB) |>
     distinct()
   
-  # Create output directory
-  dir.create(paste0(replication_datapath, "/predictors/all_exps"), showWarnings = FALSE, recursive = TRUE)
+  message(paste0("Found ", nrow(all_exps), " replications (Done=Yes, UNIT=BRI) across ", 
+                 length(unique(all_exps$EXP)), " experiments"))
   
   # Prepare experiment-level predictor data (all 60 experiments)
   FDATA_EXP <- PRED_DATA_EXP_LEVEL |>
@@ -211,14 +212,19 @@ run_predictor_analysis_all_exps <- function(replication_datapath) {
     select(-DOI) |>
     rename(`University Ranking (Experiment)` = `Institution Ranking`)
   
+  message(paste0("Experiment-level predictor data: ", nrow(FDATA_EXP), " experiments"))
+  
   # Prepare replication-level predictor data (all 143 replications)
   FDATA_REP <- PRED_DATA_REP_LEVEL |>
     inner_join(all_exps, by = c("EXP", "LAB")) |>
     rename(`University Ranking (Replication)` = `Institution Ranking`)
   
+  message(paste0("Replication-level predictor data: ", nrow(FDATA_REP), " replications"))
+  
   # Combine for correlation analysis
   FDATA <- full_join(FDATA_EXP, FDATA_REP, by = "EXP")
-  write_tsv(FDATA, paste0(replication_datapath, "/predictors/all_exps/Table for Predictor Correlations.tsv"))
+  
+  message(paste0("Combined data for correlation: ", nrow(FDATA), " rows"))
   
   # List predictor variables
   global_vars <- setdiff(colnames(FDATA_EXP), "EXP")
@@ -226,12 +232,54 @@ run_predictor_analysis_all_exps <- function(replication_datapath) {
   vars1 <- c(global_vars, individual_vars)
   vars2 <- vars1
   
-  # Generate predictor x predictor plot
+  # Generate predictor x predictor plot (compute once)
   print("Building correlation table for ALL experiments, predictors x predictors ...")
-  plot_cortable_alternative(FDATA, FDATA_EXP, FDATA_REP, vars1, vars2, 
+  
+  # Use first path for plot generation (save to 'both' folder alongside other combined predictor analyses)
+  first_path <- replication_datapaths[1]
+  dir.create(paste0(first_path, "/predictors/both"), showWarnings = FALSE, recursive = TRUE)
+  
+  p <- plot_cortable_alternative(FDATA, FDATA_EXP, FDATA_REP, vars1, vars2, 
     "Correlation between predictors (all experiments)", 
-    paste0(replication_datapath, "/predictors/all_exps/predictor x predictor"), 
+    paste0(first_path, "/predictors/both/predictor x predictor (all experiments)"), 
     show_label = TRUE, make_individual_plots = FALSE)
+  
+  # Save TSV to first path
+  write_tsv(FDATA, paste0(first_path, "/predictors/both/Table for Predictor Correlations (all experiments).tsv"))
+  
+  # Copy outputs to all other paths
+  if (length(replication_datapaths) > 1) {
+    for (path in replication_datapaths[-1]) {
+      dir.create(paste0(path, "/predictors/both"), showWarnings = FALSE, recursive = TRUE)
+      
+      # Copy TSV
+      file.copy(
+        paste0(first_path, "/predictors/both/Table for Predictor Correlations (all experiments).tsv"),
+        paste0(path, "/predictors/both/Table for Predictor Correlations (all experiments).tsv"),
+        overwrite = TRUE
+      )
+      
+      # Copy plots
+      file.copy(
+        paste0(first_path, "/predictors/both/predictor x predictor (all experiments) - spearman.png"),
+        paste0(path, "/predictors/both/predictor x predictor (all experiments) - spearman.png"),
+        overwrite = TRUE
+      )
+      file.copy(
+        paste0(first_path, "/predictors/both/predictor x predictor (all experiments) - pearson.png"),
+        paste0(path, "/predictors/both/predictor x predictor (all experiments) - pearson.png"),
+        overwrite = TRUE
+      )
+      file.copy(
+        paste0(first_path, "/predictors/both/predictor x predictor (all experiments) cordata.tsv"),
+        paste0(path, "/predictors/both/predictor x predictor (all experiments) cordata.tsv"),
+        overwrite = TRUE
+      )
+    }
+    message(paste0("Copied outputs to ", length(replication_datapaths) - 1, " additional folders"))
+  }
+  
+  return(p)
 }
 
 # Function to run a correlation between two predictors/outcomes

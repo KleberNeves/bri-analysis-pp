@@ -8,4 +8,3 @@ bri-analysis-pp.Rproj
 .gitignore
 /other-data
 /_smoke_test
-main.R

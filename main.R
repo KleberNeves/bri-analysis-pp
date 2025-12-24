@@ -115,6 +115,11 @@ source("predictor-data-prep.R")
 
 make_individual_graphs = T # Will make graphs of predictors x outcomes only
 
+# Run predictor x predictor analysis for ALL experiments (Done=Yes, UNIT=BRI) - only once
+# This ensures predictor correlations include all 143 replications, not just those in analysis sets
+# Outputs are copied to all analysis folders
+run_predictor_analysis_all_exps(list_of_analyses)
+
 for (analysis in list_of_analyses) {
   message("\n\n\n\n")
   message(analysis)
