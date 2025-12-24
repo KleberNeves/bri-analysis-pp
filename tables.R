@@ -3023,7 +3023,7 @@ doc <- read_docx()
 
 # a) Count and % of experiments with log_es_ratio > 0 (PCR analysis)
 result_a <- df_assessment_by_experiment |>
-  filter(!str_detect(EXP, "ALTPCR")) |>
+  filter(!str_detect(EXP, "ALTPCR") & !str_detect(EXP, "ALTMTT")) |>
   summarise(
     count = sum(log_es_ratio > 0, na.rm = TRUE),
     total = n(),
@@ -3066,7 +3066,7 @@ result_d <- df_assessment_by_experiment |>
   mutate(
     technique = case_when(
       str_detect(EXP, "EPM") ~ "EPM",
-      str_detect(EXP, "MTT") ~ "MTT",
+      str_detect(EXP, "^(MTT)") ~ "MTT",
       str_detect(EXP, "^(PCR)(?!ALT)") ~ "PCR",
       str_detect(EXP, "^(ALTPCR)") ~ "ALTPCR"
     )
@@ -3106,7 +3106,7 @@ result_f <- df_assessment_by_experiment |>
   mutate(
     technique = case_when(
       str_detect(EXP, "EPM") ~ "EPM",
-      str_detect(EXP, "MTT") ~ "MTT",
+      str_detect(EXP, "^(MTT)") ~ "MTT",
       str_detect(EXP, "^(PCR)(?!ALT)") ~ "PCR",
       str_detect(EXP, "^(ALTPCR)") ~ "ALTPCR"
     )
@@ -3133,7 +3133,7 @@ result_g <- df_inclusion_sets |>
   mutate(
     technique = case_when(
       str_detect(exp, "EPM") ~ "EPM",
-      str_detect(exp, "MTT") ~ "MTT",
+      str_detect(exp, "^(MTT)") ~ "MTT",
       str_detect(exp, "^(PCR)(?!ALT)") ~ "PCR",
       str_detect(exp, "^(ALTPCR)") ~ "ALTPCR"
     )
