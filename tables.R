@@ -2746,11 +2746,11 @@ df_rep_allexp_altmtt <- read_tsv(paste0("output/", results_path, "/all_exps_lab_
 cv_primary_paired <- df_rep_primary_mtt |>
   summarise(
     cv_summary = paste0(
-      sprintf("%.2f", median(replication_cv, na.rm = TRUE)),
+      sprintf("%.3f", median(replication_cv, na.rm = TRUE)),
       " (",
-      sprintf("%.2f", min(replication_cv, na.rm = TRUE)),
+      sprintf("%.3f", min(replication_cv, na.rm = TRUE)),
       ", ",
-      sprintf("%.2f", max(replication_cv, na.rm = TRUE)),
+      sprintf("%.3f", max(replication_cv, na.rm = TRUE)),
       ")"
     )
   ) |>
@@ -2759,11 +2759,11 @@ cv_primary_paired <- df_rep_primary_mtt |>
 cv_primary_original <- df_rep_primary_altmtt |>
   summarise(
     cv_summary = paste0(
-      sprintf("%.2f", median(replication_cv, na.rm = TRUE)),
+      sprintf("%.3f", median(replication_cv, na.rm = TRUE)),
       " (",
-      sprintf("%.2f", min(replication_cv, na.rm = TRUE)),
+      sprintf("%.3f", min(replication_cv, na.rm = TRUE)),
       ", ",
-      sprintf("%.2f", max(replication_cv, na.rm = TRUE)),
+      sprintf("%.3f", max(replication_cv, na.rm = TRUE)),
       ")"
     )
   ) |>
@@ -2772,11 +2772,11 @@ cv_primary_original <- df_rep_primary_altmtt |>
 cv_allexp_paired <- df_rep_allexp_mtt |>
   summarise(
     cv_summary = paste0(
-      sprintf("%.2f", median(replication_cv, na.rm = TRUE)),
+      sprintf("%.3f", median(replication_cv, na.rm = TRUE)),
       " (",
-      sprintf("%.2f", min(replication_cv, na.rm = TRUE)),
+      sprintf("%.3f", min(replication_cv, na.rm = TRUE)),
       ", ",
-      sprintf("%.2f", max(replication_cv, na.rm = TRUE)),
+      sprintf("%.3f", max(replication_cv, na.rm = TRUE)),
       ")"
     )
   ) |>
@@ -2785,11 +2785,11 @@ cv_allexp_paired <- df_rep_allexp_mtt |>
 cv_allexp_original <- df_rep_allexp_altmtt |>
   summarise(
     cv_summary = paste0(
-      sprintf("%.2f", median(replication_cv, na.rm = TRUE)),
+      sprintf("%.3f", median(replication_cv, na.rm = TRUE)),
       " (",
-      sprintf("%.2f", min(replication_cv, na.rm = TRUE)),
+      sprintf("%.3f", min(replication_cv, na.rm = TRUE)),
       ", ",
-      sprintf("%.2f", max(replication_cv, na.rm = TRUE)),
+      sprintf("%.3f", max(replication_cv, na.rm = TRUE)),
       ")"
     )
   ) |>
