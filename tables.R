@@ -2515,7 +2515,7 @@ tbl_s18 <- tbl_s18_exp |>
     )
   )
 
-# Order columns
+# Order columns - keep only bigexp power column
 ordered_cols_tbl_s18 <- tibble(
   colname = colnames(tbl_s18),
   priority = case_when(
@@ -2525,9 +2525,12 @@ ordered_cols_tbl_s18 <- tibble(
     str_starts(colname, "all_exps_lab_units") ~ 4,
     str_starts(colname, "at_least_2_reps") ~ 5,
     str_starts(colname, "only_3_reps") ~ 6,
-    TRUE ~ 7
+    colname == "only_80_power_a_posteriori_bigexp_ALL_PCR_MTT" ~ 7,  # Keep only bigexp power (lowercase)
+    str_starts(colname, "only_80_power") ~ 99,  # Exclude all other power columns
+    TRUE ~ 8
   )
 ) |>
+  filter(priority < 99) |>
   arrange(priority) |>
   pull(colname)
 
@@ -2550,8 +2553,9 @@ if ("at_least_2_reps_ALL_PCR_MTT" %in% colnames(tbl_s18)) {
 if ("only_3_reps_ALL_PCR_MTT" %in% colnames(tbl_s18)) {
   tbl_s18 <- tbl_s18 |> dplyr::rename(`3 copies` = only_3_reps_ALL_PCR_MTT)
 }
-if ("only_80_power_a_posteriori_T_ALL_PCR_MTT" %in% colnames(tbl_s18)) {
-  tbl_s18 <- tbl_s18 |> dplyr::rename(`≥80% power` = only_80_power_a_posteriori_T_ALL_PCR_MTT)
+# Rename bigexp power column with shorter title (lowercase bigexp)
+if ("only_80_power_a_posteriori_bigexp_ALL_PCR_MTT" %in% colnames(tbl_s18)) {
+  tbl_s18 <- tbl_s18 |> dplyr::rename(`>80% power` = only_80_power_a_posteriori_bigexp_ALL_PCR_MTT)
 }
 
 footer_text_tbl_s18 <- "Replication rates for the primary and secondary analyses using the bigexp distribution (experiment-level analysis). Effect size comparisons are based on random-effects meta-analysis, while same-sign significance is based on a fixed meta-analysis estimate. Metrics marked 'NA' are not available in the bigexp analysis. Replication-level metrics use values from the t distribution analysis (Table 2) for commensurability. Subsets for secondary analyses include all experiments judged valid by the replicating lab (Lab's Choice), all concluded experiments (All Exps), both using the experimental unit as defined by the lab, and only experiments with at least 2 and 3 replications. PI, prediction interval; CI, confidence interval. For more information on replication criteria, see https://osf.io/9rnuj."
