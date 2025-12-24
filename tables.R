@@ -2829,12 +2829,12 @@ save_tbl(
 cat("\n### Table S19 generated! ###\n")
 
 
-## Table S22 ---------------------------------------------------------------
+## Table S24 ---------------------------------------------------------------
 df_coord_difficulties <- read_excel("other-data/Coordinating team assessment of difficulties.xlsx") |>
   clean_names() |>
   select(categoria, dificuldade, soma_um)
 
-tbl_s22 <- df_coord_difficulties |>
+tbl_s24 <- df_coord_difficulties |>
   group_by(categoria) |>
   reframe(
     dificuldade = dificuldade,
@@ -2875,18 +2875,18 @@ tbl_s22 <- df_coord_difficulties |>
   rename(Difficulty = dificuldade) |>
   rename(Rating = soma) |>
   flextable() |>
-  add_name("Table – Project difficulties - Coordinating team assessment") |>
+  add_name("Table S24 – Project difficulties - Coordinating team assessment") |>
   set_table_properties(layout = "autofit")
 
 ### Saving ----
 save_tbl(
-  list(tbl_s22),
-  paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S22.docx")
+  list(tbl_s24),
+  paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S24.docx")
 )
 
-cat("\n### Table S22 generated! ###\n")
+cat("\n### Table S24 generated! ###\n")
 
-## Table S24 ---------------------------------------------------------------
+## Table S22 ---------------------------------------------------------------
 # Survey participant demographics
 
 ### Data loading and cleaning ----
@@ -2899,7 +2899,7 @@ df_participants <- read.csv2("other-data/survey-data/joined_participant_informat
     General_rep_rate = as.numeric(General_rep_rate),
     # Consolidate positions
     Institutional_position = case_when(
-      Institutional_position_other == "Research Analyst" ~ "Research associate",
+      Institutional_position_other == "Research Analyst" ~ "Post-doc/Research associate",
       Institutional_position %in% c("Post-doctoral researcher", "Research associate") ~ "Post-doc/Research associate",
       TRUE ~ Institutional_position
     ),
@@ -2964,7 +2964,8 @@ label_order <- tribble(
   "Geographical_location", "North America", 3, "Geographical_location", "Oceania", 4,
   "Highest_academic_title", "PhD", 1, "Highest_academic_title", "Master's", 2,
   "Institutional_position", "Professor", 1, "Institutional_position", "Post-doc/Research associate", 2,
-  "Institutional_position", "PhD student", 3
+  "Institutional_position", "PhD student", 3, "Institutional_position", "Master's student", 4,
+  "Institutional_position", "Technician", 5, "Institutional_position", "Other (please specify)", 6
 )
 
 # Variable display order
@@ -2972,7 +2973,7 @@ var_order <- c("Age", "Gender", "BRI_member", "Geographical_location", "Years_in
                "Highest_academic_title", "Institutional_position", "Research_area1",
                "Theoretical_knowledge", "Practical_knowledge", "Stats_knowledge", "General_rep_rate")
 
-tbl_s24_data <- all_summaries |>
+tbl_s22_data <- all_summaries |>
   left_join(label_order, by = c("Variable", "Label")) |>
   arrange(factor(Variable, levels = var_order), order) |>
   select(-order) |>
@@ -2998,19 +2999,19 @@ tbl_s24_data <- all_summaries |>
   rename("Combined\nn=70" = Combined, "MTT\nn=22" = MTT, "PCR\nn=18" = PCR, "EPM\nn=30" = EPM)
 
 ### Create flextable ----
-tbl_s24 <- tbl_s24_data |>
+tbl_s22 <- tbl_s22_data |>
   flextable() |>
-  add_header_lines(values = "Table S24 – Survey participant demographics") |>
+  add_header_lines(values = "Table S22 – Survey participant demographics") |>
   bold(i = 1, part = "header") |>
   set_table_properties(layout = "autofit")
 
 ### Saving ----
 save_tbl(
-  list(tbl_s24),
-  paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S24.docx")
+  list(tbl_s22),
+  paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S22.docx")
 )
 
-cat("\n### Table S24 generated! ###\n")
+cat("\n### Table S22 generated! ###\n")
 
 ## Text-Cited Numbers ------------------------------------------------------
 
