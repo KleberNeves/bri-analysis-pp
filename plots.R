@@ -821,7 +821,9 @@ plot_cortable_cluster <- function(FDATA, vars1, vars2, title, fn, show_label, ma
       "Academic Age\n(Protocol Team)", "Publications\n(Protocol Team)",
       "Academic Age\n(Data Collection Team)", "Publications\n(Data Collection Team)",
       "Institution\nRanking",
-      "Survey\n(Replication)", "Survey\n(Effect Size)", "Survey\n(Challenge)"
+      "Survey\n(Replication)", 
+      "Survey\n(Effect Size)", 
+      "Survey\n(Challenge)"
     )) |>
     ggplot() +
     aes(
