@@ -655,25 +655,30 @@ plot_cortable_cluster <- function(FDATA, vars1, vars2, title, fn, show_label, ma
       "Author",
       "Protocol Deviation",
       "Replication Team",
-      # "Center",
-      # "Inst.",
       "Lab",
       "Prediction"
     )) |>
-    # Force correct order within each facet
-    mutate(col1 = fct_relevel(
-      col1,
-      "Animal", "EPM", "MTT", "PCR",
-      "Hedges's g", "p-value", "Coeff. Variation",
-      "Protocol", "Bias Control",
-      "Impact Factor", "Year", "Citations",
-      "Academic Age", "Publications",
-      "Protocol Deviation\n(Lab)", "Protocol Deviation\n(Committee)",
-      "Academic Age\n(Protocol Team)", "Publications\n(Protocol Team)",
-      "Academic Age\n(Data Collection Team)", "Publications\n(Data Collection Team)",
-      "University Ranking",
-      "Survey\n(Replication)", "Survey\n(Effect Size)", "Survey\n(Challenge)"
-    )) |>
+    # Brutal force ordering: Prepend index to string to force alphabetical order in ggplot
+    mutate(
+      desired_order = factor(col1, levels = c(
+        "Animal", "EPM", "MTT", "PCR",
+        "Hedges's g", "p-value", "Coeff. Variation",
+        "Protocol", "Bias Control",
+        "Impact Factor", "Year", "Citations",
+        "Academic Age", "Publications",
+        "Protocol Deviation\n(Lab)", "Protocol Deviation\n(Committee)",
+        "Academic Age\n(Protocol Team)", "Publications\n(Protocol Team)",
+        "Academic Age\n(Data Collection Team)", "Publications\n(Data Collection Team)",
+        "University Ranking",
+        "Survey\n(Replication)",
+        "Survey\n(Effect Size)",
+        "Survey\n(Challenge)"
+      )),
+      col1_idx = as.integer(desired_order),
+      # Fallback for unexpected items: place at end
+      col1_idx = ifelse(is.na(col1_idx), 99, col1_idx),
+      col1 = paste0(sprintf("%02d_", col1_idx), col1)
+    ) |>
     mutate(
       # Create separate fill variables for positive and negative correlations using -log10(p)
       fill_negative = ifelse(rho < 0, -log10(capped.p_rho), NA_real_),
@@ -882,7 +887,7 @@ plot_cortable_cluster <- function(FDATA, vars1, vars2, title, fn, show_label, ma
 
   p <- p +
     scale_y_discrete(expand = c(0, 0)) +
-    scale_x_discrete(expand = c(0, 0))
+    scale_x_discrete(expand = c(0, 0), labels = function(x) sub("^[0-9]+_", "", x))
 
   p_p <- p_p +
     scale_y_discrete(expand = c(0, 0)) +

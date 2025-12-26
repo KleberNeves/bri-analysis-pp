@@ -1,4 +1,4 @@
-─ Session info ─────────────────────────────────────────────────────────────────────────────────────────────────
+─ Session info ──────────────────────────────────────────────────────────────────────────────────────────────────────────
  setting  value
  version  R version 4.5.1 (2025-06-13)
  os       macOS Tahoe 26.2
@@ -8,12 +8,12 @@
  collate  en_US.UTF-8
  ctype    en_US.UTF-8
  tz       America/Sao_Paulo
- date     2025-12-22
+ date     2025-12-24
  rstudio  2025.09.2+418 Cucumberleaf Sunflower (desktop)
  pandoc   3.6.3 @ /Applications/RStudio.app/Contents/Resources/app/quarto/bin/tools/aarch64/ (via rmarkdown)
  quarto   1.7.32 @ /Applications/RStudio.app/Contents/Resources/app/quarto/bin/quarto
 
-─ Packages ─────────────────────────────────────────────────────────────────────────────────────────────────────
+─ Packages ──────────────────────────────────────────────────────────────────────────────────────────────────────────────
  package           * version    date (UTC) lib source
  abind               1.4-8      2024-09-12 [1] CRAN (R 4.5.0)
  askpass             1.2.1      2024-10-04 [1] CRAN (R 4.5.0)
@@ -169,11 +169,10 @@
  xfun                0.53       2025-08-19 [1] CRAN (R 4.5.0)
  xml2                1.4.0      2025-08-20 [1] CRAN (R 4.5.0)
  xtable            * 1.8-4      2019-04-21 [1] CRAN (R 4.5.0)
- yaml                2.3.10     2024-07-26 [1] CRAN (R 4.5.0)
  zip                 2.3.3      2025-05-13 [1] CRAN (R 4.5.0)
  zoo                 1.8-14     2025-04-10 [1] CRAN (R 4.5.0)
 
  [1] /Library/Frameworks/R.framework/Versions/4.5-arm64/Resources/library
  * ── Packages attached to the search path.
 
-────────────────────────────────────────────────────────────────────────────────────────────────────────────────
+─────────────────────────────────────────────────────────────────────────────────────────────────────────────────────────
