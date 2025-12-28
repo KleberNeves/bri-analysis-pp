@@ -197,6 +197,16 @@ run_predictor_analysis_both_level <- function(replication_datapath, make_plots) 
 # Accepts a vector of paths and saves output to all of them (runs analysis only once)
 # Uses global inclusion_sets variable (must be already loaded in main.R)
 run_predictor_analysis_all_exps <- function(replication_datapaths) {
+  # Read CV data from replication assessment file (contains original_cv column)
+  # Use first path to read the data
+  cv_data <- fread(paste0(replication_datapaths[1], "/Replication Assessment by Experiment.tsv")) |>
+    select(EXP, original_cv) |>
+    distinct() |>
+    filter(str_detect(EXP, "^(MTT|EPM|PCR)")) |>
+    rename(`Original CV` = original_cv)
+  
+  message(paste0("Read CV data for ", nrow(cv_data), " experiments"))
+  
   # Filter for UNIT=BRI to get all 143 replications
   all_exps <- inclusion_sets |>
     filter(UNIT == "BRI") |>
@@ -210,7 +220,8 @@ run_predictor_analysis_all_exps <- function(replication_datapaths) {
   FDATA_EXP <- PRED_DATA_EXP_LEVEL |>
     filter(EXP %in% unique(all_exps$EXP)) |>
     select(-DOI) |>
-    rename(`University Ranking (Experiment)` = `Institution Ranking`)
+    rename(`University Ranking (Experiment)` = `Institution Ranking`) |>
+    left_join(cv_data, by = "EXP")
   
   message(paste0("Experiment-level predictor data: ", nrow(FDATA_EXP), " experiments"))
   
@@ -226,8 +237,9 @@ run_predictor_analysis_all_exps <- function(replication_datapaths) {
   
   message(paste0("Combined data for correlation: ", nrow(FDATA), " rows"))
   
-  # List predictor variables
-  global_vars <- setdiff(colnames(FDATA_EXP), "EXP")
+  # List predictor variables (position "Original CV" after "p-value" like other predictor analyses)
+  global_vars <- setdiff(colnames(FDATA_EXP), c("EXP", "Original CV"))
+  global_vars <- append(global_vars, "Original CV", after = which(global_vars == "p-value"))
   individual_vars <- setdiff(colnames(FDATA_REP), c("EXP", "LAB"))
   vars1 <- c(global_vars, individual_vars)
   vars2 <- vars1
