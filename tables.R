@@ -2065,32 +2065,76 @@ form1_val <- full_join(form1, inclusion_sets_short, by = c("LAB", "EXP")) |>
 
 form1_val
 
-lab_agreement_summary <- form1_val |>
-  group_by(validation_new) |>
+# Build Table S5 data directly from inclusion_sets to avoid category mismatches
+# Use inclusion_sets as the authoritative source for validation decisions
+
+# Get experiment counts per validation category (only Done/BRI experiments)
+experiment_counts <- df_inclusion_sets |>
+  filter(UNIT == "BRI") |>
+  filter(done == "Yes") |>
+  mutate(
+    # Use is.na(Validation - Excluded by) to determine Included, matching plots.R logic
+    validation_decision = case_when(
+      is.na(`Validation - Excluded by`) ~ "Included",
+      TRUE ~ `Validation - Excluded by`
+    )
+  ) |>
+  count(validation_decision, name = "n_experiments")
+
+# Get lab agreement data: join form1 survey with inclusion_sets
+# Note: form1 has decision_agree column from survey responses
+form1_with_validation <- full_join(
+  form1, 
+  df_inclusion_sets |> 
+    filter(UNIT == "BRI") |>
+    filter(done == "Yes") |>
+    select(EXP, LAB, `Validation - Decision`, `Validation - Excluded by`),
+  by = c("LAB", "EXP")
+) |>
+  filter(!is.na(decision_agree)) |>
+  mutate(
+    # Use is.na(Validation - Excluded by) to determine Included, matching plots.R logic
+    validation_decision = case_when(
+      is.na(`Validation - Excluded by`) ~ "Included",
+      TRUE ~ `Validation - Excluded by`
+    )
+  ) |>
+  filter(!is.na(validation_decision))
+
+# Count agreements and total responses per category
+lab_agreement_summary <- form1_with_validation |>
+  group_by(validation_decision) |>
   summarise(
-    lab_agree = sum(decision_agree == "Sim", na.rm = T)
+    lab_agree = sum(decision_agree == "Sim", na.rm = TRUE),
+    total_responses = n()
   )
 
-df_experiments_numbers_overview_wide_join <- df_experiments_numbers_overview_wide |>
-  mutate(reason = case_when(validation == "Valid" ~ "Included", TRUE ~ reason)) |>
-  left_join(lab_agreement_summary, by = c("reason" = "validation_new")) |>
-  arrange(validation) |>
+# Join experiment counts with lab agreement
+df_s5_data <- experiment_counts |>
+  left_join(lab_agreement_summary, by = "validation_decision") |>
+  rename(n = n_experiments) |>
+  arrange(desc(n))
+
+
+# Add total row (sum only Done experiments)
+df_s5_data <- df_s5_data |>
   add_row(
-    status = "Total", 
-    n = sum(df_experiments_numbers_overview_wide$n, na.rm = TRUE), 
-    lab_agree = sum(form1_val$decision_agree == "Sim", na.rm = TRUE),
-    .before = 9
+    validation_decision = "Total",
+    n = sum(df_s5_data$n, na.rm = TRUE),
+    lab_agree = sum(df_s5_data$lab_agree, na.rm = TRUE),
+    total_responses = sum(df_s5_data$total_responses, na.rm = TRUE)
+  )
+
+# Format output - percentage is calculated as agreement among respondents
+df_experiments_numbers_overview_wide_join <- df_s5_data |>
+  mutate(
+    percent = lab_agree / total_responses * 100,
+    `Lab Agreement` = paste0(lab_agree, " (", round(percent, 0), "%)")
   ) |>
-  arrange(desc(n)) |>
-  slice(3:4, 6, 9:13, 2, 1, 5, 7:8) |>
-  mutate(percent = lab_agree / n * 100) |>
-  mutate(lab_agree = paste0(lab_agree, " (", round(percent, 1), "%)")) |>
-  mutate(lab_agree = if_else(lab_agree == "NA (NA%)", "", lab_agree)) |>
-  select(-percent) |>
-  rename(Status = status) |>
-  rename(Validation = validation) |>
-  rename(Reason = reason) |>
-  rename(`Lab Agreement` = lab_agree)
+  mutate(`Lab Agreement` = if_else(is.na(lab_agree) | is.na(percent), "", `Lab Agreement`)) |>
+  select(validation_decision, n, `Lab Agreement`) |>
+  rename(`Validation decision` = validation_decision, `# of cases` = n)
+
 
 tbl_s5 <- df_experiments_numbers_overview_wide_join |>
   flextable() |>
@@ -2890,7 +2934,7 @@ save_tbl(
 
 cat("\n### Table S24 generated! ###\n")
 
-## Table S22 ---------------------------------------------------------------
+## Table S21 ---------------------------------------------------------------
 # Survey participant demographics
 
 ### Data loading and cleaning ----
@@ -2977,7 +3021,7 @@ var_order <- c("Age", "Gender", "BRI_member", "Geographical_location", "Years_in
                "Highest_academic_title", "Institutional_position", "Research_area1",
                "Theoretical_knowledge", "Practical_knowledge", "Stats_knowledge", "General_rep_rate")
 
-tbl_s22_data <- all_summaries |>
+tbl_s21_data <- all_summaries |>
   left_join(label_order, by = c("Variable", "Label")) |>
   arrange(factor(Variable, levels = var_order), order) |>
   select(-order) |>
@@ -3003,19 +3047,19 @@ tbl_s22_data <- all_summaries |>
   rename("Combined\nn=70" = Combined, "MTT\nn=22" = MTT, "PCR\nn=18" = PCR, "EPM\nn=30" = EPM)
 
 ### Create flextable ----
-tbl_s22 <- tbl_s22_data |>
+tbl_s21 <- tbl_s21_data |>
   flextable() |>
-  add_header_lines(values = "Table S22 – Survey participant demographics") |>
+  add_header_lines(values = "Table S21 – Survey participant demographics") |>
   bold(i = 1, part = "header") |>
   set_table_properties(layout = "autofit")
 
 ### Saving ----
 save_tbl(
-  list(tbl_s22),
-  paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S22.docx")
+  list(tbl_s21),
+  paste0("output/", results_path, "/_manuscript figures and tables", "/tables/Table S21.docx")
 )
 
-cat("\n### Table S22 generated! ###\n")
+cat("\n### Table S21 generated! ###\n")
 
 ## Text-Cited Numbers ------------------------------------------------------
 
