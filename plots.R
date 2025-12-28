@@ -317,6 +317,21 @@ plot_cortable_alternative <- function(FDATA, FDATA_EXP, FDATA_REP, vars1, vars2,
   })
 
   test_results <- test_results |>
+    rowwise() |>
+    mutate(
+      idx1 = match(col1, vars1),
+      idx2 = match(col2, vars1),
+      
+      # Swap if in upper triangle (idx1 > idx2) to enforce lower triangle (idx1 <= idx2)
+      col1_new = ifelse(idx1 > idx2, col2, col1),
+      col2_new = ifelse(idx1 > idx2, col1, col2),
+      
+      col1 = col1_new,
+      col2 = col2_new
+    ) |>
+    ungroup() |>
+    select(-idx1, -idx2, -col1_new, -col2_new) |>
+    distinct(col1, col2, .keep_all = TRUE) |>
     filter(col1 != col2) |>
     mutate(
       # Create formatted labels
