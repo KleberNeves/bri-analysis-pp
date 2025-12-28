@@ -204,17 +204,13 @@ run_predictor_analysis_all_exps <- function(replication_datapaths) {
     distinct() |>
     filter(str_detect(EXP, "^(MTT|EPM|PCR)")) |>
     rename(`Original CV` = original_cv)
-  
-  message(paste0("Read CV data for ", nrow(cv_data), " experiments"))
-  
-  # Filter for UNIT=BRI to get all 143 replications
+    
+  # Filter to get all 143 replications
   all_exps <- inclusion_sets |>
     filter(UNIT == "BRI") |>
+    filter(done == "Yes") |>
     select(EXP, LAB) |>
     distinct()
-  
-  message(paste0("Found ", nrow(all_exps), " replications (Done=Yes, UNIT=BRI) across ", 
-                 length(unique(all_exps$EXP)), " experiments"))
   
   # Prepare experiment-level predictor data (all 60 experiments)
   FDATA_EXP <- PRED_DATA_EXP_LEVEL |>
@@ -222,21 +218,15 @@ run_predictor_analysis_all_exps <- function(replication_datapaths) {
     select(-DOI) |>
     rename(`University Ranking (Experiment)` = `Institution Ranking`) |>
     left_join(cv_data, by = "EXP")
-  
-  message(paste0("Experiment-level predictor data: ", nrow(FDATA_EXP), " experiments"))
-  
+    
   # Prepare replication-level predictor data (all 143 replications)
   FDATA_REP <- PRED_DATA_REP_LEVEL |>
     inner_join(all_exps, by = c("EXP", "LAB")) |>
     rename(`University Ranking (Replication)` = `Institution Ranking`)
-  
-  message(paste0("Replication-level predictor data: ", nrow(FDATA_REP), " replications"))
-  
+    
   # Combine for correlation analysis
   FDATA <- full_join(FDATA_EXP, FDATA_REP, by = "EXP")
-  
-  message(paste0("Combined data for correlation: ", nrow(FDATA), " rows"))
-  
+    
   # List predictor variables (position "Original CV" after "p-value" like other predictor analyses)
   global_vars <- setdiff(colnames(FDATA_EXP), c("EXP", "Original CV"))
   global_vars <- append(global_vars, "Original CV", after = which(global_vars == "p-value"))
