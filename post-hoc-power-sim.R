@@ -12,20 +12,13 @@ n_sims = 1000
 i_sims = 0
 
 run_all_sims = function (dist) {
-  sim_exp_sss <<- matrix(nrow = length(exp_list), ncol = n_sims)
-  rownames(sim_exp_sss) <<- exp_list
-  colnames(sim_exp_sss) <<- paste0("SIM_", 1:n_sims)
-  sim_exp_sss <<- as_tibble(sim_exp_sss, rownames = "EXP")
+  sim_exp_sss <<- tibble(EXP = exp_list)
   
   if (dist == "bigexp") { # IF bigexp, rep_list is actually exp_list (only a single replication)
-    sim_rep_sss <<- matrix(nrow = length(exp_list), ncol = n_sims)
-    rownames(sim_rep_sss) <<- exp_list
+    sim_rep_sss <<- tibble(EXP = exp_list)
   } else {
-    sim_rep_sss <<- matrix(nrow = length(rep_list), ncol = n_sims)
-    rownames(sim_rep_sss) <<- rep_list
+    sim_rep_sss <<- tibble(EXPLAB = rep_list)
   }
-  colnames(sim_rep_sss) <<- paste0("SIM_", 1:n_sims)
-  sim_rep_sss <<- as_tibble(sim_rep_sss, rownames = "EXP")
   
   finish_times = tibble(setcol = "start", time = lubridate::now())
   
@@ -45,7 +38,7 @@ run_all_sims = function (dist) {
     )
     
     if (all(is.na(result))) {
-      print("Error: running again ...")
+      print("Error: NA results (sim_alerts or too few replications) --> running again ...")
       next
     }
     
@@ -71,13 +64,16 @@ run_all_sims = function (dist) {
         )
       )
     
-    if (nrow(sim_exp_sss[,i_sims+1]) != length(by_exp_result$signif) | nrow(sim_rep_sss[,i_sims+1]) != length(by_rep_result$signif)) {
-      print("Error: running again ...")
-      next
-    }
-    
-    sim_exp_sss[,i_sims+1] <<- by_exp_result$signif
-    sim_rep_sss[,i_sims+1] <<- by_rep_result$signif
+    # if (nrow(sim_exp_sss[,i_sims+1]) != length(by_exp_result$signif) | nrow(sim_rep_sss[,i_sims+1]) != length(by_rep_result$signif)) {
+    #   print("Error: result length did not match --> running again ...")
+    #   next
+    # }
+    # browser()
+    new_exp_col = by_exp_result |> select(EXP, signif) |> `colnames<-`(c("EXP", paste0("SIM_", i_sims)))
+    new_rep_col = by_rep_result |> rowwise() |> mutate(EXPLAB = paste0(EXP, " ", LAB)) |> select(EXPLAB, signif) |> `colnames<-`(c("EXPLAB", paste0("SIM_", i_sims)))
+      
+    sim_exp_sss <<- sim_exp_sss |> left_join(new_exp_col, by = c("EXP"))
+    sim_rep_sss <<- sim_rep_sss |> left_join(new_rep_col, by = c("EXPLAB"))
     
     power_check_all_data <<- rbind(power_check_all_data, by_exp_result)
     
