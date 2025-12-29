@@ -918,7 +918,7 @@ make_rep_es_analysis = function (data_fns, simulated, EXP_code, is_PCR, original
 generate_sim_data_from_replication = function (empirical_data, original_es, exp_code, paired_labs) {
   is_PCR = str_detect(exp_code, "PCR")
   
-  empirical_es = empirical_data |> summarise_es_by_lab(paired_labs)
+  empirical_es = empirical_data |> summarise_es_by_lab(paired_labs, use_perc = T)
   
   # Generates simulated datasets based on the summaries of the empirical results
   all_labs_simdata = pmap_dfr(empirical_es, function (LAB, mean_group_1, mean_group_2, sd_group_1, sd_group_2, n_group_1, n_group_2) {
@@ -932,40 +932,41 @@ generate_sim_data_from_replication = function (empirical_data, original_es, exp_
         LAB = LAB,
         EXP = exp_code,
         Replicate = 1:max_n,
-        Group1 = c(
+        Group1_Perc = c(
           rnorm(n = n_group_1, mean = mean_group_1, sd = sd_group_1),
           rep(NA, max_n - n_group_1)
         ),
-        Group2 = c(
+        Group2_Perc = c(
           rnorm(n = n_group_2, mean = mean_group_1 - log2(exp(original_es)), sd = sd_group_2),
           rep(NA, max_n - n_group_2)
         )
       ) |> mutate(
-        # Calculates percentages
-        Group1_Perc = Group1 - mean(Group1, na.rm = T),
-        Group2_Perc = Group2 - mean(Group1, na.rm = T)
-      )
+        # Set Group1/Group2 to be the same as the normalized ones (won't be used)
+        Group1 = Group1_Perc,
+        Group2 = Group2_Perc
+      ) |>
+        # Set column order to be the same as the empirical data sheets
+        select(LAB, EXP, Replicate, Group1, Group2, Group1_Perc, Group2_Perc)
     } else {
-      sim_data = tibble(
+      sim_data = tibble(LAB
         LAB = LAB,
         EXP = exp_code,
         Replicate = 1:max_n,
-        Group1 = c(
+        Group1_Perc = c(
           rnorm(n = n_group_1, mean = mean_group_1, sd = sd_group_1),
           rep(NA, max_n - n_group_1)
         ),
-        Group2 = c(
+        Group2_Perc = c(
           rnorm(n = n_group_2, mean = mean_group_1 * exp(original_es), sd = sd_group_2),
           rep(NA, max_n - n_group_2)
         )
       ) |> mutate(
-        # Truncates data that is negative
-        Group1 = ifelse(Group1 < 0, runif (1, min=0.0001, max=0.001), Group1),
-        Group2 = ifelse(Group2 < 0, runif (1, min=0.0001, max=0.001), Group2),
-        # Calculates percentages
-        Group1_Perc = Group1 / mean(Group1, na.rm = T),
-        Group2_Perc = Group2 / mean(Group1, na.rm = T)
-      )
+        # Set Group1/Group2 to be the same as the normalized ones (won't be used)
+        Group1 = Group1_Perc,
+        Group2 = Group2_Perc
+      ) |>
+        # Set column order to be the same as the empirical data sheets
+        select(LAB, EXP, Replicate, Group1, Group2, Group1_Perc, Group2_Perc)
     }
     sim_data
   })
