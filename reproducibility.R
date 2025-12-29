@@ -92,7 +92,7 @@ run_all_meta_analyses = function (inclusion_set_column, save_results_to, params,
     ma_only_list = rbind(ma_only_list, ma_only_list_alt)
   }
   
-  # data_list = data_list |> filter(str_detect(EXP, "MTT"))
+  # data_list = data_list |> filter(str_detect(EXP, "PCR16"))
   exps = unique(data_list$EXP)
   
   # Run each analysis 
@@ -809,10 +809,7 @@ make_rep_es_analysis = function (data_fns, simulated, EXP_code, is_PCR, original
       
       # If any mean is NaN, regenerate the data until you get a valid dataset
       regen = any(
-        c(
-          is.nan(c(rep_es$mean_group_1, rep_es$mean_group_2)),
-          c(rep_es$mean_group_1, rep_es$mean_group_2) == 0
-        )
+        is.nan(c(rep_es$mean_group_1, rep_es$mean_group_2))
       )
     }
   } else {
@@ -948,7 +945,7 @@ generate_sim_data_from_replication = function (empirical_data, original_es, exp_
         # Set column order to be the same as the empirical data sheets
         select(LAB, EXP, Replicate, Group1, Group2, Group1_Perc, Group2_Perc)
     } else {
-      sim_data = tibble(LAB
+      sim_data = tibble(
         LAB = LAB,
         EXP = exp_code,
         Replicate = 1:max_n,
