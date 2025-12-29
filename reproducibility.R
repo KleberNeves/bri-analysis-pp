@@ -574,9 +574,11 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
         filter(SUBJ_SUCCESS)
     )
     
-    # If it's a single experiment, just get all the subjective evaluations and count (individual subjective evaluation does not exist)
+    # If it's a single big experiment, remove subjective and voting as criteria
     if (params$ma_dist == "bigexp") {
       n_subjective_successful_eval = NA
+      n_signif_tests = NA
+      total_tests = NA
     }
     
   }
