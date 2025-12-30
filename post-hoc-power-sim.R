@@ -15,7 +15,7 @@ run_all_sims = function (dist) {
   sim_exp_sss <<- tibble(EXP = exp_list)
   
   if (dist == "bigexp") { # IF bigexp, rep_list is actually exp_list (only a single replication)
-    sim_rep_sss <<- tibble(EXP = exp_list)
+    sim_rep_sss <<- tibble(EXP = exp_list) |> mutate(EXPLAB = paste0(EXP, " All LABs")) |> select(EXPLAB)
   } else {
     sim_rep_sss <<- tibble(EXPLAB = rep_list)
   }
@@ -64,11 +64,6 @@ run_all_sims = function (dist) {
         )
       )
     
-    # if (nrow(sim_exp_sss[,i_sims+1]) != length(by_exp_result$signif) | nrow(sim_rep_sss[,i_sims+1]) != length(by_rep_result$signif)) {
-    #   print("Error: result length did not match --> running again ...")
-    #   next
-    # }
-    # browser()
     new_exp_col = by_exp_result |> select(EXP, signif) |> `colnames<-`(c("EXP", paste0("SIM_", i_sims)))
     new_rep_col = by_rep_result |> rowwise() |> mutate(EXPLAB = paste0(EXP, " ", LAB)) |> select(EXPLAB, signif) |> `colnames<-`(c("EXPLAB", paste0("SIM_", i_sims)))
       
