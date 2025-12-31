@@ -967,6 +967,13 @@ generate_sim_data_from_replication = function (empirical_data, original_es, exp_
         # Set column order to be the same as the empirical data sheets
         select(LAB, EXP, Replicate, Group1, Group2, Group1_Perc, Group2_Perc)
     }
+    
+    # Truncates data that is negative
+    sim_data = sim_data |> mutate(
+      Group1_Perc = ifelse(Group1_Perc < 0, runif (1, min=0.0001, max=0.001), Group1_Perc),
+      Group2_Perc = ifelse(Group2_Perc < 0, runif (1, min=0.0001, max=0.001), Group2_Perc)
+    )
+    
     sim_data
   })
   
