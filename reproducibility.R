@@ -961,8 +961,8 @@ generate_sim_data_from_replication = function (empirical_data, original_es, exp_
         )
       ) |> mutate(
         # Truncates data that is negative
-          Group1_Perc = ifelse(Group1_Perc < 0, runif (1, min=0.0001, max=0.001), Group1_Perc),
-          Group2_Perc = ifelse(Group2_Perc < 0, runif (1, min=0.0001, max=0.001), Group2_Perc),
+        Group1_Perc = ifelse(Group1_Perc < 0, runif(dplyr::n(), min=0.0001, max=0.001), Group1_Perc),
+        Group2_Perc = ifelse(Group2_Perc < 0, runif(dplyr::n(), min=0.0001, max=0.001), Group2_Perc),
         # Set Group1/Group2 to be the same as the normalized ones (won't be used)
         Group1 = Group1_Perc,
         Group2 = Group2_Perc
@@ -971,11 +971,6 @@ generate_sim_data_from_replication = function (empirical_data, original_es, exp_
         select(LAB, EXP, Replicate, Group1, Group2, Group1_Perc, Group2_Perc)
     }
     
-    # Truncates data that is negative
-    sim_data = sim_data |> mutate(
-      Group1_Perc = ifelse(Group1_Perc < 0, runif (1, min=0.0001, max=0.001), Group1_Perc),
-      Group2_Perc = ifelse(Group2_Perc < 0, runif (1, min=0.0001, max=0.001), Group2_Perc)
-    )
     
     sim_data
   })
