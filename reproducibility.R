@@ -762,7 +762,7 @@ summarise_es_by_lab = function(df, paired_labs, use_perc = F) {
 
 # Function to run escalc while handling PCR vs MTT/EPM as well as paired and non-paired experiments (all of which have different effect size measures)
 make_rep_es_analysis = function (data_fns, simulated, EXP_code, is_PCR, original_es, paired_labs, ma_dist, use_perc = F) {
-  
+  use_perc = T
   rep_data = map_dfr(data_fns, read_tsv, show_col_types = F)
   
   if (ma_dist == "bigexp") {
