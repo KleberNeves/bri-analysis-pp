@@ -314,18 +314,33 @@ create_tbl_by_method_altpcr <- function(analysis_type, distribution) {
   # Build the flextable
   footer_text <- paste0("Same-sign significance is based on a fixed meta-analysis estimate, while effect size comparisons are based on random-effects meta-analysis. All statistical tests use the ", toupper(distribution), " distribution. PI, prediction interval; CI, confidence interval. For more information on criteria, see https://osf.io/9rnuj.")
 
-  tbl_by_method_all_exps <- tbl_by_method_all_exps |>
-    slice(-1) |>
-    flextable() |>
-    bold(j = 2) |>
-    bold(i = 6) |>
-    hline(i = 5:6) |>
+  tbl_df <- tbl_by_method_all_exps |> slice(-1)
+  
+  ft <- flextable(tbl_df)
+  
+  # column 2 may not exist if only 1 method column survived filtering
+  if (ncol(tbl_df) >= 2) {
+    ft <- bold(ft, j = 2)
+  }
+  
+  # only apply row-based styling if those rows exist
+  if (nrow(tbl_df) >= 6) {
+    ft <- bold(ft, i = 6)
+  }
+  if (nrow(tbl_df) >= 6) {
+    ft <- hline(ft, i = 5:6)
+  } else if (nrow(tbl_df) >= 5) {
+    ft <- hline(ft, i = 5)
+  }
+  
+  ft <- ft |>
     add_footer_lines(value = as_paragraph(footer_text)) |>
-    add_header_lines(values = paste0("Table S - Replication Rates (ALTPCR) - ", analysis_type, " - dist ", toupper(distribution))) |>
+    add_header_lines(values = paste0("Table S - Replication Rates ...")) |>
     bold(i = 2, part = "header") |>
     set_table_properties(layout = "autofit")
-
-  return(tbl_by_method_all_exps)
+  
+  return(ft)
+  
 }
 
 ### PCR ---------------------------------------------------------------------
