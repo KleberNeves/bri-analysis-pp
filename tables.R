@@ -3351,7 +3351,7 @@ data_summary <- data.frame(
   `Subjects` = c(fleiss_kappa_exp$subjects, fleiss_kappa_rep$subjects),
   `Raters` = c(fleiss_kappa_exp$raters, fleiss_kappa_rep$raters),
   `Kappa` = c(round(fleiss_kappa_exp$value, 2), round(fleiss_kappa_rep$value, 2)),
-  `p-value` = c(format(fleiss_kappa_exp$p.value, scientific = TRUE, digits = 2), format(fleiss_kappa_rep$p.value, scientific = TRUE, digits = 2))
+  `p-value` = c(sprintf("%.2e", fleiss_kappa_exp$p.value), sprintf("%.2e", fleiss_kappa_rep$p.value))
 )
 
 # Create a flextable table

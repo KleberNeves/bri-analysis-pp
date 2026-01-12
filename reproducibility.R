@@ -143,21 +143,24 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
   
   # Paired experiment data
   uses_lab_unit = any(data_filenames |> str_detect("LABUNIT"))
-  if (params$ma_dist == "bigexp") { # If using a single experiment, all experiments are treated as non-paired
-    paired_labs = c()
-  } else if (uses_lab_unit) {
-    paired_labs = rbind(
+  paired_labs_primary = if (uses_lab_unit) {
+    rbind(
       meta_data_EPM |> filter(EXP == EXP_code) |> select(LAB, Paired),
       meta_data_PCR |> filter(EXP == EXP_code) |> select(LAB, `Paired Alternative`) |> rename(Paired = `Paired Alternative`),
       meta_data_MTT |> filter(EXP == EXP_code) |> select(LAB, `Paired Main`) |> rename(Paired = `Paired Main`)
     ) |> filter(Paired %in% c("yes","Yes")) |> pull(LAB)
   } else {
-    paired_labs = rbind(
+    rbind(
       meta_data_EPM |> filter(EXP == EXP_code) |> select(LAB, Paired),
       meta_data_PCR |> filter(EXP == EXP_code) |> select(LAB, Paired),
       meta_data_MTT |> filter(EXP == EXP_code) |> select(LAB, `Paired Main`) |> rename(Paired = `Paired Main`)
     ) |> filter(Paired %in% c("yes","Yes")) |> pull(LAB)
   }
+  
+  # bigexp is a synthesis method; it should not change lab-level voting/subjective outcomes.
+  # For the bigexp pooled estimate we treat all replications as non-paired, but we keep the
+  # primary pairing structure for replication-level metrics.
+  paired_labs = if (params$ma_dist == "bigexp") character(0) else paired_labs_primary
   
   if (is_ALTPCR) {
     data_filenames_PCR_ref = df |> filter(EXP == EXP_code |> str_remove("ALT") & !is.na(Filename)) |> pull(Filename)
@@ -202,13 +205,51 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
   if (nrow(summaries) == 0)
     return (list(data = tibble(fema_pvalue = NA, indiv_pvalue = NA), plot = ggplot(), individual_data = tibble()))
   
+  # For bigexp, replication-level results should mirror the primary (t) analysis while keeping
+  # the experiment-level synthesis as bigexp. This ensures that replication-level rates (by
+  # replication), voting, and subjective criteria are comparable across specifications.
+  all_rep_es_data_by_replication = all_rep_es_data
+  if (!simulated && params$ma_dist == "bigexp") {
+    all_rep_es_data_by_replication = make_rep_es_analysis(
+      data_filenames,
+      simulated,
+      EXP_code,
+      is_PCR,
+      original_es,
+      paired_labs_primary,
+      "t",
+      use_perc = is_MTT_main
+    )
+  }
+  
+  summaries_by_replication_escalc = all_rep_es_data_by_replication$summaries
+  rep_es_by_replication = all_rep_es_data_by_replication$rep_es
+  rep_data_by_replication = all_rep_es_data_by_replication$rep_data
+  rep_enough_ns_by_replication = all_rep_es_data_by_replication$rep_enough_ns
+  
   dir.create(paste0(output_path, "/escalc"))
   fn = paste0(output_path, "/escalc/",
               "escalc - ", EXP_code, ".tsv")
   
   # Get coefficient of variation for original and experiments with the summaries using the _Perc columns
   
-  rep_es_with_perc = make_rep_es_analysis(data_filenames, simulated, EXP_code, is_PCR, original_es, paired_labs, params$ma_dist, use_perc = T)
+  rep_es_with_perc_paired_labs = paired_labs
+  rep_es_with_perc_ma_dist = params$ma_dist
+  if (!simulated && params$ma_dist == "bigexp") {
+    rep_es_with_perc_paired_labs = paired_labs_primary
+    rep_es_with_perc_ma_dist = "t"
+  }
+  
+  rep_es_with_perc = make_rep_es_analysis(
+    data_filenames,
+    simulated,
+    EXP_code,
+    is_PCR,
+    original_es,
+    rep_es_with_perc_paired_labs,
+    rep_es_with_perc_ma_dist,
+    use_perc = T
+  )
   
   original_cv = orig_data$`Pooled SD` / ((orig_data$`Treated Mean` + orig_data$`Control Mean`) / 2)
   
@@ -537,6 +578,56 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
     }
   }
   
+  # From this point on, use lab-level results for replication-level criteria in the bigexp
+  # specification (while keeping the pooled bigexp synthesis already stored above).
+  if (!simulated && params$ma_dist == "bigexp") {
+    summaries_rep <- summary(summaries_by_replication_escalc)
+    class(summaries_rep) <- "data.frame"
+    summaries_rep$LAB <- summaries_by_replication_escalc$LAB
+    
+    summaries_rep <- summaries_rep |> left_join(
+      rep_es_by_replication |> select(LAB, dfi, pooled_sd),
+      by = "LAB"
+    )
+    
+    if (params$ma_dist == "z") {
+      summaries_rep <- summaries_rep |> mutate(
+        crit = qnorm(0.025, lower.tail = FALSE),
+        pval = 2 * pnorm(abs(zi), lower.tail = FALSE)
+      )
+    } else if (params$ma_dist == "t" | params$ma_dist == "knha" | params$ma_dist == "bigexp") {
+      summaries_rep <- summaries_rep |> mutate(
+        crit = qt(0.025, df = dfi, lower.tail = FALSE),
+        pval = 2 * pt(abs(zi), df = dfi, lower.tail = FALSE)
+      )
+    }
+    
+    summaries_rep <- summaries_rep |> mutate(
+      ci.lb = yi - crit * sei,
+      ci.ub = yi + crit * sei,
+      pi.lb = yi - crit * pooled_sd,
+      pi.ub = yi + crit * pooled_sd
+    )
+    
+    summaries_rep <- summaries_rep |>
+      mutate(
+        yi = exp_only_PCR(yi, is_PCR, PCR_exponent),
+        ci.lb = exp_only_PCR(ci.lb, is_PCR, PCR_exponent),
+        ci.ub = exp_only_PCR(ci.ub, is_PCR, PCR_exponent)
+      )
+    
+    indiv_estimate = summaries_rep$yi
+    indiv_ci_lower = summaries_rep$ci.lb
+    indiv_ci_upper = summaries_rep$ci.ub
+    indiv_pvalue = summaries_rep$pval
+    
+    summaries = summaries_rep |> rename(lb = ci.lb, ub = ci.ub)
+    rep_es = rep_es_by_replication
+    rep_data = rep_data_by_replication
+    rep_enough_ns = rep_enough_ns_by_replication
+    n_reps = rep_data |> pull(LAB) |> unique() |> length()
+  }
+  
   if (!simulated) {
     # Perform separate t-tests for each replication, this is only used for the voting criterion
     
@@ -573,13 +664,6 @@ perform_analysis = function (EXP_code, df, output_path, params, ma_only_list, si
       used_tests |>
         filter(SUBJ_SUCCESS)
     )
-    
-    # If it's a single big experiment, remove subjective and voting as criteria
-    if (params$ma_dist == "bigexp") {
-      n_subjective_successful_eval = NA
-      n_signif_tests = NA
-      total_tests = NA
-    }
     
   }
   
