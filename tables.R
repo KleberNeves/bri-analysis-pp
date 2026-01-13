@@ -3343,7 +3343,12 @@ fleiss_kappa_exp <- kappam.fleiss(as.matrix(data_exp |>
 fleiss_kappa_rep <- kappam.fleiss(as.matrix(data_rep |>
   drop_na()))
 
-
+# Recalculate p-values from z-statistic to avoid numeric underflow
+# The kappam.fleiss$p.value can underflow to 0 when the z-statistic is very large,
+# because R's double precision cannot represent values smaller than ~1e-308.
+# Using pnorm() directly with the z-statistic avoids this issue.
+p_value_exp <- 2 * pnorm(abs(fleiss_kappa_exp$statistic), lower.tail = FALSE)
+p_value_rep <- 2 * pnorm(abs(fleiss_kappa_rep$statistic), lower.tail = FALSE)
 
 # Create a data frame with the information
 data_summary <- data.frame(
@@ -3351,7 +3356,7 @@ data_summary <- data.frame(
   `Subjects` = c(fleiss_kappa_exp$subjects, fleiss_kappa_rep$subjects),
   `Raters` = c(fleiss_kappa_exp$raters, fleiss_kappa_rep$raters),
   `Kappa` = c(round(fleiss_kappa_exp$value, 2), round(fleiss_kappa_rep$value, 2)),
-  `p-value` = c(sprintf("%.2e", fleiss_kappa_exp$p.value), sprintf("%.2e", fleiss_kappa_rep$p.value))
+  `p-value` = c(sprintf("%.2e", p_value_exp), sprintf("%.2e", p_value_rep))
 )
 
 # Create a flextable table
