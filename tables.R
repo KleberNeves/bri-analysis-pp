@@ -125,8 +125,8 @@ create_tbl_by_method_pcr <- function(analysis_type, distribution) {
     
     # Define all expected metrics for experiment level (in desired order)
     expected_exp_metrics <- c(
-      "REMA estimate within CI of Original",
       "Original estimate within PI of REMA",
+      "REMA estimate within CI of Original",
       "FEMA is significant and has same signal as original",
       "t-test majority vote (with ties as success)",
       "Subjective assessment majority vote (with ties as success)"
@@ -2494,8 +2494,8 @@ tbl_s18_rep_t <- df_by_replication |>
 
 # Define expected metrics and their sources
 expected_exp_metrics <- c(
-  "REMA estimate within CI of Original",
   "Original estimate within PI of REMA",
+  "REMA estimate within CI of Original",
   "FEMA is significant and has same signal as original",
   "t-test majority vote (with ties as success)",
   "Subjective assessment majority vote (with ties as success)"
