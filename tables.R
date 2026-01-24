@@ -3221,7 +3221,7 @@ for (i in 1:nrow(result_g)) {
     ))
 }
 
-# h) Mean ± SD of Validation-mean score
+# h) Mean ± SD of Validation-mean score (all experiments)
 result_h <- df_inclusion_sets |>
   filter(unit != "LABUNIT") |>
   summarise(
@@ -3231,8 +3231,22 @@ result_h <- df_inclusion_sets |>
 
 doc <- doc |>
   body_add_par(run_linebreak()) |>
-  body_add(fpar(ftext("h) Mean ± SD of Validation-mean score", prop = fp_text(bold = TRUE)))) |>
+  body_add(fpar(ftext("h) Mean ± SD of Validation-mean score (all experiments)", prop = fp_text(bold = TRUE)))) |>
   body_add_par(paste("Mean:", sprintf("%.2f", result_h$mean), "SD:", sprintf("%.2f", result_h$sd)))
+
+# h-2) Mean ± SD of Validation-mean score (excluding rediscussed experiments)
+result_h2 <- df_inclusion_sets |>
+  filter(unit != "LABUNIT") |>
+  filter(validation_discussed != "E-mail" | is.na(validation_discussed)) |>
+  summarise(
+    mean = mean(validation_mean_score, na.rm = TRUE),
+    sd = sd(validation_mean_score, na.rm = TRUE)
+  )
+
+doc <- doc |>
+  body_add_par(run_linebreak()) |>
+  body_add(fpar(ftext("h-2) Mean ± SD of Validation-mean score (excluding rediscussed experiments)", prop = fp_text(bold = TRUE)))) |>
+  body_add_par(paste("Mean:", sprintf("%.2f", result_h2$mean), "SD:", sprintf("%.2f", result_h2$sd)))
 
 # i) Mean ± SD of Validation-mean score (Primary analysis only)
 result_i <- df_inclusion_sets |>
@@ -3248,7 +3262,7 @@ doc <- doc |>
   body_add(fpar(ftext("i) Mean ± SD of Validation-mean score (Primary Analysis Only)", prop = fp_text(bold = TRUE)))) |>
   body_add_par(paste("Mean:", sprintf("%.2f", result_i$mean), "SD:", sprintf("%.2f", result_i$sd)))
 
-# j) Mean ± SD of changes_from_preregistration
+# j) Mean ± SD of changes_from_preregistration (all experiments)
 result_j <- df_inclusion_sets |>
   filter(unit != "LABUNIT") |>
   summarise(
@@ -3258,8 +3272,22 @@ result_j <- df_inclusion_sets |>
 
 doc <- doc |>
   body_add_par(run_linebreak()) |>
-  body_add(fpar(ftext("j) Mean ± SD of changes_from_preregistration", prop = fp_text(bold = TRUE)))) |>
+  body_add(fpar(ftext("j) Mean ± SD of changes_from_preregistration (all experiments)", prop = fp_text(bold = TRUE)))) |>
   body_add_par(paste("Mean:", sprintf("%.2f", result_j$mean), "SD:", sprintf("%.2f", result_j$sd)))
+
+# j-2) Mean ± SD of changes_from_preregistration (excluding rediscussed experiments)
+result_j2 <- df_inclusion_sets |>
+  filter(unit != "LABUNIT") |>
+  filter(validation_discussed != "E-mail" | is.na(validation_discussed)) |>
+  summarise(
+    mean = mean(q1_changes_from_preregistration, na.rm = TRUE),
+    sd = sd(q1_changes_from_preregistration, na.rm = TRUE)
+  )
+
+doc <- doc |>
+  body_add_par(run_linebreak()) |>
+  body_add(fpar(ftext("j-2) Mean ± SD of changes_from_preregistration (excluding rediscussed experiments)", prop = fp_text(bold = TRUE)))) |>
+  body_add_par(paste("Mean:", sprintf("%.2f", result_j2$mean), "SD:", sprintf("%.2f", result_j2$sd)))
 
 # k) Mean ± SD of changes_from_preregistration (Primary analysis only)
 result_k <- df_inclusion_sets |>
