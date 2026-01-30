@@ -3131,6 +3131,7 @@ result_d <- df_assessment_by_experiment |>
     technique = case_when(
       str_detect(EXP, "EPM") ~ "EPM",
       str_detect(EXP, "^(MTT)") ~ "MTT",
+      str_detect(EXP, "^(ALTMTT)") ~ "ALTMTT",
       str_detect(EXP, "^(PCR)(?!ALT)") ~ "PCR",
       str_detect(EXP, "^(ALTPCR)") ~ "ALTPCR"
     )
@@ -3171,6 +3172,7 @@ result_f <- df_assessment_by_experiment |>
     technique = case_when(
       str_detect(EXP, "EPM") ~ "EPM",
       str_detect(EXP, "^(MTT)") ~ "MTT",
+      str_detect(EXP, "^(ALTMTT)") ~ "ALTMTT",
       str_detect(EXP, "^(PCR)(?!ALT)") ~ "PCR",
       str_detect(EXP, "^(ALTPCR)") ~ "ALTPCR"
     )
